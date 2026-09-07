@@ -1,0 +1,30 @@
+/* Đổi toàn bộ font chữ của cả trang và màu nền */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    line-height: 1.6;
+}
+
+/* Thử tạo 1 class định dạng thông báo */
+.badge-success {
+    background-color: #28a745;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+/* Trang trí thẻ kbd thành hình phím bấm máy tính nổi 3D */
+kbd {
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 0 #b4b4b4;
+    color: #333;
+    display: inline-block;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    font-weight: 600;
+    padding: 3px 7px;
+    margin: 0 2px;
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trang Blog Tin Tức Semantic HTML5</title>
+</head>
+
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f8f9fa;">
+
+    <!-- 1. Đầu trang web -->
+    <header style="background-color: #2c3e50; color: white; padding: 20px; text-align: center;">
+        <h1 style="margin: 0;">🌐 Báo Công Nghệ Mới</h1>
+        <p style="margin: 5px 0 0 0; color: #bdc3c7;">Cập nhật tin tức lập trình 24/7</p>
+    </header>
+
+    <!-- 2. Menu điều hướng chính -->
+    <nav style="background-color: #34495e; padding: 10px;">
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; gap: 20px;">
+            <li><a href="#" style="color: white; text-decoration: none; font-weight: bold;">Trang Chủ</a></li>
+            <li><a href="#" style="color: white; text-decoration: none; font-weight: bold;">Khóa Học</a></li>
+            <li><a href="#" style="color: white; text-decoration: none; font-weight: bold;">Liên Hệ</a></li>
+        </ul>
+    </nav>
+
+    <!-- 3. Khu vực nội dung chính (Chỉ 1 main duy nhất) -->
+    <main style="max-width: 900px; margin: 20px auto; padding: 0 15px;">
+
+        <!-- Khối bài viết nổi bật -->
+        <section>
+            <h2 style="border-bottom: 2px solid #3498db; padding-bottom: 8px;">🔥 Bài Viết Mới Nhất</h2>
+
+            <!-- 1 Bài báo hoàn chỉnh độc lập -->
+            <article
+                style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;">
+                <h3 style="margin-top: 0; color: #2c3e50;">Lộ Trình Trở Thành Front-End Developer 2026</h3>
+
+                <p style="color: #7f8c8d; font-size: 14px;">
+                    Đăng ngày: <time datetime="2026-09-07">07/09/2026</time> | Tác giả: <b>Nguyễn Văn A</b>
+                </p>
+
+                <p>Học Front-End hiện đại bắt đầu từ việc nắm vững cấu trúc HTML5 Semantic, CSS Flexbox/Grid và
+                    JavaScript ES6+...</p>
+
+                <figure style="margin: 15px 0; text-align: center;">
+                    <img src="anh1.jpg" alt="Lộ trình học Front-End" width="300" style="border-radius: 6px;" />
+                    <figcaption style="font-size: 13px; color: #7f8c8d; margin-top: 5px;">Hình 1: Bản đồ kỹ năng lập
+                        trình viên Front-End.</figcaption>
+                </figure>
+            </article>
+        </section>
+
+        <!-- Khối thông tin phụ bên lề -->
+        <aside style="background-color: #ecf0f1; padding: 15px; border-radius: 6px;">
+            <h3 style="margin-top: 0;">💡 Có thể bạn quan tâm</h3>
+            <ul>
+                <li><a href="#">10 câu hỏi phỏng vấn HTML phổ biến</a></li>
+                <li><a href="#">Bí quyết làm chủ CSS Box Model</a></li>
+            </ul>
+        </aside>
+
+    </main>
+
+    <!-- 4. Chân trang web -->
+    <footer style="background-color: #2c3e50; color: white; text-align: center; padding: 15px; margin-top: 40px;">
+        <p style="margin: 0;">© 2026 Báo Công Nghệ Mới. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>
