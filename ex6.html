@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ex6</title>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#">home</a></li>
+                <li><a href="#">about</a></li>
+                <li><a href="#">contact</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <video controls loop width="500" height="500" poster="anh1.jpg">
+                <source src="video.mp4" type="video/mp4">
+                <source src="video.webm" type="video/webm">
+                <track src="caption.vtt" kind="subtitles" srclang="vi" label="Vietnamese">
+                </track>
+                <track src="caption.vtt" kind="subtitles" srclang="en" label="English">
+                </track>
+                <track src="caption.vtt" kind="captions" srclang="vi" label="Vietnamese captions">
+                </track>
+                <track src="caption.vtt" kind="chapters" srclang="en" label="English chapters">
+                </track>
+            </video>
+            <audio src="video.mp4" controls></audio>
+            <iframe src="https://www.youtube.com/embed/4Njy3rVJMxc?si=NlB7lL3DXrM8WJcx" frameborder="0" width="560"
+                height="315" title="video youtube" loading="lazy"></iframe>
+        </section>
+        <article>
+            <h2>Câu hỏi thường gặp</h2>
+
+            <details>
+                <summary>HTML là gì?</summary>
+                <p>HTML là ngôn ngữ đánh dấu dùng để xây dựng cấu trúc của trang web.</p>
+            </details>
+
+            <details>
+                <summary>CSS dùng để làm gì?</summary>
+                <p>CSS dùng để định dạng và thiết kế giao diện cho trang web.</p>
+            </details>
+
+            <details>
+                <summary>JavaScript dùng để làm gì?</summary>
+                <p>JavaScript giúp trang web có thêm hành vi và tính tương tác.</p>
+            </details>
+        </article>
+        <div>
+            <dialog id="dialog">
+                <h3>Thông báo</h3>
+                <p>Bạn có chắc chắn muốn thoát?</p>
+                <button onclick="document.getElementById('dialog').close()">Đóng</button>
+            </dialog>
+            <button onclick="document.getElementById('dialog').showModal()">Mở hộp thoại</button>
+        </div>
+    </main>
+    <footer>
+        <svg width="100" height="100">
+            <circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" />
+        </svg>
+        <p>
+            Code:&nbsp;&lt;div&gt;Hello&lt;/div&gt;&nbsp;&copy;&nbsp;2026&nbsp;&trade;
+        </p>
+        <img src="anh1.jpg" alt="Bàn làm việc" usemap="#workmap" width="400" height="379" />
+
+        <map name="workmap">
+            <!-- Khu vực hình chữ nhật trỏ tới máy tính -->
+            <area shape="rect" coords="34,44,270,350" alt="Computer" href="computer.html" />
+            <!-- Khu vực hình tròn trỏ tới cốc cà phê -->
+            <area shape="circle" coords="337,300,44" alt="Coffee" href="coffee.html" />
+        </map>
+    </footer>
+</body>
+
+</html>

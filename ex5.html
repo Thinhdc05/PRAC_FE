@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 1.4: Form Ứng Tuyển & Đăng Ký</title>
+    <link rel="stylesheet" href="ex5.css">
+</head>
+<body>
+    <header>
+        <nav class="nav-menu">
+            <ul class="nav-list">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="form-container">
+        <h1 class="form-title">Form Đăng Ký Ứng Tuyển</h1>
+        
+        <form class="application-form" action="/submit" method="POST" enctype="multipart/form-data">
+            <!-- 1. THÔNG TIN CÁ NHÂN -->
+            <fieldset class="personal-info">
+                <legend>Thông Tin Cá Nhân</legend>
+                
+                <label for="name">Họ và tên</label>
+                <input type="text" id="name" name="fullname" placeholder="Nhập họ và tên..." required autofocus minlength="2">
+
+                <label for="email">Địa chỉ Email</label>
+                <input type="email" id="email" name="email" placeholder="name@example.com" required>
+
+                <label for="password">Mật khẩu</label>
+                <input type="password" id="password" name="password" placeholder="Mật khẩu từ 8-20 ký tự" required minlength="8" maxlength="20">
+
+                <label for="tel">Số điện thoại</label>
+                <input type="tel" id="tel" name="tel" placeholder="0123456789" pattern="[0-9]{10}">
+
+                <label for="date">Ngày sinh</label>
+                <input type="date" id="date" name="date" required>
+
+                <div class="gender-group">
+                    <span class="label-inline">Giới tính:</span>
+                    <label><input type="radio" id="male" name="gender" value="male"> Nam</label>
+                    <label><input type="radio" id="female" name="gender" value="female"> Nữ</label>
+                </div>
+            </fieldset>
+
+            <!-- 2. HỒ SƠ ỨNG TUYỂN -->
+            <fieldset class="job-info">
+                <legend>Hồ Sơ Năng Lực</legend>
+
+                <div class="skills-group">
+                    <span class="label-inline">Kỹ năng chuyên môn:</span>
+                    <label><input type="checkbox" name="skill" id="html" value="html" checked> HTML</label>
+                    <label><input type="checkbox" name="skill" id="css" value="css"> CSS</label>
+                    <label><input type="checkbox" name="skill" id="javascript" value="javascript"> JavaScript</label>
+                </div>
+
+                <label for="city">Thành phố làm việc</label>
+                <select name="city" id="city">
+                    <option value="">Chọn thành phố</option>
+                    <optgroup label="Miền Bắc">
+                        <option value="hn">Hà Nội</option>
+                        <option value="hp">Hải Phòng</option>
+                    </optgroup>
+                    <optgroup label="Miền Nam">
+                        <option value="hcm">TP. Hồ Chí Minh</option>
+                        <option value="dn">Đà Nẵng</option>
+                    </optgroup>
+                </select>
+
+                <label for="position">Vị trí ứng tuyển</label>
+                <input id="position" name="position" type="text" list="pos" placeholder="Chọn hoặc nhập vị trí..." required>
+                <datalist id="pos">
+                    <option value="Frontend Developer"></option>
+                    <option value="Backend Developer"></option>
+                    <option value="UI/UX Designer"></option>
+                </datalist>
+
+                <label for="salary">Mức lương mong muốn ($)</label>
+                <input type="range" id="salary" name="salary" min="1000" max="10000" value="5000" step="100">
+
+                <label for="file">Tải lên CV (PDF, DOCX)</label>
+                <input type="file" id="file" name="file" accept=".pdf,.doc,.docx" required>
+
+                <label for="intro">Giới thiệu bản thân</label>
+                <textarea id="intro" name="intro" rows="4" placeholder="Viết vài dòng giới thiệu kinh nghiệm của bạn..."></textarea>
+            </fieldset>
+
+            <!-- 3. NÚT HÀNH ĐỘNG -->
+            <div class="form-actions">
+                <button type="reset" class="btn btn-reset">Xóa Hết</button>
+                <button type="submit" class="btn btn-submit">Gửi Hồ Sơ</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3-in-1 CSS Mastery: Dark Mode, Glassmorphism & Skeleton Loading</title>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="demo_sticky.css">
+</head>
+<body>
+
+    <!-- 1. CHECKBOX ĐIỀU KHIỂN DARK / LIGHT MODE THUẦN CSS -->
+    <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+
+    <div class="app-container">
+        
+        <!-- CÁC KHỐI CẦU MÀU PHÁT SÁNG NẰM PHÍA SAU (ĐỂ THẤY RÕ HIỆU ỨNG KÍNH MỜ) -->
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+
+        <!-- THANH ĐIỀU KHIỂN TRÊN CÙNG -->
+        <header class="top-nav">
+            <div class="brand">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>CSS INTERVIEW COMBO (3 TRONG 1)</span>
+            </div>
+
+            <!-- NÚT GẠT CHUYỂN THEME THUẦN CSS -->
+            <label for="theme-toggle" class="theme-switch" title="Bấm để đổi Giao diện Sáng / Tối">
+                <i class="fa-solid fa-moon icon-moon"></i>
+                <i class="fa-solid fa-sun icon-sun"></i>
+                <span class="switch-ball"></span>
+            </label>
+        </header>
+
+        <main class="showcase-grid">
+
+            <!-- ============================================================
+                 KHỐI 1: GLASSMORPHISM CARD (HIỆU ỨNG KÍNH MỜ XUYÊN THẤU)
+                 ============================================================ -->
+            <section class="card glass-card">
+                <div class="card-badge">✨ Glassmorphism Card</div>
+                <div class="user-avatar-wrapper">
+                    <img src="anh1.jpg" alt="Avatar" class="user-avatar">
+                    <span class="status-dot" title="Đang trực tuyến"></span>
+                </div>
+                <h2 class="user-name">Đinh Công Thịnh</h2>
+                <p class="user-title">Senior Front-End Architect</p>
+                <p class="user-bio">
+                    Chuyên gia tối ưu giao diện web, thiết kế hệ thống layout chịu tải cao với CSS hiện đại và trải nghiệm người dùng tinh tế.
+                </p>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <strong>48+</strong>
+                        <span>Dự án</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>99.8%</strong>
+                        <span>SEO Score</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>5★</strong>
+                        <span>Đánh giá</span>
+                    </div>
+                </div>
+                <button class="btn-action">
+                    <i class="fa-regular fa-paper-plane"></i> Kết Nối Ngay
+                </button>
+            </section>
+
+
+            <!-- ============================================================
+                 KHỐI 2: SKELETON LOADING CARD (HIỆU ỨNG SHIMMER ÁNH SÁNG)
+                 ============================================================ -->
+            <section class="card skeleton-card">
+                <div class="card-badge skeleton-badge">⏳ Skeleton Shimmer Loading</div>
+                
+                <!-- Placeholder Avatar -->
+                <div class="skeleton skeleton-avatar"></div>
+                
+                <!-- Placeholder Tên & Chức danh -->
+                <div class="skeleton skeleton-text skeleton-title"></div>
+                <div class="skeleton skeleton-text skeleton-subtitle"></div>
+                
+                <!-- Placeholder Đoạn văn mô tả -->
+                <div class="skeleton skeleton-text skeleton-line"></div>
+                <div class="skeleton skeleton-text skeleton-line skeleton-short"></div>
+                
+                <!-- Placeholder Thống kê -->
+                <div class="skeleton-stats-row">
+                    <div class="skeleton skeleton-stat-box"></div>
+                    <div class="skeleton skeleton-stat-box"></div>
+                    <div class="skeleton skeleton-stat-box"></div>
+                </div>
+
+                <!-- Placeholder Nút bấm -->
+                <div class="skeleton skeleton-btn"></div>
+            </section>
+
+        </main>
+
+        <footer class="footer-note">
+            <p>💡 <b>Mẹo:</b> Thử bấm vào nút công tắc góc trên bên phải để kiểm tra đổi toàn bộ màu sắc bằng <b>CSS Variables</b>!</p>
+        </footer>
+
+    </div>
+
+</body>
+</html>

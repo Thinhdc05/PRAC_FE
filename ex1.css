@@ -1,0 +1,32 @@
+body {
+    background-color: #ffdbac;
+    font-family: 'Inter', system-ui, sans-serif;
+    padding: 30px;
+}
+
+#gioi-thieu {
+    background-color: #fff;
+    border-radius: 10px;
+    max-width: 600px;
+    margin: 20px auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+}
+
+h1 {
+    background-color: #7d6344;
+    color: #fff;
+    padding: 10px;
+    border-radius: 10px 10px 0 0;
+}
+
+h1::after {
+    content: " ";
+    height: 5px;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(to right, #f06d06, #7d6344);
+    display: block;
+}
+p,strong,em{
+    line-height: 1.8px;
+}

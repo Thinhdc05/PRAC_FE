@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini-shop</title>
+    <link rel="stylesheet" href="mini_shop.css">
+</head>
+
+<body>
+    <header class="app-header">
+        <div class="logo">⚡ SmartShop <span>Mini</span></div>
+        <div class="user-infor">
+            <span class="user-name">Admin</span>
+            <span class="user-balance">10000 $</span>
+        </div>
+    </header>
+    <main class="main-layout">
+        <section class="shop-section">
+            <div class="shop-header">
+                <h2>✨ Danh sách Sản phẩm</h2>
+                <span id="product-count"> Số sản phẩm hiện có :0</span>
+            </div>
+            <div class="shop-controls">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder=" Tìm kiếm sản phẩm theo tên...">
+                </div>
+                <div class="category-tabs">
+                    <button class="filter-btn active" data-category="all">Tất cả</button>
+                    <button class="filter-btn" data-category="electronics">Điện tử</button>
+                    <button class="filter-btn" data-category="clothing">Thời trang</button>
+                    <button class="filter-btn" data-category="home">Gia dụng</button>
+                </div>
+            </div>
+            <div class="product-grid">
+               
+            </div>
+
+        </section>
+        <aside class="cart-section">
+            <div class="cart-header">
+                <h3>🛒 Giỏ hàng</h3>
+                <button id="clear-cart-btn">Xóa tất cả</button>
+            </div>
+            <div class="cart-items-list">
+                   
+            </div>
+            <div class="cart-summary">
+                   
+            </div>
+
+        </aside>
+    </main>
+
+    <script src="mini_shop.js"></script>
+</body>
+
+</html>

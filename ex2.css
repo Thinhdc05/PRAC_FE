@@ -1,0 +1,25 @@
+.figure{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.img{
+    width: 200px;
+    height: 200px;
+    border-radius: 10px 10px 0 0;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    object-fit: cover;
+}
+.img:hover{
+    transform: scale(1.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    
+}
+.figcaption{
+    text-align: center;
+    padding: 10px;
+}

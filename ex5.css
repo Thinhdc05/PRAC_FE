@@ -1,0 +1,15 @@
+form{
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+}
+h1{
+    background-color: aqua;
+    color: blue;
+    text-align: center;
+    font-size: 30px;
+    text-decoration: underline red wavy 2px;
+  
+}
+.personal-info,.profile{
+    font-size: 20px;
+}

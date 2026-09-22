@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mini-shop</title>
+    <link rel="stylesheet" href="shop_mini.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo">SmartShop <span class="highlight">Mini</span></div>
+        <div class="user-info">
+            <span class="user-name">Tên</span>
+            <span class="user-balance">100000đ</span>
+        </div>
+    </header>
+    <main class="main-layout">
+        <section class="shop-section">
+            <div class="shop-header">
+                <h2>Danh sach san pham</h2>
+                <span id="product-count">So san pham hien co: 0 </span>
+            </div>
+            <div class="shop-controls">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder=" Tim kiem san pham theo ten...">
+                </div>
+                <div class="category-tabs">
+                    <button class="filter-btn active" data-category="all">Tat ca</button>
+                    <button class="filter-btn" data-category="electronics">Dien tu</button>
+                    <button class="filter-btn" data-category="clothing">Thoi trang</button>
+                    <button class="filter-btn" data-category="home">Gia dung</button>
+                </div>  
+            </div>
+            <div class="product-grid">
+                
+
+            </div>
+        </section>
+        <aside class="cart-section">
+            <div class="cart-header">
+                <h3>🛒 Giỏ hàng</h3>
+                <button id="clear-cart-btn">Xóa tất cả</button>
+            </div>
+            <div class="cart-items-list">
+                   
+            </div>
+            <div class="cart-summary">
+                <div class="summary-item">
+                    <span>Tổng tiền:</span>
+                    <span id="cart-total">0đ</span>
+                </div>
+                <div class="summary-item">
+                    <span>Giảm giá:</span>
+                    <span id="cart-discount">0đ</span>
+                </div>
+                <div class="summary-item summary-total">
+                    <span>Thành tiền:</span>
+                    <span id="cart-final-total">0đ</span>
+                </div>
+            </div>
+            <button id="checkout-btn">Thanh toán</button>
+        </aside>
+    </main>
+    <script src="shop_mini.js"></script>
+</body>
+</html>

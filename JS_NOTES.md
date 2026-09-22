@@ -18,7 +18,7 @@
 ---
 
 ### 📍 GIAI ĐOẠN 2: HÀM & LUỒNG ĐIỀU KHIỂN (FUNCTIONS & CONTROL FLOW)
-- [x] **Bài 2.1:** Các loại Hàm: Function Declaration, Function Expression, Arrow Function, IIFE, Callback cơ bản, con trỏ `this`, đối tượng `arguments`.
+- [x] **Bài 2.1:** Các loại Hàm: Function Declaration vs Expression, Arrow Function, **Chuyên sâu IIFE**, Con trỏ `this`, Bộ ba **`call` / `apply` / `bind`**, `arguments` vs Rest `...args`.
 - [x] **Bài 2.2:** Tham số & Trả về: Default parameters, Rest parameter `...args`, Từ khóa `return`, Bẫy đột biến tham chiếu & Pure Functions.
 - [x] **Bài 2.3:** Câu lệnh rẽ nhánh: `if / else if / else`, `switch / case` và Toán tử 3 ngôi (Ternary Operator `? :`).
 - [x] **Bài 2.4:** Vòng lặp toàn diện (JS Loops & Iterations): `for`, `while`, `do...while`, `for...in` (cho Object), `for...of` (cho Array/Iterable).
@@ -412,7 +412,58 @@ var sayHi = function() { console.log("Hi!"); };
 <br>
 
 <details open>
-<summary><b>3. Bẫy Tử Huyệt Con Trỏ `this`: 4 Quy Tắc Ràng Buộc & Sự Khác Biệt Giữa Hàm Thường vs Arrow</b> <i>(Bấm để xem)</i></summary>
+<summary><b>3. Chuyên Sâu IIFE (Immediately Invoked Function Expression): Bản Chất, Lịch Sử & Ứng Dụng</b> <i>(Bấm để xem)</i></summary>
+
+* **Bản chất cú pháp:**
+  ```javascript
+  (function() {
+      // Mã nguồn tự thực thi ngay khi đọc tới
+      console.log("IIFE chạy ngay lập tức!");
+  })();
+
+  // Viết bằng Arrow Function:
+  (() => {
+      console.log("Arrow IIFE chạy tức thì!");
+  })();
+  ```
+  * **Dấu ngoặc đơn thứ 1 `(function() { ... })`:** Ép trình duyệt coi đây là một **Biểu thức hàm (Function Expression)** thay vì một câu lệnh khai báo (Declaration), ngăn chặn lỗi cú pháp `SyntaxError`.
+  * **Dấu ngoặc đơn thứ 2 `()`:** Lập tức thực thi hàm vừa tạo (Invoke). Có thể truyền tham số vào: `(function(appName) { ... })("MyApp");`.
+
+* **Tại sao IIFE từng là "Vua" của thế giới JavaScript (Thời kỳ trước ES6)?**
+  * Trước ES6 (2015), JS **chưa có `let`, `const`** (chỉ có `var`) và **chưa có hệ thống ES Modules (`import / export`)**.
+  * Khai báo `var` ngoài cùng sẽ tràn ra phạm vi toàn cục (`window`), dẫn đến việc các thư viện đè biến lên nhau gây xung đột dữ liệu (**Global Scope Pollution**).
+  * 👉 **Giải pháp Module Pattern cổ điển với IIFE:** Đóng kín phạm vi hàm, bảo vệ biến Private không bị sửa đổi từ bên ngoài:
+    ```javascript
+    const myWallet = (function() {
+        let balance = 1000; // Biến Private, bên ngoài không thể truy cập trực tiếp
+
+        return {
+            checkBalance() { console.log(`Số dư: ${balance}k`); },
+            deposit(amount) { if (amount > 0) balance += amount; }
+        };
+    })();
+
+    myWallet.checkBalance(); // "Số dư: 1000k"
+    myWallet.balance = 99999999; // VÔ DỤNG! Không thể ghi đè biến private bên trong
+    myWallet.checkBalance(); // Vẫn là: "Số dư: 1000k"
+    ```
+
+* **Ứng dụng hiện đại của IIFE ngày nay:**
+  * **Khởi chạy mã bất đồng bộ cấp cao nhất (Top-level Async):**
+    ```javascript
+    (async () => {
+        const res = await fetch("https://api.example.com/data");
+        const data = await res.json();
+        console.log(data);
+    })();
+    ```
+  * **Đóng gói thư viện độc lập:** Các thư viện lớn như jQuery (`$`), Lodash (`_`) đều bọc toàn bộ mã nguồn bên trong một IIFE để bảo vệ không gian tên (Namespace Isolation).
+</details>
+
+<br>
+
+<details open>
+<summary><b>4. Bẫy Tử Huyệt Con Trỏ `this`: 4 Quy Tắc Ràng Buộc & Sự Khác Biệt Giữa Hàm Thường vs Arrow</b> <i>(Bấm để xem)</i></summary>
 
 * **4 Quy tắc vàng xác định `this` trong Hàm Thường (Regular Function):**
   1. **Default Binding:** Gọi hàm rời rạc `fn()` → `this` trỏ về `window` (hoặc `undefined` nếu bật `'use strict'`).
@@ -492,7 +543,63 @@ button.addEventListener("click", function() {
 <br>
 
 <details open>
-<summary><b>4. Mổ Xẻ Đối Tượng `arguments` (ES5) vs Rest Parameter `...args` (ES6)</b> <i>(Bấm để xem)</i></summary>
+<summary><b>5. Bộ Ba Điều Khiển Con Trỏ `this`: `call()`, `apply()`, `bind()` (Bản Chất, Cheat Sheet & Mượn Hàm)</b> <i>(Bấm để xem)</i></summary>
+
+* **Mục đích chung:** Ép buộc con trỏ `this` của một hàm trỏ vào **đối tượng cụ thể mà lập trình viên chỉ định** (Explicit Binding), bất kể hàm đó được định nghĩa ở đâu.
+
+* **1. `call(thisArg, arg1, arg2, ...)` — Gọi hàm ngay, truyền đối số liệt kê:**
+  * Thực thi hàm **ngay lập tức**.
+  * Đối số truyền vào dạng danh sách ngăn cách bởi dấu phẩy.
+  ```javascript
+  function introduce(greeting, punctuation) {
+      console.log(`${greeting}, tôi là ${this.name}${punctuation}`);
+  }
+  const person = { name: "Thịnh Đỗ" };
+  introduce.call(person, "Xin chào", "!"); // "Xin chào, tôi là Thịnh Đỗ!"
+  ```
+
+* **2. `apply(thisArg, [argsArray])` — Gọi hàm ngay, truyền đối số dạng MẢNG:**
+  * Thực thi hàm **ngay lập tức**.
+  * Nhận đối số dưới dạng một **Mảng duy nhất** (`[arg1, arg2]`). *(Mẹo nhớ: **A**pply = **A**rray)*.
+  ```javascript
+  introduce.apply(person, ["Hello", "."]); // "Hello, tôi là Thịnh Đỗ."
+
+  // Ứng dụng kinh điển: Mượn hàm Math.max tìm phần tử lớn nhất trong mảng
+  const numbers = [10, 45, 2, 89, 34];
+  const maxVal = Math.max.apply(null, numbers); // 89
+  ```
+
+* **3. `bind(thisArg, arg1, ...)` — KHÔNG gọi hàm ngay, trả về HÀM MỚI bị khóa cứng `this`:**
+  * **Không thực thi ngay!** Nó trả về một hàm mới (Bound Function).
+  * Con trỏ `this` trong hàm mới này bị **khóa chết vĩnh viễn** vào `thisArg`, không thể bị ghi đè bởi bất kỳ ai.
+  * **Ứng dụng sống còn trong Frontend:** Sửa lỗi mất ngữ cảnh `this` khi truyền hàm làm Callback cho DOM Event hoặc `setTimeout`:
+  ```javascript
+  const user = {
+      name: "Thịnh",
+      sayHi() { console.log(`Hi, I'm ${this.name}`); }
+  };
+
+  // ❌ setTimeout tự gọi hàm -> this trỏ ra window -> "Hi, I'm undefined"
+  // setTimeout(user.sayHi, 1000);
+
+  // ✔️ Dùng .bind() khóa vĩnh viễn this vào user:
+  setTimeout(user.sayHi.bind(user), 1000); // "Hi, I'm Thịnh"
+  ```
+
+* **Bảng so sánh cốt lõi:**
+
+| Tiêu chí | `call()` | `apply()` | `bind()` |
+| :--- | :--- | :--- | :--- |
+| **Thời điểm thực thi** | **Ngay lập tức** (Invoke immediately) | **Ngay lập tức** (Invoke immediately) | **Trì hoãn** (Trả về hàm mới để gọi sau) |
+| **Cú pháp truyền đối số** | Danh sách: `(this, a, b)` | Dạng Mảng: `(this, [a, b])` | Danh sách: `(this, a, b)` (hỗ trợ Currying) |
+| **Ứng dụng chủ yếu** | Mượn method dùng ngay lập tức | Mượn method với danh sách đối số là mảng | Khóa `this` cho Event Listeners / Callbacks |
+
+</details>
+
+<br>
+
+<details open>
+<summary><b>6. Mổ Xẻ Đối Tượng `arguments` (ES5) vs Rest Parameter `...args` (ES6)</b> <i>(Bấm để xem)</i></summary>
 
 * **Bản chất `arguments` trong Hàm Thường:**
   * Là một **Array-like Object** (đối tượng dạng mảng: có thuộc tính `.length`, truy cập qua chỉ mục index `[0]`, `[1]`).
@@ -533,7 +640,7 @@ console.log(sumModern(1, 2, 3, 4, 5)); // 15
 <br>
 
 <details open>
-<summary><b>5. Quy Tắc Cú Pháp & Ghi Nhớ Vàng Của Arrow Function (Chuẩn W3Schools)</b> <i>(Bấm để xem)</i></summary>
+<summary><b>7. Quy Tắc Cú Pháp & Ghi Nhớ Vàng Của Arrow Function (Chuẩn W3Schools)</b> <i>(Bấm để xem)</i></summary>
 
 * **Quy tắc ngoặc đơn `()`:**
   * **0 tham số:** BẮT BUỘC có ngoặc đơn: `const greet = () => "Hello";`
@@ -554,7 +661,7 @@ console.log(sumModern(1, 2, 3, 4, 5)); // 15
 <br>
 
 <details open>
-<summary><b>6. Bảng Chiến Lược: Khi Nào NÊN & KHÔNG NÊN Dùng Arrow Function</b> <i>(Bấm để xem)</i></summary>
+<summary><b>8. Bảng Chiến Lược: Khi Nào NÊN & KHÔNG NÊN Dùng Arrow Function</b> <i>(Bấm để xem)</i></summary>
 
 * **Khi NÊN dùng Arrow Function:**
   * ✔️ Dùng cho các hàm ngắn gọn (chức năng 1 dòng).

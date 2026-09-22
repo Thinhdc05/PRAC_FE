@@ -1,0 +1,420 @@
+/* ============================================================
+   3-IN-1 CSS MASTER COMBO:
+   1. Dark / Light Mode Switcher (CSS Variables + :checked)
+   2. Glassmorphism Card (backdrop-filter: blur)
+   3. Skeleton Loading Screen (Shimmer Animation)
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. HỆ THỐNG BIẾN TOÀN CỤC (CSS VARIABLES)
+   ------------------------------------------------------------ */
+:root {
+    /* CHẾ ĐỘ TỐI (DARK MODE - MẶC ĐỊNH) */
+    --bg-color: #0b0f19;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    
+    /* Biến cho kính mờ Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    
+    /* Biến cho vệt sáng Skeleton Shimmer */
+    --skel-base: rgba(255, 255, 255, 0.07);
+    --skel-shine: rgba(255, 255, 255, 0.18);
+    
+    --transition-speed: 0.4s;
+}
+
+/* KHI CHECKBOX ĐƯỢC CHỌN -> CHUYỂN SANG CHẾ ĐỘ SÁNG (LIGHT MODE) */
+#theme-toggle:checked ~ .app-container {
+    --bg-color: #f1f5f9;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --primary-color: #4f46e5;
+    
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    
+    --skel-base: #e2e8f0;
+    --skel-shine: #f8fafc;
+}
+
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ẨN CHECKBOX THẬT */
+.theme-checkbox {
+    display: none;
+}
+
+/* KHUNG ỨNG DỤNG CHÍNH */
+.app-container {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    padding: 30px 20px;
+    position: relative;
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+/* ------------------------------------------------------------
+   2. CÁC QUẢ CẦU PHÁT SÁNG NỀN (GLOWING ORBS)
+   ------------------------------------------------------------ */
+.glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.6;
+    animation: floatOrb 8s infinite alternate ease-in-out;
+}
+
+.orb-1 {
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, #6366f1, #3b82f6);
+    top: 10%;
+    left: 15%;
+}
+
+.orb-2 {
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, #ec4899, #8b5cf6);
+    bottom: 15%;
+    right: 15%;
+    animation-delay: -3s;
+}
+
+.orb-3 {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, #06b6d4, #10b981);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation-delay: -5s;
+}
+
+@keyframes floatOrb {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(-40px) scale(1.1); }
+}
+
+/* ------------------------------------------------------------
+   3. THANH ĐIỀU HƯỚNG & NÚT GẠT THEME SWITCH
+   ------------------------------------------------------------ */
+.top-nav {
+    max-width: 900px;
+    margin: 0 auto 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+.brand {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-color);
+}
+
+/* NÚT GẠT THEME THUẦN CSS */
+.theme-switch {
+    width: 64px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    cursor: pointer;
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.icon-moon { color: #facc15; font-size: 13px; }
+.icon-sun { color: #fb923c; font-size: 13px; }
+
+.switch-ball {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* KHI CHECKBOX CHECKED: ĐẨY VIÊN BI SANG PHẢI */
+#theme-toggle:checked ~ .app-container .switch-ball {
+    transform: translateX(32px);
+    background: #0f172a;
+}
+
+/* ------------------------------------------------------------
+   4. BỐ CỤC LƯỚI GRID HIỂN THỊ 2 THẺ SONG SONG
+   ------------------------------------------------------------ */
+.showcase-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 36px;
+    position: relative;
+    z-index: 10;
+}
+
+/* ĐỊNH DẠNG CHUNG CỦA CARD */
+.card {
+    border-radius: 24px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    transition: all var(--transition-speed) ease;
+}
+
+.card-badge {
+    position: absolute;
+    top: 16px;
+    left: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--primary-color);
+}
+
+/* ------------------------------------------------------------
+   5. KỸ THUẬT GLASSMORPHISM (KÍNH MỜ XUYÊN THẤU)
+   ------------------------------------------------------------ */
+.glass-card {
+    /* ĐẶC TRƯNG CỐT LÕI CỦA GLASSMORPHISM: */
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);             /* ← BẮT BUỘC: làm mờ cảnh vật phía sau */
+    -webkit-backdrop-filter: blur(20px);      /* Safari */
+    border: 1px solid var(--glass-border);    /* Viền phản chiếu ánh sáng mỏng */
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.user-avatar-wrapper {
+    position: relative;
+    margin: 24px 0 16px;
+}
+
+.user-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.status-dot {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    width: 14px;
+    height: 14px;
+    background: #22c55e;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+.user-name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.user-title {
+    font-size: 13px;
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.user-bio {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.stats-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding: 14px 0;
+    margin-bottom: 24px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 14px;
+    border: 1px solid var(--glass-border);
+}
+
+.stat-item strong {
+    display: block;
+    font-size: 16px;
+}
+
+.stat-item span {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.btn-action {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.btn-action:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+/* ------------------------------------------------------------
+   6. KỸ THUẬT SKELETON LOADING (SHIMMER ANIMATION)
+   ------------------------------------------------------------ */
+.skeleton-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+/* ĐẶC TRƯNG CỐT LÕI CỦA SKELETON SHIMMER: */
+.skeleton {
+    /* Tạo dải gradient quét sáng qua lại */
+    background: linear-gradient(
+        90deg,
+        var(--skel-base) 0%,
+        var(--skel-shine) 50%,
+        var(--skel-base) 100%
+    );
+    background-size: 200% 100%; /* Phóng to gấp đôi để có chiều trượt */
+    animation: shimmer 1.6s infinite ease-in-out; /* Chạy lặp vô hạn */
+    border-radius: 6px;
+}
+
+/* KEYFRAMES QUÉT DẢI ÁNH SÁNG TỪ TRÁI SANG PHẢI */
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* TẠO DÁNG TỪNG PHẦN TỬ SKELETON GIỐNG THẺ THẬT */
+.skeleton-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    margin: 24px 0 16px;
+}
+
+.skeleton-text {
+    height: 12px;
+    margin-bottom: 12px;
+    border-radius: 999px;
+}
+
+.skeleton-title {
+    width: 140px;
+    height: 20px;
+    margin-bottom: 8px;
+}
+
+.skeleton-subtitle {
+    width: 180px;
+    margin-bottom: 20px;
+}
+
+.skeleton-line {
+    width: 100%;
+}
+
+.skeleton-short {
+    width: 75%;
+    margin-bottom: 24px;
+}
+
+.skeleton-stats-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.skeleton-stat-box {
+    flex: 1;
+    height: 52px;
+    border-radius: 12px;
+}
+
+.skeleton-btn {
+    width: 100%;
+    height: 44px;
+    border-radius: 12px;
+}
+
+/* FOOTER NOTE */
+.footer-note {
+    max-width: 900px;
+    margin: 40px auto 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    position: relative;
+    z-index: 10;
+}

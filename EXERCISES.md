@@ -7,12 +7,13 @@
 
 ## 📋 DANH SÁCH TIẾN ĐỘ THỰC HÀNH
 
-- [x] **Bài 1:** Trang Hồ Sơ Cá Nhân & CV Ứng Tuyển (`ex1.html` / `bai1_profile.html`)
-- [ ] **Bài 2:** Trang Bài Báo Tin Tức Công Nghệ (`bai2_news.html`)
-- [ ] **Bài 3:** Bảng Thống Kê Điểm Số & Bảng Giá Dịch Vụ (`bai3_table.html`)
-- [ ] **Bài 4:** Danh Sách Đa Cấp & Menu Điều Hướng Đa Phương Tiện (`bai4_menu.html`)
-- [ ] **Bài 5:** Form Đăng Ký Ứng Tuyển Toàn Diện (Full Controls & Validation) (`bai5_form.html`)
-- [ ] **Bài 6:** Trung Tâm Trợ Giúp, Media & Thẻ Hiện Đại (`bai6_media.html`)
+- [x] **Bài 1:** Trang Hồ Sơ Cá Nhân & CV Ứng Tuyển (`ex1.html`)
+- [x] **Bài 2:** Trang Bài Báo Tin Tức Công Nghệ (`ex2.html`)
+- [x] **Bài 3:** Bảng Thống Kê Điểm Số & Bảng Giá Dịch Vụ (`ex3.html`)
+- [x] **Bài 4:** Danh Sách Đa Cấp & Menu Điều Hướng Đa Phương Tiện (`ex4.html`)
+- [x] **Bài 5:** Form Đăng Ký Ứng Tuyển Toàn Diện (Full Controls & Validation) (`ex5.html`)
+- [x] **Bài 6:** Trung Tâm Trợ Giúp, Media & Thẻ Hiện Đại (`ex6.html`)
+- [ ] **Bài 7 (BOSS CHALLENGE):** Thử Thách Bẫy Phỏng Vấn & Tối Ưu Ngữ Nghĩa Toàn Diện (`ex7.html`)
 
 ---
 
@@ -362,3 +363,101 @@
 +-------------------------------------------------------------+
 ```
 </details>
+
+---
+
+### 📌 BÀI 7 (BOSS CHALLENGE): Thử Thách Bẫy Phỏng Vấn & Tối Ưu Ngữ Nghĩa Toàn Diện
+* **Tên file:** `ex7.html`
+* **Mục tiêu:** Kiểm tra khả năng xử lý **các tình huống bẫy, thẻ dễ nhầm lẫn và chuẩn Accessibility/SEO nâng cao**.
+
+<details open>
+<summary><b>📖 1. Mô tả chi tiết các thử thách cần vượt qua</b> <i>(Bấm để mở/đóng)</i></summary>
+
+1. **Chuẩn `<head>` Nâng Cao:**
+   - Đủ `<!DOCTYPE html>`, `lang="vi"`, `<meta charset="UTF-8">`, `<meta name="viewport" ...>`.
+   - Có `<title>`, `<meta name="description">`, `<link rel="canonical" href="https://example.com/ex7.html">` (tránh trùng lặp nội dung SEO).
+
+2. **Khung Điều Hướng & Tránh Lỗi Lồng Thẻ (Invalid Nesting Trap):**
+   - `<header>` có logo `<h1>` duy nhất.
+   - Menu `<nav>` chứa `<ul>` và `<li>`.
+   - **Bẫy nút bấm:** Có 1 nút Call-To-Action "Đăng ký ngay" ➔ **TUYỆT ĐỐI KHÔNG bọc thẻ `<button>` bên trong thẻ `<a>`** (Vi phạm chuẩn HTML). Dùng thẻ `<a class="btn" href="#dang-ky">Đăng ký ngay</a>`.
+
+3. **Phân Biệt `<article>` vs `<section>` & `<figure>` vs `<img>`:**
+   - Tạo một bài viết đánh giá khóa học bọc trong thẻ `<article>`.
+   - Bên trong `<article>` có `<header>` riêng (tiêu đề `<h2>`, `<time datetime="2026-09-08">`, tác giả).
+   - **Bẫy hình ảnh minh họa:** Dùng thẻ `<figure>` và `<figcaption>` để chú thích ảnh biểu đồ (thay vì dùng thẻ `<p>` thường).
+   - Có 1 `<section>` con bên trong `<article>` dành riêng cho khu vực "Bình luận độc giả".
+
+4. **Bảng Báo Cáo Phức Tạp (Colspan + Rowspan + Tfoot):**
+   - Bảng tổng kết học phí các kỳ:
+     - Dùng `<caption>` mô tả bảng.
+     - Sử dụng kết hợp cả `rowspan` (gộp nhiều hàng cho Cột "Khóa học") và `colspan` (gộp nhiều cột cho Hàng "Tổng cộng" ở `<tfoot>`).
+     - Có đủ `<thead>`, `<tbody>`, `<tfoot>`, thẻ `<th>` có thuộc tính `scope="col"` hoặc `scope="row"`.
+
+5. **Form Thanh Toán Chống Bẫy (Form Edge Cases Trap):**
+   - Thẻ `<form action="/checkout" method="POST" enctype="multipart/form-data">`.
+   - **Bẫy `readonly` vs `disabled`:**
+     - Ô 1: "Mã khuyến mãi áp dụng" ➔ Dùng `readonly` (để người dùng không sửa được nhưng **vẫn gửi dữ liệu lên server**).
+     - Ô 2: "Trạng thái VIP cũ" ➔ Dùng `disabled` (để vô hiệu hóa và **không gửi dữ liệu lên server**).
+   - **Bẫy nút bấm trong Form:**
+     - Nút "Thanh toán ngay": Khai báo rõ `type="submit"`.
+     - Nút "Hủy bỏ": **BẮT BUỘC khai báo `type="button"`** (để tránh bị submit nhầm khi click).
+     - Nút "Nhập lại": Khai báo `type="reset"`.
+   - Ô tải lên hóa đơn: `<input type="file" accept="image/*,.pdf" required>`.
+
+6. **Đa Phương Tiện & Responsive Picture:**
+   - Dùng thẻ `<picture>` với 2 thẻ `<source>`:
+     - Màn hình nhỏ hơn `600px` (`max-width: 600px`): Dùng ảnh bản dọc `mobile.jpg`.
+     - Màn hình lớn: Dùng ảnh bản ngang `desktop.jpg`.
+     - Thẻ `<img>` dự phòng có `loading="lazy"` và `alt`.
+</details>
+
+<details open>
+<summary><b>🖼️ 2. Khung Preview Giao Diện Mẫu (Mockup)</b> <i>(Bấm để mở/đóng)</i></summary>
+
+```text
++-----------------------------------------------------------------------+
+| [HEADER] <h1>TechMaster Academy</h1>                                   |
+| [NAV]: [Trang chủ] | [Khóa học] | [Bảng giá]                          |
+|        [ 👉 Đăng ký ngay (Dùng thẻ <a> chuẩn, không bọc <button>) ]    |
++-----------------------------------------------------------------------+
+| [MAIN]                                                                |
+|  +--<article> (Bài đánh giá khóa học - Độc lập)---------------------+ |
+|  |  <h2>Đánh Giá Lộ Trình Front-End 2026</h2>                       |
+|  |  Ngày đăng: 08/09/2026 | Tác giả: Mentor                         |
+|  |                                                                  |
+|  |  +--<figure>--------------------------------------------------+  |
+|  |  |  [ Ảnh biểu đồ lộ trình học ]                              |  |
+|  |  |  <figcaption>Hình 1: Tháp kỹ năng Front-End chuẩn</figcaption>|
+|  |  +------------------------------------------------------------+  |
+|  |                                                                  |
+|  |  +--<section> (Bình luận độc giả)-----------------------------+  |
+|  |  |  <h3>Bình luận (2)</h3>                                    |  |
+|  |  |  - Bình luận 1: Khóa học rất chi tiết!                     |  |
+|  |  +------------------------------------------------------------+  |
+|  +------------------------------------------------------------------+ |
+|                                                                       |
+|  +--<section> BẢNG BÁO GIÁ & THỐNG KÊ (Colspan + Rowspan)-----------+ |
+|  |  +------------------------------------------------------------+  |
+|  |  | Khóa học (Rowspan) | Kỳ học | Học phí                      |  |
+|  |  |--------------------+--------+------------------------------|  |
+|  |  | Front-End          | Kỳ 1   | 3.000.000đ                   |  |
+|  |  | (Gộp 2 hàng)       | Kỳ 2   | 3.500.000đ                   |  |
+|  |  |--------------------+--------+------------------------------|  |
+|  |  | TỔNG CỘNG (Colspan gộp 2 cột) | 6.500.000đ (Ở <tfoot>)     |  |
+|  |  +------------------------------------------------------------+  |
+|  +------------------------------------------------------------------+ |
+|                                                                       |
+|  +--<section> FORM THANH TOÁN (Chống Bẫy Form)----------------------+ |
+|  |  Mã giảm giá: [ PROMO2026 (readonly - vẫn submit) ]              |
+|  |  Gói cũ:      [ Hết hạn   (disabled - không submit) ]            |
+|  |  Hóa đơn:     [ Chọn file ảnh/pdf... ]                            |
+|  |                                                                  |
+|  |  [ Thanh Toán (type=submit) ] [ Hủy Bỏ (type=button) ]           |
+|  +------------------------------------------------------------------+ |
++-----------------------------------------------------------------------+
+| [FOOTER] &copy; 2026 TechMaster. All rights reserved.                 |
++-----------------------------------------------------------------------+
+```
+</details>
+

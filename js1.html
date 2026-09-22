@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Mini Shopping Cart</title>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: #f8fafc; padding: 30px; }
+        .app { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        h2 { color: #38bdf8; margin-bottom: 16px; }
+        .product-item, .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #0f172a; margin-bottom: 10px; border-radius: 8px; }
+        button { cursor: pointer; padding: 6px 12px; border-radius: 6px; border: none; font-weight: bold; }
+        .btn-add { background: #38bdf8; color: #0f172a; }
+        .btn-qty { background: #334155; color: #fff; padding: 2px 8px; }
+        .btn-del { background: #f43f5e; color: #fff; }
+        .total-box { margin-top: 16px; padding-top: 16px; border-top: 1px solid #334155; font-size: 18px; font-weight: bold; color: #4ade80; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Cột trái: Cửa hàng sản phẩm -->
+        <div class="card">
+            <h2>Cửa Hàng</h2>
+            <div id="product-list">
+                <!-- Danh sách sản phẩm có data-id, data-name, data-price -->
+                <div class="product-item" data-id="p1" data-name="Áo Thun Basic" data-price="150000">
+                    <div><b>Áo Thun Basic</b><br><small>150.000đ</small></div>
+                    <button class="btn-add">Thêm vào giỏ</button>
+                </div>
+                <div class="product-item" data-id="p2" data-name="Quần Jeans Slim" data-price="350000">
+                    <div><b>Quần Jeans Slim</b><br><small>350.000đ</small></div>
+                    <button class="btn-add">Thêm vào giỏ</button>
+                </div>
+                <div class="product-item" data-id="p3" data-name="Giày Sneaker" data-price="600000">
+                    <div><b>Giày Sneaker</b><br><small>600.000đ</small></div>
+                    <button class="btn-add">Thêm vào giỏ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải: Giỏ hàng -->
+        <div class="card">
+            <h2>Giỏ Hàng Của Bạn</h2>
+            <div id="cart-list"></div>
+            <div class="total-box">
+                <span>Tổng cộng:</span>
+                <span id="total-price">0đ</span>
+            </div>
+        </div>
+    </div>
+    <script src="cart.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ex4</title>
+    <link rel="stylesheet" href="ex4.css">
+</head>
+
+<body>
+    <nav class="nav-menu">
+    <ul class="nav-list">
+        <li><a href="#">Home</a></li>
+        <li class="has-dropdown">
+            <a href="#">About</a>
+            <ul class="dropdown-menu">
+                <li><a href="#">HTML</a></li>
+                <li><a href="#">CSS</a></li>
+                <li><a href="#">JAVASCRIPT</a></li>
+            </ul>
+        </li>
+        <li><a href="#">Contact</a></li>
+    </ul>
+</nav>
+
+<section class="content-section">
+    <ol type="A" start="3">
+        <li>Home</li>
+        <li>About</li>
+        <li>Contact</li>
+    </ol>
+    
+    <ol reversed>
+        <li>Home</li>
+        <li>About</li>
+        <li>Contact</li>
+    </ol>
+
+    <dl class="glossary-list">
+        <dt>API</dt>
+        <dd>Application Programming Interface...</dd>
+        <dt>DOM</dt>
+        <dd>Document Object Model...</dd>
+    </dl>
+</section>
+
+<main>
+    <picture class="responsive-banner">
+        <source media="(max-width:480px)" srcset="anh1_1.jpg">
+        <source media="(max-width:768px)" srcset="anh1_2.jpg">
+        <source media="(max-width:1200px)" srcset="anh1_3.jpg">
+        <img src="anh1.jpg" alt="Ảnh banner" loading="lazy">
+    </picture>
+</main>
+
+</body>
+
+</html>

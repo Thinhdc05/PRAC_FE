@@ -2129,26 +2129,142 @@ graph LR
 
 #### D. Thực Thể HTML (HTML Entities & Symbols)
 
-<details>
-<summary><b>5. Bảng các Ký tự Thực thể (HTML Entities) bắt buộc nhớ</b> <i>(Bấm để xem)</i></summary>
+<details open>
+<summary><b>5. Bảng các Ký tự Thực thể & Biểu tượng (HTML Entities) Toàn Diện</b> <i>(Bấm để xem)</i></summary>
 
 * **Tại sao phải dùng Entity?**
   * Trong HTML, các ký tự như `<` và `>` bị hiểu lầm là thẻ mở/đóng thẻ. Nếu muốn **hiển thị chữ `<p>` nguyên vẹn lên màn hình**, bạn phải viết là `&lt;p&gt;`.
-* **Bảng ký tự phổ biến:**
+  * Các ký tự đặc biệt không có sẵn trên bàn phím (tiền tệ, mũi tên, công thức toán học, ký tự bản quyền) đều có mã Entity tương ứng.
 
-| Ký tự hiển thị | Ý nghĩa | Mã Entity (Dễ nhớ) | Mã Số (Decimal) |
+---
+
+##### 1. Nhóm Ký Tự Cốt Lõi (Bắt buộc nhớ)
+| Ký tự | Tên tiếng Anh | Mã Entity (Dễ nhớ) | Mã Số (Decimal) |
 | :---: | :--- | :--- | :---: |
 | `<` | Dấu nhỏ hơn (Less than) | `&lt;` | `&#60;` |
 | `>` | Dấu lớn hơn (Greater than) | `&gt;` | `&#62;` |
 | `&` | Dấu và (Ampersand) | `&amp;` | `&#38;` |
-| `"` | Dấu ngoặc kép | `&quot;` | `&#34;` |
-| `'` | Dấu ngoặc đơn | `&apos;` | `&#39;` |
-| *(Dấu cách)* | **Khoảng trắng cứng (Không bị gộp)** | `&nbsp;` | `&#160;` |
-| `©` | Ký hiệu bản quyền (Copyright) | `&copy;` | `&#169;` |
+| `"` | Dấu ngoặc kép (Quotation) | `&quot;` | `&#34;` |
+| `'` | Dấu ngoặc đơn (Apostrophe) | `&apos;` | `&#39;` |
+| *(khoảng cách)* | **Khoảng trắng cứng (Không bị gộp)** | `&nbsp;` | `&#160;` |
+
+---
+
+##### 2. Nhóm Dấu Câu & Ký Hiệu Văn Bản Đặc Biệt
+| Ký tự | Ý nghĩa | Mã Entity | Mã Số |
+| :---: | :--- | :--- | :---: |
+| `–` | Dấu gạch ngang ngắn (En-dash) | `&ndash;` | `&#8211;` |
+| `—` | Dấu gạch ngang dài (Em-dash) | `&mdash;` | `&#8212;` |
+| `…` | Dấu ba chấm (Ellipsis) | `&hellip;` | `&#8230;` |
+| `•` | Dấu chấm tròn đầu dòng (Bullet) | `&bull;` | `&#8226;` |
+| `°` | Dấu độ (Degree - ví dụ 37°C) | `&deg;` | `&#176;` |
+| `§` | Dấu điều khoản (Section) | `&sect;` | `&#167;` |
+| `¶` | Dấu đoạn văn (Paragraph mark) | `&para;` | `&#182;` |
+| `©` | Bản quyền (Copyright) | `&copy;` | `&#169;` |
 | `®` | Thương hiệu đã đăng ký (Registered) | `&reg;` | `&#174;` |
 | `™` | Nhãn hiệu thương mại (Trademark) | `&trade;` | `&#8482;` |
+
+---
+
+##### 3. Nhóm Dấu Toán Học & So Sánh
+| Ký tự | Ý nghĩa | Mã Entity | Mã Số |
+| :---: | :--- | :--- | :---: |
+| `×` | Dấu nhân (Multiply) | `&times;` | `&#215;` |
+| `÷` | Dấu chia (Divide) | `&divide;` | `&#247;` |
+| `±` | Dấu cộng trừ (Plus-minus) | `&plusmn;` | `&#177;` |
+| `≠` | Dấu khác / không bằng (Not equal) | `&ne;` | `&#8800;` |
+| `≤` | Nhỏ hơn hoặc bằng (Less than or equal) | `&le;` | `&#8804;` |
+| `≥` | Lớn hơn hoặc bằng (Greater than or equal) | `&ge;` | `&#8805;` |
+| `≈` | Xấp xỉ (Almost equal) | `&asymp;` | `&#8776;` |
+| `√` | Căn bậc hai (Square root) | `&radic;` | `&#8730;` |
+| `∞` | Vô cực (Infinity) | `&infin;` | `&#8734;` |
+| `∑` | Tổng Sigma (Summation) | `&sum;` | `&#8721;` |
+| `π` | Số Pi | `&pi;` | `&#960;` |
+
+---
+
+##### 4. Nhóm Mũi Tên Chỉ Hướng
+| Ký tự | Hướng mũi tên | Mã Entity | Mã Số |
+| :---: | :--- | :--- | :---: |
+| `←` | Mũi tên trái | `&larr;` | `&#8592;` |
+| `→` | Mũi tên phải | `&rarr;` | `&#8594;` |
+| `↑` | Mũi tên lên | `&uarr;` | `&#8593;` |
+| `↓` | Mũi tên xuống | `&darr;` | `&#8595;` |
+| `↔` | Mũi tên hai chiều trái-phải | `&harr;` | `&#8596;` |
+| `⇐` | Mũi tên đôi sang trái | `&lArr;` | `&#8656;` |
+| `⇒` | Mũi tên đôi sang phải | `&rArr;` | `&#8658;` |
+| `⇔` | Mũi tên đôi hai chiều | `&hArr;` | `&#8660;` |
+
+---
+
+##### 5. Nhóm Tiền Tệ
+| Ký tự | Đơn vị tiền tệ | Mã Entity | Mã Số |
+| :---: | :--- | :--- | :---: |
+| `$` | Đô la Mỹ (Dollar) | `&dollar;` | `&#36;` |
+| `₫` | Đồng Việt Nam (VND) | — | `&#8363;` |
 | `€` | Đồng Euro | `&euro;` | `&#8364;` |
-| `♥` | Trái tim | `&hearts;` | `&#9829;` |
+| `£` | Bảng Anh (Pound) | `&pound;` | `&#163;` |
+| `¥` | Yên Nhật / Nhân dân tệ (Yen) | `&yen;` | `&#165;` |
+| `¢` | Xu (Cent) | `&cent;` | `&#162;` |
+
+---
+
+##### 6. Nhóm Dấu Tiếng Việt & Dấu Tổ Hợp (Combining Diacritical Marks)
+*Khi cần ghép dấu vào bất kỳ chữ cái nào:*
+
+| Dấu | Tên dấu | Mã Số (Ghép sau chữ cái) | Ví dụ viết mã | Kết quả hiển thị |
+| :---: | :--- | :---: | :--- | :---: |
+| ̀ | Dấu huyền (Grave) | `&#768;` | `a&#768;` | à |
+| ́ | Dấu sắc (Acute) | `&#769;` | `a&#769;` | á |
+| ̃ | Dấu ngã (Tilde) | `&#771;` | `a&#771;` | ã |
+| ̉ | Dấu hỏi (Hook above) | `&#777;` | `a&#777;` | ả |
+| ̣ | Dấu nặng (Dot below) | `&#803;` | `a&#803;` | ạ |
+| ̂ | Dấu mũ (Circumflex - â, ê, ô) | `&#770;` | `a&#770;` | â |
+| ̆ | Dấu trăng (Breve - ă) | `&#774;` | `a&#774;` | ă |
+| ̛ | Dấu móc (Horn - ơ, ư) | `&#795;` | `o&#795;` | ơ |
+| `đ` / `Đ` | Chữ đ / Đ | `&#273;` / `&#272;` | `&#273;` / `&#272;` | đ / Đ |
+
+---
+
+##### 7. Biểu Tượng & Ký Hiệu Đồ Họa Phổ Biến
+| Ký tự | Ý nghĩa | Mã Entity | Mã Số |
+| :---: | :--- | :--- | :---: |
+| `✓` | Dấu tích (Checkmark) | `&check;` | `&#10003;` |
+| `✗` | Dấu gạch chéo (Cross mark) | `&cross;` | `&#10007;` |
+| `♥` | Trái tim (Heart) | `&hearts;` | `&#9829;` |
+| `♠` | Bích (Spade) | `&spades;` | `&#9824;` |
+| `♣` | Tép/Chuồn (Club) | `&clubs;` | `&#9827;` |
+| `♦` | Rô (Diamond) | `&diams;` | `&#9830;` |
+</details>
+
+<br>
+
+---
+
+### 📝 QUY TẮC VIẾT CODE CHUẨN HTML5 (STYLE GUIDE & CODING CONVENTIONS - W3SCHOOLS)
+
+<details open>
+<summary><b>Tổng hợp các quy tắc chuẩn cú pháp HTML5 (Bấm để ẩn/hiện)</b></summary>
+
+* **Luôn khai báo kiểu tài liệu (`<!DOCTYPE html>`)**: Đặt ở dòng đầu tiên của trang để trình duyệt render đúng chế độ chuẩn (Standards Mode).
+* **Dùng chữ thường cho tên thẻ (Lowercase Element Names)**: Luôn viết `<body>`, `<p>`, `<div>` thay vì `<BODY>`, `<P>`, `<DIV>`.
+* **Luôn luôn đóng thẻ (Close All HTML Elements)**: Kể cả khi HTML5 cho phép bỏ qua thẻ đóng (như `</p>`, `</li>`), vẫn luôn đóng đầy đủ để tránh lỗi cấu trúc DOM.
+* **Quy ước thẻ tự đóng (Void Elements)**: Các thẻ không có nội dung (`<img>`, `<input>`, `<br>`, `<hr>`, `<meta>`) không bắt buộc dấu gạch chéo `/` ở cuối (`<img ...>` hay `<img ... />` đều hợp lệ, nhưng hãy nhất quán trong toàn bộ dự án).
+* **Dùng chữ thường cho tên thuộc tính (Lowercase Attribute Names)**: Viết `class="menu"`, `href="..."` thay vì `CLASS="menu"`, `HREF="..."`.
+* **Luôn bọc giá trị thuộc tính trong dấu ngoặc kép (Quote Attribute Values)**: Viết `class="header"` thay vì `class=header` (bắt buộc khi giá trị có khoảng trắng và giúp code sạch, dễ bảo trì).
+* **Khoảng trắng quanh dấu bằng**: Xung quanh dấu bằng (`=`) của thuộc tính có thể có khoảng trắng (`id = "demo"`) nhưng **không nên dùng**, hãy viết liền `id="demo"` cho gọn gàng và dễ đọc.
+* **Luôn khai báo `alt`, `width`, `height` cho ảnh (`<img>`)**: `alt` giúp tăng khả năng tiếp cận (Accessibility/SEO khi ảnh lỗi), `width` & `height` giúp trình duyệt dành sẵn không gian tránh giật lag layout khi tải trang (Cumulative Layout Shift).
+* **Tránh dòng code quá dài**: Hạn chế viết một dòng code quá dài khiến phải cuộn ngang màn hình; hãy xuống dòng hợp lý giữa các thuộc tính.
+* **Thụt lề và dòng trống (Indentation & Blank Lines)**: Dùng 2 hoặc 4 dấu cách (spaces) để thụt lề cho các thẻ con bên trong (không dùng tab lộn xộn). Dùng 1 dòng trống để phân tách các khối logic lớn.
+* **Không bao giờ bỏ qua thẻ `<title>`**: Thẻ `<title>` bắt buộc phải có trong `<head>` để hiển thị tiêu đề tab trình duyệt, lưu bookmark và tối ưu SEO.
+* **Không bỏ qua các thẻ cấu trúc (`<html>`, `<head>`, `<body>`)**: Dù HTML5 cho phép trình duyệt tự suy luận khi thiếu, tuyệt đối **không được bỏ** để tránh lỗi DOM / CSS / JS ngoài ý muốn.
+* **Luôn khai báo ngôn ngữ trang (`lang`)**: Khai báo `<html lang="vi">` hoặc `<html lang="en">` ở thẻ gốc để hỗ trợ công cụ dịch và máy đọc màn hình.
+* **Luôn khai báo bảng mã UTF-8**: Khai báo `<meta charset="UTF-8">` ngay đầu thẻ `<head>` để hiển thị đúng mọi ký tự tiếng Việt và quốc tế.
+* **Luôn khai báo thẻ Viewport**: `<meta name="viewport" content="width=device-width, initial-scale=1.0">` để trang web tự co giãn chuẩn trên thiết bị di động (Responsive).
+* **Cú pháp gọi CSS ngắn gọn**: Chỉ cần `<link rel="stylesheet" href="style.css">` (không cần thuộc tính `type="text/css"` trong HTML5).
+* **Cú pháp gọi JavaScript ngắn gọn**: Chỉ cần `<script src="app.js"></script>` (không cần thuộc tính `type="text/javascript"` trong HTML5).
+* **Dùng chữ thường khi đặt tên file (Lowercase File Names)**: Dùng toàn bộ chữ thường và nối từ bằng dấu gạch ngang (`main-style.css`, `about-us.html`), không dùng chữ hoa hoặc khoảng trắng vì máy chủ Web (như Linux) phân biệt chữ hoa chữ thường.
+* **Đuôi mở rộng file chuẩn**: Luôn dùng đúng định dạng chữ thường `.html`, `.css`, `.js`.
 </details>
 
 

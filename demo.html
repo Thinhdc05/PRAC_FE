@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Playground & Showcase Template</title>
+
+    <!-- Google Fonts Inter & Fira Code & Google Font Effects -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Link phông Rancho kèm 4 hiệu ứng đặc biệt của Google -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Rancho&effect=neon|fire-animation|3d-float|shadow-multiple">
+    <!-- CDN Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- LIÊN KẾT FILE CSS THỰC HÀNH -->
+    <link rel="stylesheet" href="demo2.css">
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <header class="demo-header">
+            <h1>🎨 CSS Learning & Test Template</h1>
+            <p>File HTML ngữ nghĩa sạch sẽ. Mọi mã CSS nằm gọn gàng tại file <code>demo.css</code>!</p>
+        </header>
+
+        <!-- 1. KHU VỰC VĂN BẢN & TYPOGRAPHY -->
+        <section class="card-section">
+            <h2 class="section-title">✍️ 1. Văn Bản & Typography (Headings, Paragraphs, Inlines)</h2>
+            
+            <div class="headings-group">
+                <h1>Heading 1 - Tiêu đề cấp 1</h1>
+                <h2>Heading 2 - Tiêu đề cấp 2</h2>
+                <h3>Heading 3 - Tiêu đề cấp 3</h3>
+                <h4>Heading 4 - Tiêu đề cấp 4</h4>
+            </div>
+
+            <p class="paragraph-demo">
+                Đây là đoạn văn <code>&lt;p&gt;</code> tiêu chuẩn chứa các thẻ nội dòng: 
+                <strong>Chữ in đậm strong</strong>, 
+                <em>chữ in nghiêng em</em>, 
+                <u>chữ gạch chân u</u>, 
+                <del>giá cũ 500k</del> <ins>giá mới 300k</ins>, 
+                <mark>chữ highlight mark</mark>, 
+                <small>chữ chú thích nhỏ small</small>, 
+                và công thức H<sub>2</sub>O hoặc x<sup>2</sup>.
+            </p>
+
+            <p class="demo-text-custom">Đoạn text có class <code>.demo-text-custom</code> sẵn sàng để bạn đổi kiểu chữ, đổ bóng, màu sắc!</p>
+
+            <!-- DEMO HIỆU ỨNG GOOGLE FONT EFFECTS -->
+            <div class="google-effects-box">
+                <p class="google-font-effect font-effect-neon">✨ Google Effect: Hiệu ứng Phát Sáng Neon (font-effect-neon)</p>
+                <p class="google-font-effect font-effect-fire-animation">🔥 Google Effect: Hiệu ứng Lửa Cháy (font-effect-fire-animation)</p>
+                <p class="google-font-effect font-effect-3d-float">☁️ Google Effect: Hiệu ứng Chữ 3D Bồng Bềnh (font-effect-3d-float)</p>
+                <p class="google-font-effect font-effect-shadow-multiple">🌈 Google Effect: Hiệu ứng Đổ Nhiều Tầng Bóng (font-effect-shadow-multiple)</p>
+            </div>
+
+            <blockquote class="quote-demo">
+                "Thành công không phải là chìa khóa mở cánh cửa hạnh phúc. Hạnh phúc mới là chìa khóa mở cánh cửa thành công."
+            </blockquote>
+
+            <pre class="code-block-demo"><code>/* Đoạn mã code bên trong thẻ &lt;pre&gt;&lt;code&gt; */
+function helloWorld() {
+    console.log("Hello CSS Mastery!");
+}</code></pre>
+        </section>
+
+        <!-- 2. KHU VỰC NÚT BẤM, ĐƯỜNG LINK & BIỂU TƯỢNG (ICONS) -->
+        <section class="card-section">
+            <h2 class="section-title">🔘 2. Buttons, Links & Biểu Tượng (Icons: Font Awesome & SVG)</h2>
+            
+            <div class="buttons-group">
+                <a href="#link-demo" class="link-demo">Thẻ Link &lt;a&gt; Bình Thường</a>
+                <button type="button" class="btn btn-primary">
+                    <i class="fa-solid fa-paper-plane"></i> Gửi Tin Nhắn
+                </button>
+                <button type="button" class="btn btn-outline">
+                    <i class="fa-solid fa-download"></i> Tải Xuống
+                </button>
+                <button type="button" class="btn" disabled>
+                    <i class="fa-solid fa-lock"></i> Đã Khóa
+                </button>
+            </div>
+
+            <!-- DEMO SO SÁNH FONT AWESOME VS SVG -->
+            <div class="icons-demo-row">
+                <div class="icon-card">
+                    <i class="fa-solid fa-house fa-2x" style="color: #2563eb;"></i>
+                    <span>Font Awesome (<code>&lt;i&gt;</code>)</span>
+                </div>
+                <div class="icon-card">
+                    <i class="fa-solid fa-heart fa-2x" style="color: #ef4444;"></i>
+                    <span>Font Awesome (Heart)</span>
+                </div>
+                <div class="icon-card">
+                    <!-- SVG Vector Icon -->
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>SVG Inline Vector</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. KHU VỰC BOX MODEL & CONTAINER SANDBOX -->
+        <section class="card-section">
+            <h2 class="section-title">📦 3. Box Model & Layout Sandbox (Padding, Margin, Border, Width)</h2>
+            <p style="font-size: 14px; color: #64748b; margin-bottom: 12px;">Các khối <code>div</code> có class riêng để test padding, margin, border-radius, box-sizing, v.v.</p>
+
+            <div class="sandbox-area">
+                <div class="test-box-1">
+                    <strong>.test-box-1</strong>: Khối hộp mẫu 1 (Đang có padding, border).
+                </div>
+                <div class="test-box-2">
+                    <strong>.test-box-2</strong>: Khối hộp mẫu 2 (Sẵn sàng để test Margin Collapse hoặc Kích thước).
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. KHU VỰC DANH SÁCH (LISTS) -->
+        <section class="card-section">
+            <h2 class="section-title">📋 4. Danh Sách (Lists: ul, ol, dl)</h2>
+            
+            <div class="lists-grid">
+                <div>
+                    <h4 class="list-title">Unordered List (&lt;ul&gt;):</h4>
+                    <ul class="list-wrapper">
+                        <li>HTML5 Ngữ nghĩa</li>
+                        <li>CSS3 Toàn diện</li>
+                        <li>JavaScript ES6+</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="list-title">Ordered List (&lt;ol&gt;):</h4>
+                    <ol class="list-wrapper">
+                        <li>Học kiến thức nền tảng</li>
+                        <li>Luyện bài tập thực tế</li>
+                        <li>Phỏng vấn việc làm</li>
+                    </ol>
+                </div>
+
+                <div>
+                    <h4 class="list-title">Description List (&lt;dl&gt;):</h4>
+                    <dl class="dl-demo">
+                        <dt>HTML</dt>
+                        <dd>Cấu trúc trang web</dd>
+                        <dt>CSS</dt>
+                        <dd>Tạo kiểu & Giao diện</dd>
+                    </dl>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. KHU VỰC FORM & INPUT CONTROLS -->
+        <section class="card-section">
+            <h2 class="section-title">📝 5. Biểu Mẫu (Forms & Inputs)</h2>
+            
+            <form class="form-grid">
+                <div>
+                    <label class="form-label">Họ và tên (Text):</label>
+                    <input type="text" placeholder="Nhập họ tên..." class="form-input">
+                </div>
+
+                <div>
+                    <label class="form-label">Email:</label>
+                    <input type="email" placeholder="name@example.com" class="form-input">
+                </div>
+
+                <div>
+                    <label class="form-label">Chọn kỹ năng (Select):</label>
+                    <select class="form-select">
+                        <option>Frontend Developer</option>
+                        <option>Backend Developer</option>
+                        <option>Fullstack Developer</option>
+                    </select>
+                </div>
+
+                <div class="form-full-row">
+                    <label class="form-label">Lời nhắn (Textarea):</label>
+                    <textarea rows="3" placeholder="Viết lời nhắn tại đây..." class="form-textarea"></textarea>
+                </div>
+
+                <div class="form-checkbox-group">
+                    <label class="form-checkbox-label">
+                        <input type="checkbox" checked> Ghi nhớ đăng nhập
+                    </label>
+                    <label class="form-checkbox-label">
+                        <input type="radio" name="gender" checked> Nam
+                    </label>
+                    <label class="form-checkbox-label">
+                        <input type="radio" name="gender"> Nữ
+                    </label>
+                </div>
+            </form>
+        </section>
+
+        <!-- 6. KHU VỰC BẢNG (TABLE) -->
+        <section class="card-section">
+            <h2 class="section-title">📊 6. Bảng Dữ Liệu (Data Table)</h2>
+            
+            <div class="table-wrapper">
+                <table class="demo-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Chủ đề</th>
+                            <th>Trọng tâm CSS</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td style="font-weight: 500;">Chương 1</td>
+                            <td>Specificity, Đơn vị, Màu & Background</td>
+                            <td><span class="badge badge-success">Đã học</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td style="font-weight: 500;">Chương 2</td>
+                            <td>Typography, Google Fonts, Text Overflow</td>
+                            <td><span class="badge badge-success">Đã học</span></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td style="font-weight: 500;">Chương 3</td>
+                            <td>Box Model, Padding/Margin, Border, Max-width</td>
+                            <td><span class="badge badge-warning">Đang học</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 7. KHU VỰC HÌNH ẢNH & MEDIA -->
+        <section class="card-section">
+            <h2 class="section-title">🖼️ 7. Hình Ảnh & Media (Images, Figures)</h2>
+            
+            <div class="media-container">
+                <figure class="media-figure">
+                    <img src="anh1.jpg" alt="Ảnh demo">
+                    <figcaption class="media-caption">Thẻ &lt;figure&gt; + &lt;img&gt;</figcaption>
+                </figure>
+
+                <div class="media-desc">
+                    <p style="margin-bottom: 8px;">
+                        Ảnh bên trái sử dụng file <code>anh1.jpg</code> sẵn có trong thư mục của bạn, đã được gán <code>display: block;</code> để tránh lỗi hở mép chân ảnh.
+                    </p>
+                    <p>
+                        Bạn có thể dùng phần tử này để test <code>object-fit</code>, <code>filter: blur()</code>, <code>border-radius: 50%</code>, hoặc các hiệu ứng hover ảnh!
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>

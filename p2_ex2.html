@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 2.2: Pricing Cards Grid</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="p2_ex2.css">
+</head>
+<body>
+
+    <section class="pricing-section">
+        <div class="pricing-header">
+            <h2>Bảng Giá Khóa Học Linh Hoạt</h2>
+            <p>Chọn gói học phù hợp nhất với lộ trình sự nghiệp của bạn</p>
+        </div>
+
+        <div class="pricing-grid">
+            <!-- GÓI 1 -->
+            <div class="price-card">
+                <h3 class="card-title">Cơ Bản (Starter)</h3>
+                <div class="card-price"><span class="amount">0đ</span> / tháng</div>
+                <ul class="features-list">
+                    <li><i class="fa-solid fa-check"></i> HTML5 & CSS3 Nền tảng</li>
+                    <li><i class="fa-solid fa-check"></i> 10 Bài tập thực hành</li>
+                    <li class="disabled"><i class="fa-solid fa-xmark"></i> Hỗ trợ 1-1 từ Mentor</li>
+                </ul>
+                <button class="btn-plan">Bắt Đầu Miễn Phí</button>
+            </div>
+
+            <!-- GÓI 2 (NỔI BẬT) -->
+            <div class="price-card featured">
+                <div class="popular-ribbon">Phổ Biến Nhất</div>
+                <h3 class="card-title">Chuyên Nghiệp (Pro)</h3>
+                <div class="card-price"><span class="amount">299k</span> / tháng</div>
+                <ul class="features-list">
+                    <li><i class="fa-solid fa-check"></i> Toàn bộ Video HTML, CSS, JS</li>
+                    <li><i class="fa-solid fa-check"></i> 5 Dự án Web thực chiến</li>
+                    <li><i class="fa-solid fa-check"></i> Hỗ trợ Code Review 1-1</li>
+                </ul>
+                <button class="btn-plan btn-featured">Đăng Ký Gói Pro</button>
+            </div>
+
+            <!-- GÓI 3 -->
+            <div class="price-card">
+                <h3 class="card-title">Doanh Nghiệp (VIP)</h3>
+                <div class="card-price"><span class="amount">899k</span> / tháng</div>
+                <ul class="features-list">
+                    <li><i class="fa-solid fa-check"></i> Toàn quyền truy cập trọn đời</li>
+                    <li><i class="fa-solid fa-check"></i> Luyện phỏng vấn Mock Interview</li>
+                    <li><i class="fa-solid fa-check"></i> Giới thiệu việc làm trực tiếp</li>
+                </ul>
+                <button class="btn-plan">Liên Hệ Tư Vấn</button>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

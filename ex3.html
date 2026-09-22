@@ -5,54 +5,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="style2.css" />
+    <link rel="stylesheet" href="ex3.css" />
 </head>
 
 <body>
-    <table>
-        <caption>Bảng đánh giá</caption>
-        <thead>
-            <tr>
-                <th>STT</th>
-                <th>Tên</th>
-                <th>Môn</th>
-                <th>Điểm</th>
-                <th>Xếp loại</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td rowspan="2">1</td>
-                <td rowspan="2">Nguyễn Văn A</td>
-                <td>HTML & CSS</td>
-                <td>9</td>
-                <td rowspan="2">Giỏi</td>
-            </tr>
-            <tr>
-                <td>JavaScript</td>
-                <td>8.5</td>
-            </tr>
+   <table class="grade-table">
+    <caption class="grade-table-title">Bảng Đánh Giá Kết Quả Học Tập</caption>
+    <thead>
+        <tr>
+            <th>STT</th>
+            <th>Họ và Tên</th>
+            <th>Môn Học</th>
+            <th>Điểm Số</th>
+            <th>Xếp Loại</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td rowspan="2">1</td>
+            <td rowspan="2" class="student-name">Nguyễn Văn A</td>
+            <td>HTML & CSS</td>
+            <td class="text-center font-bold">9.0</td>
+            <td rowspan="2" class="text-center">
+                <span class="badge badge-success">Giỏi</span>
+            </td>
+        </tr>
+        <tr>
+            <td>JavaScript</td>
+            <td class="text-center font-bold">8.5</td>
+        </tr>
 
-            <tr>
-                <td rowspan="2">2</td>
-                <td rowspan="2">Trần Văn B</td>
-                <td>HTML & CSS</td>
-                <td>7</td>
-                <td rowspan="2">Khá</td>
-            </tr>
+        <tr>
+            <td rowspan="2">2</td>
+            <td rowspan="2" class="student-name">Trần Văn B</td>
+            <td>HTML & CSS</td>
+            <td class="text-center font-bold">7.0</td>
+            <td rowspan="2" class="text-center">
+                <span class="badge badge-warning">Khá</span>
+            </td>
+        </tr>
+        <tr>
+            <td>JavaScript</td>
+            <td class="text-center font-bold">7.5</td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <tr class="summary-row">
+            <td colspan="3">Điểm Trung Bình Toàn Khóa</td>
+            <td colspan="2" class="text-center">8.0</td>
+        </tr>
+    </tfoot>
+</table>
 
-            <tr>
-                <td>JavaScript</td>
-                <td>7.5</td>
-            </tr>
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="3">Điểm Trung Bình Toàn Khóa</td>
-                <td colspan="2">8.0</td>
-            </tr>
-        </tfoot>
-    </table>
 </body>
 
 </html>
