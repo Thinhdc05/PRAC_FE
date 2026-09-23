@@ -1,123 +1,83 @@
 # 📋 BÁO CÁO TIẾN ĐỘ & BÀN GIAO DỰ ÁN PRAC_FE (HANDOVER PROGRESS)
 
-> **Dành cho AI tiếp quản tại máy cá nhân:** 
+> **Dành cho AI tiếp quản tại phiên làm việc tiếp theo:** 
 > Vui lòng đọc kỹ file này kết hợp với `.agents/skills/fe-teaching-method/SKILL.md` để tiếp tục giữ đúng phong cách giảng dạy: **mổ xẻ cơ chế ngầm Browser/JS Engine, clean code không comment thừa, không dùng LaTeX, đồng hành hướng dẫn người học tự code.**
 
 ---
 
 ## 🧭 1. TỔNG QUAN NGỮ CẢNH DỰ ÁN
 
-- **Thư mục repo:** `/Users/thinh/FE/Prac_FE/PRAC_FE` (Chú ý: thư mục git nằm trong `PRAC_FE`).
-- **Nhánh Git:** `main` (Đã commit và push code mới nhất lên `origin/main`).
-- **Bộ file tham chiếu mẫu đã hoàn thiện trước đó:** `mini_shop.html`, `mini_shop.css`, `mini_shop.js`.
-- **Bộ file người học đang trực tiếp xây dựng:**
-  - `shop_mini.html`
-  - `shop_mini.css`
-  - `shop_mini.js`
-  - *(Kế hoạch tiếp theo: `admin.html`, `admin.css`, `admin.js`)*.
+- **Thư mục workspace:** `/Users/thinh/FE/Prac_FE/PRAC_FE` (Chú ý: git repo nằm ở `PRAC_FE`).
+- **Nhánh Git:** `main`.
+- **Hệ thống gồm 2 trang liên thông dữ liệu qua LocalStorage (`products-data.js`):**
+  1. `shop_mini.html` + `shop_mini.css` + `shop_mini.js`: Trang mua sắm khách hàng.
+  2. `admin.html` + `admin.css` + `admin.js`: Trang Dashboard quản trị sản phẩm.
+  3. `products-data.js`: Kho dữ liệu trung tâm dùng chung (`STORAGE_KEYS`: `PRODUCTS`, `CART`, `BALANCE`), cơ chế tự phục hồi (self-healing fallback).
 
 ---
 
-## ✅ 2. NHỮNG GÌ ĐÃ HOÀN THÀNH HÔM NAY (DAY 1)
+## ✅ 2. TỔNG KẾT NHỮNG GÌ ĐÃ HOÀN THÀNH
 
-### A. Giao diện & HTML/CSS (`shop_mini.html`, `shop_mini.css`)
-- Khung Semantic HTML chuẩn: Header, Layout 2 cột (`2fr 1fr`), Lưới sản phẩm Grid 3 cột, Cột giỏ hàng bên phải.
-- Tự tay CSS hoàn thiện các Card sản phẩm:
-  - Khung `.product-card` flexbox, hover nổi bóng.
-  - Ảnh `.product-image` dùng `position: relative`, `object-fit: cover` khống chế 11 ảnh không bị vỡ/tràn.
-  - Huy hiệu `.product-category` và `.badge-hot` định vị tuyệt đối `position: absolute`.
-  - Header card, rating, tag giảm giá, giá tiền căn thẳng `align-items: baseline`, tồn kho, nút thêm vào giỏ.
-- CSS xong các thành phần cơ bản trong giỏ hàng (`.cart-item`, `.cart-item-img`, `.cart-item-info`, `.item-name`, `.item-price`, `.cart-item-quantity` flexbox hàng ngang, nút tăng giảm `.quantity-btn`).
-- Đã thêm nút chuyển hướng sang Admin trên header: `<a href="admin.html" class="admin-nav-btn">⚙️ Quản trị Admin</a>`.
+### A. Trang Mua Sắm (`shop_mini.html`, `shop_mini.css`, `shop_mini.js`) - HOÀN THÀNH 100%
+- **Giao diện:** Semantic HTML, CSS Grid 3 cột, Card sản phẩm, Badge Hot deal, Giỏ hàng bên phải.
+- **Hiển thị & Tìm kiếm:** Lọc danh mục (Event Delegation) + Tìm kiếm từ khóa theo thời gian thực (sự kiện `input`).
+- **Tương tác giỏ hàng:**
+  - Tăng / Giảm số lượng (`updateQuantity`) có chốt chặn kiểm tra không vượt quá tồn kho `stock` (`item.quantity >= product.stock`), tự động xóa khi số lượng về 0.
+  - Xóa từng món (`removeFromCart`) bằng `.filter()`.
+  - Nút "Xóa tất cả" (`clearCartBtn`) có xác nhận `confirm()`.
+- **Ví tiền & Thanh toán (`checkout`):**
+  - Quản lý số dư `balance` (mặc định 50.000.000đ).
+  - Tính tổng bill bằng `.reduce()`, kiểm tra ví đủ tiền mới cho mua.
+  - Trừ tiền ví, trừ số lượng tồn kho `stock` của các sản phẩm tương ứng trong kho hàng (`products`), lưu LocalStorage, xóa giỏ hàng.
 
-### B. Logic JavaScript (`shop_mini.js`)
-- **Dữ liệu 11 sản phẩm:** Khai báo chuẩn mảng `PRODUCTS` tương ứng với 11 ảnh trong thư mục `images/` (chú ý `p6.webp`, `p7.webp`).
-- **Render sản phẩm (`renderProducts`):**
-  - Kết hợp sàng lọc 2 lớp: `.filter()` theo danh mục (`currentCategory === 'all' || item.category === currentCategory`) và ô tìm kiếm (`item.name.toLowerCase().includes(...)`).
-  - Dùng `.map().join('')` đổ thẻ HTML.
-- **Sự kiện Bộ lọc & Tìm kiếm:**
-  - `searchInput.addEventListener('input', ...)`
-  - `categoryTabs.addEventListener('click', ...)` (Áp dụng kỹ thuật Ủy quyền sự kiện Event Delegation).
-- **Cơ chế LocalStorage cho giỏ hàng:**
-  - Khóa `SHOP_MINI_CART`.
-  - Hàm `saveCart(cartData)` và `loadCart()` có bọc `try...catch` phòng thủ lỗi bộ nhớ.
-- **Hàm `renderCart()`:**
-  - Dùng **`.reduce()`** tính tổng tiền hàng `subtotal`.
-  - Đổ dữ liệu vào các thẻ `#cart-total`, `#cart-discount`, `#cart-final-total`.
-  - Dùng `.map().join('')` vẽ các món trong giỏ (`.cart-item`).
-  - Xử lý trạng thái giỏ rỗng: hiện chữ báo rỗng và ẩn nút `clearCartBtn`.
-- **Hàm `addToCart(productId)`:**
-  - Tìm sản phẩm theo ID.
-  - Kiểm tra tồn tại trong giỏ: nếu đã có thì tăng `quantity + 1`, nếu chưa thì thêm mới với `quantity: 1`.
-  - Bắt sự kiện click nút "Thêm vào giỏ" qua Event Delegation trên `productGrid`.
+### B. Trang Quản Trị Admin (`admin.html`, `admin.css`, `admin.js`) - HOÀN THÀNH CƠ BẢN
+- **Đồng bộ dữ liệu:** Nhúng `products-data.js` dùng chung danh mục 11 sản phẩm gốc.
+- **Thống kê Dashboard (`renderStats`):** 4 thẻ KPI tính tự động: Tổng sản phẩm, Đang bán, Chờ duyệt, Hết hàng.
+- **Bảng dữ liệu (`renderTable`):** Đổ 10 cột dữ liệu (STT, Ảnh thumbnail, Tên, Danh mục, Giá gốc, Giá bán, Tồn kho, Trạng thái badge, Đánh giá, Nút Sửa/Xóa).
+- **Bộ lọc kết hợp 3 tầng (`applyFilters`):** Tìm kiếm theo tên + Lọc theo Trạng thái + Lọc theo Danh mục.
+- **Modal Form CRUD (Thêm / Sửa / Xóa):**
+  - Tái sử dụng 1 Modal duy nhất qua cờ hiệu `editingId`.
+  - **Thêm mới:** `editingId = null`, reset form, sinh ID mới `Math.max(...id) + 1`.
+  - **Sửa:** `editingId = id`, đổ dữ liệu cũ vào input (pre-fill), ghi đè dữ liệu bằng Object Spread `{ ...p, ...productData }`.
+  - **Xóa:** Bắt sự kiện click qua Event Delegation trên `productTableBody`, xác nhận `confirm()`, xóa bằng `.filter()`.
+  - Đóng modal khi bấm [X], nút [Hủy], hoặc bấm ra vùng nền tối bên ngoài (`e.target === productModal`).
 
 ---
 
-## 🚧 3. CÔNG VIỆC ĐANG LÀM DỞ CẦN LÀM TIẾP NGAY KHI MỞ MÁY
+## 📌 3. CÔNG VIỆC CẦN LÀM TIẾP HÔM SAU (USER NOTES ĐẶC BIỆT)
 
-Trước khi chuyển sang làm trang Admin, cần hoàn thiện **nốt 4 tính năng còn thiếu trong `shop_mini.js`**:
+Người học đã yêu cầu ghi chú cụ thể các mục sau để triển khai ở buổi học tiếp theo:
 
-### Việc 1: Tương tác Tăng (+), Giảm (-), Xóa từng món trong giỏ hàng
-Trong `shop_mini.js` đã render các nút với `data-type="decrease"`, `data-type="increase"` và class `.remove-item-btn`, cần viết:
-1. Hàm `updateQuantity(productId, delta)`:
-   - `delta` là `1` hoặc `-1`.
-   - Cập nhật số lượng bằng `.map()`.
-   - Nếu số lượng `<= 0` thì tự động xóa bằng `.filter(item => item.quantity > 0)`.
-   - Gọi `saveCart(cart)` và `renderCart()`.
-2. Hàm `removeFromCart(productId)`:
-   - Xóa món bằng `cart.filter(item => item.id !== productId)`.
-   - Gọi `saveCart(cart)` và `renderCart()`.
-3. Gắn 1 sự kiện `click` duy nhất trên `cartItemsList` (Event Delegation) để xử lý cả 3 nút trên.
+### 1. Đồng bộ Số dư Ví tiền & Luồng Thanh toán
+- Rà soát và hoàn thiện dứt điểm luồng trừ tiền, hiển thị số dư ví sau khi thanh toán xong giữa trang Shop và Admin.
+- Bổ sung tùy chọn nạp thêm tiền ví hoặc reset số dư khi cần.
 
-### Việc 2: Nút "Xóa tất cả" giỏ hàng
-- Gắn sự kiện `click` cho `clearCartBtn`:
-  ```javascript
-  clearCartBtn.addEventListener('click', () => {
-      cart = [];
-      saveCart(cart);
-      renderCart();
-  });
-  ```
+### 2. Cho phép Upload File Ảnh thật khi Thêm / Sửa sản phẩm
+- Thay vì chỉ gõ đường dẫn URL tĩnh (`images/p1.jpg`):
+  - Chuyển ô nhập ảnh thành `<input type="file" id="product-image-file" accept="image/*">`.
+  - Ứng dụng API **`FileReader`** (`readAsDataURL`) để đọc file ảnh thành chuỗi Base64 và hiển thị khung **Xem trước ảnh (Image Preview)** ngay trên Modal.
+  - **Ràng buộc bảo mật & hiệu năng:**
+    - Giới hạn định dạng file hợp lệ: chỉ nhận `.png`, `.jpg`, `.jpeg`, `.webp`.
+    - Giới hạn kích thước file (ví dụ: tối đa `1MB` hoặc `2MB` để tránh làm tràn hạn mức 5MB của LocalStorage).
 
-### Việc 3: Quản lý Số dư Ví tiền (User Balance)
-- Đổi tên selector ở đầu file tránh trùng biến: `const userBalanceEl = document.querySelector(".user-balance")`.
-- Viết `saveBalance(amount)` và `loadBalance()` lưu vào key `SHOP_MINI_BALANCE` (mặc định 50.000.000đ).
-- Viết `renderBalance()` để hiển thị số dư ví lên header.
+### 3. Thêm tính năng Phân trang (Pagination) cho Bảng Admin
+- **Bài toán thực tế:** Khi bảng có 100 - 1.000 bản ghi, không thể render hết một lúc gây lag giao diện.
+- **Thanh điều khiển phân trang dưới đáy bảng:**
+  - Dropdown chọn số dòng hiển thị mỗi trang: `5, 10, 20... sản phẩm / trang`.
+  - Bộ nút điều hướng: Nút `Trước`, các nút số trang `1, 2, 3...`, nút `Sau`.
+  - Hiển thị thông tin: *"Hiển thị 1 - 10 trên tổng số 100 sản phẩm"*.
+- **Cơ chế ngầm:** Thuật toán tính `totalPages = Math.ceil(total / pageSize)`, dùng phương thức **`.slice(startIndex, endIndex)`** để cắt mảng dữ liệu hiển thị theo trang hiện tại.
 
-### Việc 4: Nút "Thanh toán" (`checkoutBtn`)
-- Bắt sự kiện `click` cho `checkoutBtn`:
-  - Kiểm tra giỏ rỗng -> cảnh báo.
-  - Tính tổng bill bằng `cart.reduce()`.
-  - So sánh với số dư ví -> nếu thiếu tiền báo lỗi.
-  - Nếu đủ: trừ tiền ví, lưu storage ví, làm rỗng giỏ `cart = []`, lưu storage giỏ, cập nhật lại giao diện, `alert` thành công.
+### 4. Nghiên cứu cách Sửa sản phẩm KHÔNG CẦN DÙNG `.map()`
+- Khám phá và mổ xẻ các cách cập nhật phần tử trong JavaScript thay thế cho `.map()`:
+  - **Cách 1: Dùng `.findIndex()`**: Tìm chỉ số index của sản phẩm trong mảng, rồi gán đè trực tiếp `products[index] = { ...products[index], ...productData }`.
+  - **Cách 2: Dùng `.find()` + `Object.assign()`**: Tìm đối tượng bằng `.find()` (lấy tham chiếu ô nhớ Heap), rồi dùng `Object.assign(product, productData)` để ghi đè thuộc tính trực tiếp.
+  - So sánh chuyên sâu về hiệu năng và triết lý: **Mutable (Biến đổi trực tiếp)** vs **Immutable (Tạo mảng mới)** trong JavaScript Engine.
 
 ---
 
-## 🚀 4. KẾ HOẠCH BƯỚC TIẾP THEO: TRANG ADMIN QUẢN LÝ (ĐÃ THỐNG NHẤT BẢN THIẾT KẾ)
+## 💬 4. PROMPT DÁN CHO AI TIẾP QUẢN PHIÊN TIẾP THEO
 
-Sau khi hoàn tất 4 việc trên của `shop_mini.js`, sẽ bắt tay vào làm trang Admin:
+Khi bắt đầu phiên làm việc mới, bạn chỉ cần gửi đoạn tin nhắn sau:
 
-1. **Bộ 3 file mới:** `admin.html`, `admin.css`, `admin.js`.
-2. **Giao diện Dashboard chuẩn hóa:**
-   - Header: Logo `Shop Admin Dashboard`, badge `E-commerce Sync`, nút `⬅ Về trang Shop`.
-   - 4 thẻ thống kê: Tổng sản phẩm, Đang hiển thị (Active), Đang ẩn (Pending), Hết hàng (Stock = 0).
-   - Toolbar: Ô tìm kiếm tên, Dropdown lọc danh mục, Dropdown lọc status, Nút xanh `+ Thêm sản phẩm mới`.
-   - Bảng (`<table>`): Ảnh, Tên, Danh mục, Giá bán/Giá gốc, Tồn kho, Đánh giá, Trạng thái, Nút Sửa/Xóa.
-   - **Modal Form (Compact Dialog nhỏ gọn `max-width: 480px`, căn giữa màn hình, backdrop blur):** Form nhập liệu Thêm/Sửa sản phẩm có xem trước ảnh thumbnail.
-3. **Kiến trúc Dữ liệu mới (Schema Migration):**
-   - Đổi `inStock: boolean` thành `stock: number` (`> 0`: còn hàng, `= 0`: hết hàng).
-   - Thêm `status: 'active' | 'pending'` (`active`: hiện cả ở Shop, `pending`: chỉ hiện ở Admin).
-   - Đồng bộ chung qua LocalStorage: `SHOP_MINI_PRODUCTS`.
-
----
-
-## 💬 5. PROMPT DÁN CHO AI Ở MÁY CÁ NHÂN ĐỂ TIẾP TỤC NGAY LẬP TỨC
-
-Khi về máy cá nhân, bạn chỉ cần gõ lệnh Git:
-```bash
-cd PRAC_FE
-git pull origin main
-```
-Sau đó mở chat với AI và dán đoạn prompt sau:
-
-> *"Chào bạn! Tôi vừa kéo code mới nhất từ repo PRAC_FE về máy. Bạn hãy đọc file `HANDOVER_PROGRESS.md` và các skill trong `.agents/skills/` để nắm trọn vẹn ngữ cảnh. Hiện tại chúng ta đang dừng ở mục 3: Hoàn thiện nốt 4 tính năng còn thiếu trong `shop_mini.js` (Tăng/Giảm/Xóa món giỏ hàng, Xóa tất cả, Ví tiền và Thanh toán checkout). Hãy cùng tôi làm tiếp phần này ngay nhé!"*
+> *"Chào bạn! Hãy đọc kỹ file `HANDOVER_PROGRESS.md` (đặc biệt là Mục 3: CÔNG VIỆC CẦN LÀM TIẾP HÔM SAU) và tuân thủ skill `.agents/skills/fe-teaching-method/SKILL.md`. Chúng ta sẽ bắt đầu giải quyết 4 nhiệm vụ đã được note lại: (1) Rà soát luồng tiền ví sau checkout, (2) Upload file ảnh có validate định dạng/kích thước bằng FileReader, (3) Làm phân trang Pagination cho bảng Admin, và (4) Mổ xẻ cách sửa sản phẩm không dùng .map(). Hãy hướng dẫn tôi từng bước một nhé!"*

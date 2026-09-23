@@ -11,156 +11,66 @@ const cartDiscount = document.querySelector("#cart-discount")
 const cartFinalTotal = document.querySelector("#cart-final-total")
 const checkoutBtn = document.querySelector("#checkout-btn")
 const clearCartBtn = document.querySelector("#clear-cart-btn")
+const DEFAULT_BALANCE = 50000000;
+let products = getProducts();
+function loadBalance() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEYS.BALANCE);
+        return raw !== null ? Number(raw) : DEFAULT_BALANCE;
+    } catch {
+        return DEFAULT_BALANCE;
+    }
+}
+function saveBalance(amount) {
+    try {
+        localStorage.setItem(STORAGE_KEYS.BALANCE, amount);
+    } catch (e) {
+        console.error("Lỗi lưu số dư:", e);
+    }
+}
+let balance = loadBalance();
+function renderBalance() {
+    if (userBalance) {
+        userBalance.textContent = `${balance.toLocaleString()}₫`;
+    }
+}
+renderBalance();
 
-const PRODUCTS = [
-    {
-        id: 1,
-        name: "Tai nghe không dây Sony WH-1000XM5",
-        category: "electronics",
-        price: 6990000,
-        originalPrice: 8490000,
-        inStock: true,
-        rating: 4.9,
-        image: "images/p1.jpg"
-    },
-    {
-        id: 2,
-        name: "Áo khoác Bomber Nam Minimalist",
-        category: "clothing",
-        price: 590000,
-        originalPrice: 850000,
-        inStock: true,
-        rating: 4.6,
-        image: "images/p2.jpg"
-    },
-    {
-        id: 3,
-        name: "Robot hút bụi lau nhà thông minh",
-        category: "home",
-        price: 9990000,
-        originalPrice: 12500000,
-        inStock: true,
-        rating: 4.8,
-        image: "images/p3.jpg"
-    },
-    {
-        id: 4,
-        name: "Điện thoại Smartphone Flagship 5G",
-        category: "electronics",
-        price: 24990000,
-        originalPrice: 28990000,
-        inStock: true,
-        rating: 4.9,
-        image: "images/p4.jpg"
-    },
-    {
-        id: 5,
-        name: "Balo Chống Nước Đa Năng Workpack",
-        category: "clothing",
-        price: 680000,
-        originalPrice: 950000,
-        inStock: true,
-        rating: 4.5,
-        image: "images/p5.jpg"
-    },
-    {
-        id: 6,
-        name: "Máy pha cà phê Espresso tự động",
-        category: "home",
-        price: 4500000,
-        originalPrice: 5900000,
-        inStock: false,
-        rating: 4.7,
-        image: "images/p6.webp"
-    },
-    {
-        id: 7,
-        name: "Bàn phím cơ Bluetooth RGB Tenkeyless",
-        category: "electronics",
-        price: 1850000,
-        originalPrice: 2400000,
-        inStock: true,
-        rating: 4.8,
-        image: "images/p7.webp"
-    },
-    {
-        id: 8,
-        name: "Quần Jeans Slimfit Co Giãn Cao Cấp",
-        category: "clothing",
-        price: 450000,
-        originalPrice: 650000,
-        inStock: true,
-        rating: 4.2,
-        image: "images/p8.jpg"
-    },
-    {
-        id: 9,
-        name: "Nồi chiên không dầu điện tử 6.5L",
-        category: "home",
-        price: 1990000,
-        originalPrice: 2790000,
-        inStock: true,
-        rating: 4.7,
-        image: "images/p9.jpg"
-    },
-    {
-        id: 10,
-        name: "Chuột Gaming Không Dây Siêu Nhẹ",
-        category: "electronics",
-        price: 1290000,
-        originalPrice: 1690000,
-        inStock: true,
-        rating: 4.4,
-        image: "images/p11.jpg"
-    },
-    {
-        id: 11,
-        name: "Giày Thể Thao Sneaker Streetwear",
-        category: "clothing",
-        price: 890000,
-        originalPrice: 1200000,
-        inStock: false,
-        rating: 4.3,
-        image: "images/p12.jpg"
-    }
-];
-const STORAGE_KEYS = {
-    CART: "SHOP_MINI_CART",
-    BALANCE: "SHOP_MINI_BALANCE"
-}
-function saveCart(cartData){
-    try{
-        localStorage.setItem(STORAGE_KEYS.CART,JSON.stringify(cartData))
-    } catch(e){
-        console.error("Lỗi lưu giỏ hàng:",e)
+function saveCart(cartData) {
+    try {
+        localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cartData))
+    } catch (e) {
+        console.error("Lỗi lưu giỏ hàng:", e)
     }
 }
-function loadCart(){
-    try{
+function loadCart() {
+    try {
         const raw = localStorage.getItem(STORAGE_KEYS.CART)
-        return raw?JSON.parse(raw):[]
-    } catch{
+        return raw ? JSON.parse(raw) : []
+    } catch {
         return [];
     }
 }
 let cart = loadCart()
-let currentCategory ="all"
-function renderProducts(){
-    const filteredProducts = PRODUCTS.filter(item =>{
+let currentCategory = "all"
+function renderProducts() {
+    const filteredProducts = products.filter(item => {
         const matchCategory = currentCategory === "all" || item.category === currentCategory;
         const matchName = item.name.toLowerCase().includes(searchInput.value.toLowerCase().trim());
-        return matchCategory && matchName;
+        const matchStatus = item.status === "active";
+        return matchCategory && matchName && matchStatus;
     })
-    if(productCount){
+    if (productCount) {
         productCount.textContent = filteredProducts.length
     }
-    if(filteredProducts.length===0){
+    if (filteredProducts.length === 0) {
         productGrid.innerHTML = `
-        <p>Không có sản phẩm nào phù hợp</p>`
+        <p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b;">Không có sản phẩm nào phù hợp</p>`;
+        return;
     }
     productGrid.innerHTML = filteredProducts.map(item => {
         const hotDealBadge = item.rating >= 4.7 ? `<span class="badge-hot">🔥Hot Deal </span>` : ""
-        const catName = item.category === 'electronics' ? "Điện tử": (item.category === "clothing" ? "Thời trang" : "Gia dụng")
+        const catName = item.category === 'electronics' ? "Điện tử" : (item.category === "clothing" ? "Thời trang" : "Gia dụng")
         const discount = Math.round((1 - item.price / item.originalPrice) * 100)
         return `
         <div class="product-card">
@@ -182,10 +92,10 @@ function renderProducts(){
                     <span class="original-price">${item.originalPrice.toLocaleString()}₫</span>
                 </div>
                 <div class="product-stock">
-                ${item.inStock ? '<span class="in-stock">Còn hàng</span>' : '<span class="out-of-stock">Hết hàng</span>'}
+                ${item.stock > 0 ? `<span class="in-stock">Còn hàng ${item.stock}</span>` : '<span class="out-of-stock">Hết hàng</span>'}
                 </div>
                 <div class="add-cart">
-                    <button class="add-to-cart-btn" data-id="${item.id}" ${item.inStock ? "" : "disabled"}>Thêm vào giỏ</button>
+                    <button class="add-to-cart-btn" data-id="${item.id}" ${item.stock > 0 ? "" : "disabled"}>Thêm vào giỏ</button>
                 </div>
             </div>
         </div>`
@@ -196,37 +106,37 @@ searchInput.addEventListener("input", (e) => {
     searchKeyword = e.target.value;
     renderProducts();
 })
-categoryTabs.addEventListener("click",(e)=>{
-    if(e.target.classList.contains("filter-btn")){
-        document.querySelectorAll(".filter-btn").forEach(btn=>btn.classList.remove("active"))
+categoryTabs.addEventListener("click", (e) => {
+    if (e.target.classList.contains("filter-btn")) {
+        document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"))
         e.target.classList.add("active")
         currentCategory = e.target.dataset.category
         renderProducts()
     }
 })
 
-function renderCart(){
-    if(cart.length===0){
+function renderCart() {
+    if (cart.length === 0) {
         cartItemsList.innerHTML = '<p>Giỏ hàng rỗng</p>';
-        clearCartBtn.style.display="none";
+        clearCartBtn.style.display = "none";
         return;
     }
-    clearCartBtn.style.display="block"
-    
-    const subtotal = cart.reduce((sum,item)=>{
-        return sum+item.price*item.quantity;
-    },0)
+    clearCartBtn.style.display = "block"
+
+    const subtotal = cart.reduce((sum, item) => {
+        return sum + item.price * item.quantity;
+    }, 0)
     cartTotal.textContent = `${subtotal.toLocaleString()}đ`
     cartDiscount.textContent = `0đ`
     cartFinalTotal.textContent = `${subtotal.toLocaleString()}đ`
-    cartItemsList.innerHTML = cart.map(item =>`
+    cartItemsList.innerHTML = cart.map(item => `
         <div class="cart-item">
         <div class="cart-item-img">
             <img src="${item.image}" alt="${item.name}">
         </div>
         <div class="cart-item-info">
             <span class="item-name">${item.name}</span>
-            <span class="item-price">${(item.price*item.quantity).toLocaleString()}đ</span>
+            <span class="item-price">${(item.price * item.quantity).toLocaleString()}đ</span>
             <div class="cart-item-quantity">
                 <button class="quantity-btn" data-id="${item.id}" data-type="decrease">-</button>
                 <span class="quantity">${item.quantity}</span>
@@ -241,33 +151,119 @@ function renderCart(){
     saveCart(cart);
 }
 renderCart();
-function addToCart(productId){
-    const product =PRODUCTS.find(p=>p.id === productId)
-    if(!product || !product.inStock){
+function addToCart(productId) {
+    const product = products.find(p => p.id === productId)
+    if (!product || product.stock <= 0) {
         return;
     }
-    const existingItem =cart.find(i=>i.id===productId)
-    if(existingItem){
-        cart=cart.map(item =>
-            item.id===productId ? {...item,quantity:item.quantity+1}:item);
+    const existingItem = cart.find(i => i.id === productId)
+    if (existingItem) {
+        cart = cart.map(item =>
+            item.id === productId ? { ...item, quantity: item.quantity + 1 } : item);
     }
     else {
         cart.push({
-            id:productId,
-            name:product.name,
-            price:product.price,
-            image:product.image,
-            quantity:1
+            id: productId,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            quantity: 1
         });
     }
     saveCart(cart);
     renderCart();
 }
-productGrid.addEventListener("click",(e)=>{
-    const btn=e.target.closest(".add-to-cart-btn")
-    if(btn && !btn.disabled){
+productGrid.addEventListener("click", (e) => {
+    const btn = e.target.closest(".add-to-cart-btn")
+    if (btn && !btn.disabled) {
         const productID = Number(btn.dataset.id)
         addToCart(productID)
-        
+
     }
 })
+function removeFormCart(productId) {
+    cart = cart.filter(item => item.id !== productId)
+    saveCart(cart);
+    renderCart();
+}
+function updateQuantity(productId, delta) {
+    const item = cart.find(i => i.id === productId)
+    if (!item) return;
+    if (delta > 0) {
+        const product = products.find(p => p.id === productId)
+        if (product && item.quantity >= product.stock) {
+            alert("số lượng quá giới hạn")
+            item.quantity = product.stock;
+            saveCart(cart);
+            renderCart();
+            return;
+        }
+    }
+    item.quantity += delta;
+    if (item.quantity <= 0) {
+        removeFormCart(productId);
+        return;
+    }
+    saveCart(cart);
+    renderCart();
+}
+cartItemsList.addEventListener("click", (e) => {
+    const qtyBtn = e.target.closest(".quantity-btn")
+    if (qtyBtn) {
+        const productID = Number(qtyBtn.dataset.id)
+        const type = qtyBtn.dataset.type
+        const delta = type === "increase" ? 1 : -1
+        updateQuantity(productID, delta)
+        return;
+    }
+    const removeBtn = e.target.closest(".remove-item-btn")
+    if (removeBtn) {
+        const productID = Number(removeBtn.dataset.id)
+        removeFormCart(productID)
+        return;
+    }
+})
+clearCartBtn.addEventListener("click", () => {
+    if (cart.length === 0) return;
+    const isConfirm = confirm("Sure?");
+    if (isConfirm) {
+        cart = [];
+        saveCart(cart);
+        renderCart();
+    }
+});
+function checkout() {
+    if (cart.length === 0) {
+        alert("Giỏ trống")
+        return;
+    }
+    const subtotal = cart.reduce((sum, item) => {
+        return sum + item.price * item.quantity;
+    }, 0)
+    if (balance < subtotal) {
+        alert("Không đủ tiền");
+        return;
+    }
+    if (!confirm("Xác nhận thanh toán?")) return;
+    balance -= subtotal;
+    saveBalance(balance);
+    renderBalance();
+    cart.forEach(item => {
+        const product = products.find(p => p.id === item.id);
+        if (product) {
+            product.stock -= item.quantity;
+        }
+    });
+    saveProducts(products);
+    renderProducts();
+    cart = [];
+    saveCart(cart);
+    renderCart();
+
+}
+checkoutBtn.addEventListener("click", () => {
+    checkout();
+})
+
+
+
