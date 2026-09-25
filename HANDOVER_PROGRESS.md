@@ -1,83 +1,81 @@
 # 📋 BÁO CÁO TIẾN ĐỘ & BÀN GIAO DỰ ÁN PRAC_FE (HANDOVER PROGRESS)
 
 > **Dành cho AI tiếp quản tại phiên làm việc tiếp theo:** 
-> Vui lòng đọc kỹ file này kết hợp với `.agents/skills/fe-teaching-method/SKILL.md` để tiếp tục giữ đúng phong cách giảng dạy: **mổ xẻ cơ chế ngầm Browser/JS Engine, clean code không comment thừa, không dùng LaTeX, đồng hành hướng dẫn người học tự code.**
+> Vui lòng đọc kỹ file này kết hợp với `.agents/skills/fe-teaching-method/SKILL.md` để tiếp tục giữ đúng phong cách giảng dạy: **mổ xẻ cơ chế ngầm Browser/JS Engine, clean code không comment thừa, không dùng LaTeX, tuyệt đối không tự sửa code mà đưa ra vấn đề để người học tự code.**
 
 ---
 
 ## 🧭 1. TỔNG QUAN NGỮ CẢNH DỰ ÁN
 
-- **Thư mục workspace:** `/Users/thinh/FE/Prac_FE/PRAC_FE` (Chú ý: git repo nằm ở `PRAC_FE`).
+- **Hệ điều hành:** Windows (hoặc macOS trên máy công ty).
 - **Nhánh Git:** `main`.
-- **Hệ thống gồm 2 trang liên thông dữ liệu qua LocalStorage (`products-data.js`):**
+- **Cấu trúc 2 trang liên thông qua LocalStorage:**
   1. `shop_mini.html` + `shop_mini.css` + `shop_mini.js`: Trang mua sắm khách hàng.
   2. `admin.html` + `admin.css` + `admin.js`: Trang Dashboard quản trị sản phẩm.
-  3. `products-data.js`: Kho dữ liệu trung tâm dùng chung (`STORAGE_KEYS`: `PRODUCTS`, `CART`, `BALANCE`), cơ chế tự phục hồi (self-healing fallback).
+  3. `products-data.js`: Nguồn chân lý dùng chung (Storage Keys, hàm đọc/ghi sản phẩm, hàm phân trang `splitPages`).
+  4. `splitpage.css`: File CSS phân trang dùng chung cho cả 2 trang (Component-based).
 
 ---
 
-## ✅ 2. TỔNG KẾT NHỮNG GÌ ĐÃ HOÀN THÀNH
+## ✅ 2. TIẾN ĐỘ ĐÃ HOÀN THÀNH XUẤT SẮC
 
-### A. Trang Mua Sắm (`shop_mini.html`, `shop_mini.css`, `shop_mini.js`) - HOÀN THÀNH 100%
-- **Giao diện:** Semantic HTML, CSS Grid 3 cột, Card sản phẩm, Badge Hot deal, Giỏ hàng bên phải.
-- **Hiển thị & Tìm kiếm:** Lọc danh mục (Event Delegation) + Tìm kiếm từ khóa theo thời gian thực (sự kiện `input`).
-- **Tương tác giỏ hàng:**
-  - Tăng / Giảm số lượng (`updateQuantity`) có chốt chặn kiểm tra không vượt quá tồn kho `stock` (`item.quantity >= product.stock`), tự động xóa khi số lượng về 0.
-  - Xóa từng món (`removeFromCart`) bằng `.filter()`.
-  - Nút "Xóa tất cả" (`clearCartBtn`) có xác nhận `confirm()`.
-- **Ví tiền & Thanh toán (`checkout`):**
-  - Quản lý số dư `balance` (mặc định 50.000.000đ).
-  - Tính tổng bill bằng `.reduce()`, kiểm tra ví đủ tiền mới cho mua.
-  - Trừ tiền ví, trừ số lượng tồn kho `stock` của các sản phẩm tương ứng trong kho hàng (`products`), lưu LocalStorage, xóa giỏ hàng.
+### A. Clean Luồng Giỏ Hàng & Thanh Toán (`shop_mini.js`)
+- **Fix Bug Clear Total Price:** Đã bổ sung reset `cartTotal`, `cartDiscount`, `cartFinalTotal` về `"0đ"` trong nhánh `if (cart.length === 0)` của `renderCart()`, tránh bug tiền vẫn giữ nguyên khi giỏ đã rỗng.
 
-### B. Trang Quản Trị Admin (`admin.html`, `admin.css`, `admin.js`) - HOÀN THÀNH CƠ BẢN
-- **Đồng bộ dữ liệu:** Nhúng `products-data.js` dùng chung danh mục 11 sản phẩm gốc.
-- **Thống kê Dashboard (`renderStats`):** 4 thẻ KPI tính tự động: Tổng sản phẩm, Đang bán, Chờ duyệt, Hết hàng.
-- **Bảng dữ liệu (`renderTable`):** Đổ 10 cột dữ liệu (STT, Ảnh thumbnail, Tên, Danh mục, Giá gốc, Giá bán, Tồn kho, Trạng thái badge, Đánh giá, Nút Sửa/Xóa).
-- **Bộ lọc kết hợp 3 tầng (`applyFilters`):** Tìm kiếm theo tên + Lọc theo Trạng thái + Lọc theo Danh mục.
-- **Modal Form CRUD (Thêm / Sửa / Xóa):**
-  - Tái sử dụng 1 Modal duy nhất qua cờ hiệu `editingId`.
-  - **Thêm mới:** `editingId = null`, reset form, sinh ID mới `Math.max(...id) + 1`.
-  - **Sửa:** `editingId = id`, đổ dữ liệu cũ vào input (pre-fill), ghi đè dữ liệu bằng Object Spread `{ ...p, ...productData }`.
-  - **Xóa:** Bắt sự kiện click qua Event Delegation trên `productTableBody`, xác nhận `confirm()`, xóa bằng `.filter()`.
-  - Đóng modal khi bấm [X], nút [Hủy], hoặc bấm ra vùng nền tối bên ngoài (`e.target === productModal`).
+### B. Nhiệm vụ Tối Ưu Tốc Độ Sửa Bản Ghi (Thay thế `.map()`)
+- Thay thế triệt để `.map()` bằng **`.findIndex()`** và Object Spread `{ ...item, ...data }`:
+  - Trong `admin.js` (hàm submit form sửa sản phẩm): Tìm index bằng `findIndex`, dừng sớm khi thấy ID trùng, cập nhật tại chỗ `products[index] = { ...products[index], ...productData }`.
+  - Trong `shop_mini.js` (hàm `addToCart`): Tìm index trong giỏ, tăng số lượng tại chỗ `cart[index] = { ...cart[index], quantity: cart[index].quantity + 1 }`.
+  - Đã hiểu sâu cơ chế V8 Heap, Garbage Collection và Reference Type trong JS.
 
----
-
-## 📌 3. CÔNG VIỆC CẦN LÀM TIẾP HÔM SAU (USER NOTES ĐẶC BIỆT)
-
-Người học đã yêu cầu ghi chú cụ thể các mục sau để triển khai ở buổi học tiếp theo:
-
-### 1. Đồng bộ Số dư Ví tiền & Luồng Thanh toán
-- Rà soát và hoàn thiện dứt điểm luồng trừ tiền, hiển thị số dư ví sau khi thanh toán xong giữa trang Shop và Admin.
-- Bổ sung tùy chọn nạp thêm tiền ví hoặc reset số dư khi cần.
-
-### 2. Cho phép Upload File Ảnh thật khi Thêm / Sửa sản phẩm
-- Thay vì chỉ gõ đường dẫn URL tĩnh (`images/p1.jpg`):
-  - Chuyển ô nhập ảnh thành `<input type="file" id="product-image-file" accept="image/*">`.
-  - Ứng dụng API **`FileReader`** (`readAsDataURL`) để đọc file ảnh thành chuỗi Base64 và hiển thị khung **Xem trước ảnh (Image Preview)** ngay trên Modal.
-  - **Ràng buộc bảo mật & hiệu năng:**
-    - Giới hạn định dạng file hợp lệ: chỉ nhận `.png`, `.jpg`, `.jpeg`, `.webp`.
-    - Giới hạn kích thước file (ví dụ: tối đa `1MB` hoặc `2MB` để tránh làm tràn hạn mức 5MB của LocalStorage).
-
-### 3. Thêm tính năng Phân trang (Pagination) cho Bảng Admin
-- **Bài toán thực tế:** Khi bảng có 100 - 1.000 bản ghi, không thể render hết một lúc gây lag giao diện.
-- **Thanh điều khiển phân trang dưới đáy bảng:**
-  - Dropdown chọn số dòng hiển thị mỗi trang: `5, 10, 20... sản phẩm / trang`.
-  - Bộ nút điều hướng: Nút `Trước`, các nút số trang `1, 2, 3...`, nút `Sau`.
-  - Hiển thị thông tin: *"Hiển thị 1 - 10 trên tổng số 100 sản phẩm"*.
-- **Cơ chế ngầm:** Thuật toán tính `totalPages = Math.ceil(total / pageSize)`, dùng phương thức **`.slice(startIndex, endIndex)`** để cắt mảng dữ liệu hiển thị theo trang hiện tại.
-
-### 4. Nghiên cứu cách Sửa sản phẩm KHÔNG CẦN DÙNG `.map()`
-- Khám phá và mổ xẻ các cách cập nhật phần tử trong JavaScript thay thế cho `.map()`:
-  - **Cách 1: Dùng `.findIndex()`**: Tìm chỉ số index của sản phẩm trong mảng, rồi gán đè trực tiếp `products[index] = { ...products[index], ...productData }`.
-  - **Cách 2: Dùng `.find()` + `Object.assign()`**: Tìm đối tượng bằng `.find()` (lấy tham chiếu ô nhớ Heap), rồi dùng `Object.assign(product, productData)` để ghi đè thuộc tính trực tiếp.
-  - So sánh chuyên sâu về hiệu năng và triết lý: **Mutable (Biến đổi trực tiếp)** vs **Immutable (Tạo mảng mới)** trong JavaScript Engine.
+### C. Nhiệm vụ Phân Trang (Pagination Engine) Dùng Chung Cả 2 Trang
+- **Hàm lõi `splitPages(items, page, pageSize)` trong `products-data.js`:**
+  - Cắt mảng con bằng `.slice(startIndex, endIndex)` thuần túy (Pure Function).
+  - Có chốt chặn an toàn `Math.max(1, Math.min(page, totalPages))` tự sửa số âm, số 0 hoặc số vượt quá tổng trang khi xóa hàng/search.
+- **Tách Component CSS riêng `splitpage.css`:**
+  - Style hiện đại, Flexbox căn đều, hiệu ứng hover, active màu xanh, `:disabled` có `opacity: 0.5` và `cursor: not-allowed`.
+- **Ráp hoàn chỉnh vào `admin.html` & `admin.js`:**
+  - Khung HTML phân trang gồm: dropdown chọn số lượng (4, 6, 8 dòng/trang), nút Trước/Sau, dãy nút số sinh động qua vòng lặp, ô nhập số "Đến trang".
+  - Gắn sự kiện: Bắt sự kiện trên các nút số bằng kỹ thuật **Event Delegation** (`closest(".page-number-btn")`).
+  - Xử lý UX: Tự động reset `currentPage = 1` khi người dùng gõ tìm kiếm hoặc đổi dropdown lọc.
+- **Ráp hoàn chỉnh vào `shop_mini.html` & `shop_mini.js`:**
+  - Chuẩn hóa luồng: **Filter danh mục/search TRƯỚC -> Cắt trang `splitPages` SAU** trên mảng đã lọc.
+  - Vẽ sản phẩm theo `pageData.items.map`.
+  - Đồng bộ thanh phân trang `renderSplitPage(pageData)`.
 
 ---
 
-## 💬 4. PROMPT DÁN CHO AI TIẾP QUẢN PHIÊN TIẾP THEO
+## 📌 3. KẾ HOẠCH BƯỚC TIẾP THEO (LÀM TRÊN MÁY CÔNG TY)
 
-Khi bắt đầu phiên làm việc mới, bạn chỉ cần gửi đoạn tin nhắn sau:
+### 🎯 NHIỆM VỤ TIẾP THEO: Quản lý Danh sách Đơn hàng đã thanh toán trong Admin
 
-> *"Chào bạn! Hãy đọc kỹ file `HANDOVER_PROGRESS.md` (đặc biệt là Mục 3: CÔNG VIỆC CẦN LÀM TIẾP HÔM SAU) và tuân thủ skill `.agents/skills/fe-teaching-method/SKILL.md`. Chúng ta sẽ bắt đầu giải quyết 4 nhiệm vụ đã được note lại: (1) Rà soát luồng tiền ví sau checkout, (2) Upload file ảnh có validate định dạng/kích thước bằng FileReader, (3) Làm phân trang Pagination cho bảng Admin, và (4) Mổ xẻ cách sửa sản phẩm không dùng .map(). Hãy hướng dẫn tôi từng bước một nhé!"*
+Mentor yêu cầu: *"Làm thêm 1 danh sách đơn hàng đã thanh toán bên trong admin (khi người dùng bấm thanh toán bên ngoài portal)"*.
+
+#### Kế hoạch thực hiện:
+1. **Trong `products-data.js`:**
+   - Thêm `STORAGE_KEYS.ORDERS = "mini_shop_orders"`.
+   - Thêm 2 hàm `getOrders()` và `saveOrders(orders)`.
+2. **Trong `shop_mini.js` (hàm `checkout`):**
+   - Khi thanh toán thành công, đóng gói Order Object:
+     ```javascript
+     const newOrder = {
+         id: "DH-" + Date.now(),
+         createdAt: new Date().toLocaleString("vi-VN"),
+         items: [...cart],
+         totalAmount: subtotal,
+         status: "paid"
+     };
+     ```
+   - Push vào mảng orders và lưu LocalStorage qua `saveOrders`.
+3. **Trong `admin.html`:**
+   - Thêm 2 Tab chuyển đổi: `[📦 Quản lý Sản phẩm]` và `[🧾 Quản lý Đơn hàng]`.
+   - Thêm bảng hiển thị đơn hàng (STT, Mã đơn, Thời gian, Tên các món đã mua, Tổng tiền, Trạng thái badge xanh).
+4. **Trong `admin.js`:**
+   - Viết hàm `renderOrders()` đọc từ `getOrders()` và đổ ra bảng.
+   - Bắt sự kiện chuyển Tab.
+
+---
+
+## 🚀 4. CÁC NHIỆM VỤ CÒN LẠI SAU ĐÓ
+1. **Upload File Ảnh thật:** Thay input text bằng `input type="file" multiple`, đọc ảnh bằng `FileReader` (Base64), validate dung lượng `< 1MB`, định dạng `.jpg, .png, .webp`.
+2. **Responsive CSS toàn diện:** Viết Media Queries cho Mobile (< 768px), Tablet (768px - 1024px), Desktop cho cả 2 trang.

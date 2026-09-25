@@ -156,3 +156,18 @@ function resetDefaultProducts() {
     saveProducts(PRODUCTS);
     return PRODUCTS;
 }
+function splitPages(items, page = 1, pageSize = 6) {
+    const totalItems = items.length;
+    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+    const currentPage = Math.max(1, Math.min(page, totalPages));
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const splitPageItems = items.slice(startIndex, endIndex);
+    return {
+        currentPage,
+        totalPages,
+        totalItems,
+        pageSize,
+        items: splitPageItems
+    };
+}

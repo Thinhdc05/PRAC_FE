@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mini-shop</title>
     <link rel="stylesheet" href="shop_mini.css">
+    <link rel="stylesheet" href="splitpage.css">    
 </head>
 <body>
     <header class="app-header">
@@ -37,6 +38,28 @@
                 
 
             </div>
+            <div class="split-page">
+                    <div class="page-size-box">
+                        <span>Hiển thị:</span>
+                        <select id="page-size-select">
+                            <option value="4">4 / trang</option>
+                            <option value="6" selected>6 / trang</option>
+                            <option value="8">8 / trang</option>
+                        </select>
+                        <span id="page-total-info"></span>
+                    </div>
+                    <div class="page-nav">
+                        <button class="splitpage-btn" id="prev-btn">Trước</button>
+                        <div id="page-numbers" class="page-numbers">
+
+                        </div>
+                        <button class="splitpage-btn" id="next-btn">Sau</button>
+                    </div>
+                    <div class="page-goto">
+                        <span>Đến trang:</span>
+                        <input type="number" id="page-input" min="1" placeholder="1">
+                    </div>
+                </div>
         </section>
         <aside class="cart-section">
             <div class="cart-header">

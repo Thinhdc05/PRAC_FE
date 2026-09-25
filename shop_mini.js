@@ -11,6 +11,14 @@ const cartDiscount = document.querySelector("#cart-discount")
 const cartFinalTotal = document.querySelector("#cart-final-total")
 const checkoutBtn = document.querySelector("#checkout-btn")
 const clearCartBtn = document.querySelector("#clear-cart-btn")
+const pageSizeSelect = document.querySelector("#page-size-select");
+const pageTotalInfo = document.querySelector("#page-total-info");
+const prevBtn = document.querySelector("#prev-btn");
+const nextBtn = document.querySelector("#next-btn");
+const pageNumbersEl = document.querySelector("#page-numbers");
+const pageInput = document.querySelector("#page-input");
+let currentPage = 1;
+let pageSize = 6;
 const DEFAULT_BALANCE = 50000000;
 let products = getProducts();
 function loadBalance() {
@@ -53,6 +61,28 @@ function loadCart() {
 }
 let cart = loadCart()
 let currentCategory = "all"
+function renderSplitPage(pageData){
+    const{currentPage,totalPages,totalItems} =pageData;
+    if(pageTotalInfo){
+        pageTotalInfo.textContent=`Tong ${totalItems} san pham`;
+    }
+    if(prevBtn) prevBtn.disabled =currentPage<=1;
+    if(nextBtn) nextBtn.disabled =currentPage>=totalPages;
+    if(pageNumbersEl){
+        let buttonsHtml="";
+        for(let i=1;i<=totalPages;i++){
+            const activeClass=i===currentPage?"active":"";
+            buttonsHtml+=`
+            <button class="page-number-btn ${activeClass}" data-page="${i}">${i}</button>
+            `
+        }
+        pageNumbersEl.innerHTML = buttonsHtml;
+    }
+    if (pageInput) {
+        pageInput.value = currentPage;
+        pageInput.max = totalPages;
+    }
+}
 function renderProducts() {
     const filteredProducts = products.filter(item => {
         const matchCategory = currentCategory === "all" || item.category === currentCategory;
@@ -60,6 +90,8 @@ function renderProducts() {
         const matchStatus = item.status === "active";
         return matchCategory && matchName && matchStatus;
     })
+    const pageData = splitPages(filteredProducts, currentPage, pageSize);
+    currentPage = pageData.currentPage;
     if (productCount) {
         productCount.textContent = filteredProducts.length
     }
@@ -68,7 +100,7 @@ function renderProducts() {
         <p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748b;">Không có sản phẩm nào phù hợp</p>`;
         return;
     }
-    productGrid.innerHTML = filteredProducts.map(item => {
+    productGrid.innerHTML = pageData.items.map(item => {
         const hotDealBadge = item.rating >= 4.7 ? `<span class="badge-hot">🔥Hot Deal </span>` : ""
         const catName = item.category === 'electronics' ? "Điện tử" : (item.category === "clothing" ? "Thời trang" : "Gia dụng")
         const discount = Math.round((1 - item.price / item.originalPrice) * 100)
@@ -100,14 +132,17 @@ function renderProducts() {
             </div>
         </div>`
     }).join("")
+    renderSplitPage(pageData);
 }
 renderProducts();
 searchInput.addEventListener("input", (e) => {
+    currentPage = 1;
     searchKeyword = e.target.value;
     renderProducts();
 })
 categoryTabs.addEventListener("click", (e) => {
     if (e.target.classList.contains("filter-btn")) {
+        currentPage = 1;
         document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"))
         e.target.classList.add("active")
         currentCategory = e.target.dataset.category
@@ -119,6 +154,9 @@ function renderCart() {
     if (cart.length === 0) {
         cartItemsList.innerHTML = '<p>Giỏ hàng rỗng</p>';
         clearCartBtn.style.display = "none";
+        if (cartTotal) cartTotal.textContent = "0đ";
+        if (cartDiscount) cartDiscount.textContent = "0đ";
+        if (cartFinalTotal) cartFinalTotal.textContent = "0đ";
         return;
     }
     clearCartBtn.style.display = "block"
@@ -156,10 +194,12 @@ function addToCart(productId) {
     if (!product || product.stock <= 0) {
         return;
     }
-    const existingItem = cart.find(i => i.id === productId)
-    if (existingItem) {
-        cart = cart.map(item =>
-            item.id === productId ? { ...item, quantity: item.quantity + 1 } : item);
+    // const existingItem = cart.find(i => i.id === productId)
+    const index = cart.findIndex(i => i.id === productId);
+    if (index !== -1) {
+        cart[index] = { ...cart[index], quantity: cart[index].quantity + 1 }
+        // cart = cart.map(item =>
+        //     item.id === productId ? { ...item, quantity: item.quantity + 1 } : item);
     }
     else {
         cart.push({
@@ -265,5 +305,40 @@ checkoutBtn.addEventListener("click", () => {
     checkout();
 })
 
-
-
+if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+        currentPage--;
+        renderProducts();
+    });
+}
+if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+        currentPage++;
+        renderProducts();
+    });
+}
+if (pageNumbersEl) {
+    pageNumbersEl.addEventListener("click", (e) => {
+        const btn = e.target.closest(".page-number-btn");
+        if (btn) {
+            currentPage = Number(btn.dataset.page);
+            renderProducts();
+        }
+    });
+}
+if (pageSizeSelect) {
+    pageSizeSelect.addEventListener("change", (e) => {
+        pageSize = Number(e.target.value);
+        currentPage = 1;
+        renderProducts();
+    });
+}
+if (pageInput) {
+    pageInput.addEventListener("change", (e) => {
+        const targetPage = Number(e.target.value);
+        if (targetPage > 0) {
+            currentPage = targetPage;
+            renderProducts();
+        }
+    });
+}

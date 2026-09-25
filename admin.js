@@ -21,22 +21,32 @@ const productOriginalPriceInput = document.querySelector("#product-original-pric
 const productStockInput = document.querySelector("#product-stock");
 const productRatingInput = document.querySelector("#product-rating");
 const productImageInput = document.querySelector("#product-image");
-
+const pageSizeSelect = document.querySelector("#page-size-select");
+const pageTotalInfo = document.querySelector("#page-total-info");
+const prevBtn = document.querySelector("#prev-btn");
+const nextBtn = document.querySelector("#next-btn");
+const pageNumbersEl = document.querySelector("#page-numbers");
+const pageInput = document.querySelector("#page-input");
+let currentPage = 1;
+let pageSize = 6;
 let products=getProducts();
 function renderTable(data=products){
-    if(data.length===0){
+    const pageData=splitPages(data,currentPage,pageSize);
+    currentPage = pageData.currentPage;
+    if(pageData.items.length===0){
         productTableBody.innerHTML =`
         <tr>
             <td colspan="7" class="text-center">không có sản phẩm nào</td>
         </tr> `
     }
-    productTableBody.innerHTML=data.map((item,index)=>{
+    productTableBody.innerHTML=pageData.items.map((item,index)=>{
+        const stt =(currentPage-1)*pageSize+index+1;
         const catName=item.category==="electronics"?"Điện tử":(item.category==="clothing"?"Thơi trang":"Gia dụng")
          const statusText = item.status === 'active' ? "Đang bán" : "Tạm ẩn";
          const statusClass = item.status === 'active' ? "status-active" : "status-pending";
          return `
             <tr>
-                <td>${index+1}</td>
+                <td>${stt}</td>
                 <td><img src="${item.image}" alt="${item.name}" class="product-img-table"></td>
                 <td>${item.name}</td>
                 <td>${catName}</td>
@@ -54,8 +64,31 @@ function renderTable(data=products){
             </tr>
          `
     }).join("")
+    renderSplitPage(pageData);
 }
 renderTable();
+function renderSplitPage(pageData){
+    const{currentPage,totalPages,totalItems} =pageData;
+    if(pageTotalInfo){
+        pageTotalInfo.textContent=`Tong ${totalItems} san pham`;
+    }
+    if(prevBtn) prevBtn.disabled =currentPage<=1;
+    if(nextBtn) nextBtn.disabled =currentPage>=totalPages;
+    if(pageNumbersEl){
+        let buttonsHtml="";
+        for(let i=1;i<=totalPages;i++){
+            const activeClass=i===currentPage?"active":"";
+            buttonsHtml+=`
+            <button class="page-number-btn ${activeClass}" data-page="${i}">${i}</button>
+            `
+        }
+        pageNumbersEl.innerHTML = buttonsHtml;
+    }
+    if (pageInput) {
+        pageInput.value = currentPage;
+        pageInput.max = totalPages;
+    }
+}
 function renderStats(){
     if(totalProductsEl) totalProductsEl.textContent=products.length;
     if(activeStatusEl) activeStatusEl.textContent = products.filter(p=>p.status==="active").length;
@@ -75,9 +108,18 @@ function applyFilters(){
     });
     renderTable(filtered);
 }
-searchInput.addEventListener("input",applyFilters)
-statusFilter.addEventListener("change",applyFilters)
-categoryFilter.addEventListener("change",applyFilters)
+searchInput.addEventListener("input",()=>{  
+    currentPage = 1;
+    applyFilters();
+})
+statusFilter.addEventListener("change",()=>{
+    currentPage = 1;
+    applyFilters();
+})
+categoryFilter.addEventListener("change",()=>{
+    currentPage = 1;
+    applyFilters();
+})
 
 function openModal() {
     productModal.classList.add("active");
@@ -148,7 +190,14 @@ productForm.addEventListener("submit",(e)=>{
         const newId=products.length>0?Math.max(...products.map(p=>p.id))+1:1;
         products.push({...productData,id:newId});
     }else{
-        products=products.map(p=>p.id===editingId?{...p,...productData}:p);
+        // products=products.map(p=>p.id===editingId?{...p,...productData}:p);
+        const index=products.findIndex(p=>p.id===editingId);
+        if(index!==-1){
+            products[index]={
+                ...products[index],
+                ...productData
+            }
+        }
 
     }
     saveProducts(products);
@@ -156,4 +205,40 @@ productForm.addEventListener("submit",(e)=>{
     renderStats();
     closeModal();
 })
-
+if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+        currentPage--;
+        applyFilters();
+    });
+}
+if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+        currentPage++;
+        applyFilters();
+    });
+}
+if (pageNumbersEl) {
+    pageNumbersEl.addEventListener("click", (e) => {
+        const btn = e.target.closest(".page-number-btn");
+        if (btn) {
+            currentPage = Number(btn.dataset.page);
+            applyFilters();
+        }
+    });
+}
+if (pageSizeSelect) {
+    pageSizeSelect.addEventListener("change", (e) => {
+        pageSize = Number(e.target.value);
+        currentPage = 1; 
+        applyFilters();
+    });
+}
+if (pageInput) {
+    pageInput.addEventListener("change", (e) => {
+        const targetPage = Number(e.target.value);
+        if (targetPage > 0) {
+            currentPage = targetPage;
+            applyFilters();
+        }
+    });
+}
