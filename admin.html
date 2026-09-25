@@ -18,95 +18,144 @@
         </div>
         <a href="shop_mini.html" class="admin-back-btn">Về trang Shop</a>
     </header>
+    <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="products">Sản phẩm</button>
+        <button class="tab-btn " data-tab="orders">Đơn hàng</button>
+    </div>
     <main class="admin-main">
-        <section class="admin-stats">
-            <div class="stat-card">
-                <div class="stat-title">Tổng sản phẩm</div>
-                <div class="stat-value" id="total-products">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">Đang hiển thị</div>
-                <div class="stat-value" id="active-status">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">Chờ hiển thị</div>
-                <div class="stat-value" id="pending-status">0</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title">Hết hàng</div>
-                <div class="stat-value" id="out-of-stock">0</div>
-            </div>
-        </section>
-        <section class="admin-controls">
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" placeholder="Tìm kiếm sản phẩm...">
-            </div>
-            <div class="filter-group">
-                <span class="filter-label">Trạng thái:</span>
-                <select class="filter-select" id="status-filter">
-                    <option value="all">Tất cả</option>
-                    <option value="active">Hiện bán</option>
-                    <option value="pending">Đang chờ</option>
-                </select>
-            </div>
-            <div class="filter-category">
-                <span class="filter-label">Danh mục:</span>
-                <select class="filter-select" id="category-filter">
-                    <option value="all">Tất cả</option>
-                    <option value="electronics">Điện tử</option>
-                    <option value="clothing">Thời trang</option>
-                    <option value="home">Đồ gia dụng</option>
-                </select>
-            </div>
-            <div class="add-product">
-                <button class="add-product-btn" id="add-product-btn">Thêm sản phẩm mới</button>
-            </div>
-        </section>
-        <section class="product-list">
-            <div class="table-container">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Ảnh</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Danh mục</th>
-                            <th>Giá gốc</th>
-                            <th>Giá bán</th>
-                            <th>Tồn kho</th>
-                            <th>Trạng thái</th>
-                            <th>Đánh giá</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-table-body">
-                    </tbody>
-                </table>
-                <div class="split-page">
-                    <div class="page-size-box">
-                        <span>Hiển thị:</span>
-                        <select id="page-size-select">
-                            <option value="4">4 / trang</option>
-                            <option value="6" selected>6 / trang</option>
-                            <option value="8">8 / trang</option>
-                        </select>
-                        <span id="page-total-info"></span>
-                    </div>
-                    <div class="page-nav">
-                        <button class="splitpage-btn" id="prev-btn">Trước</button>
-                        <div id="page-numbers" class="page-numbers">
-
+        <div id="products-tab-content">
+            <section class="admin-stats">
+                <div class="stat-card">
+                    <div class="stat-title">Tổng sản phẩm</div>
+                    <div class="stat-value" id="total-products">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Đang hiển thị</div>
+                    <div class="stat-value" id="active-status">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Chờ hiển thị</div>
+                    <div class="stat-value" id="pending-status">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Hết hàng</div>
+                    <div class="stat-value" id="out-of-stock">0</div>
+                </div>
+            </section>
+            <section class="admin-controls">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Tìm kiếm sản phẩm...">
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Trạng thái:</span>
+                    <select class="filter-select" id="status-filter">
+                        <option value="all">Tất cả</option>
+                        <option value="active">Hiện bán</option>
+                        <option value="pending">Đang chờ</option>
+                    </select>
+                </div>
+                <div class="filter-category">
+                    <span class="filter-label">Danh mục:</span>
+                    <select class="filter-select" id="category-filter">
+                        <option value="all">Tất cả</option>
+                        <option value="electronics">Điện tử</option>
+                        <option value="clothing">Thời trang</option>
+                        <option value="home">Đồ gia dụng</option>
+                    </select>
+                </div>
+                <div class="add-product">
+                    <button class="add-product-btn" id="add-product-btn">Thêm sản phẩm mới</button>
+                </div>
+            </section>
+            <section class="product-list">
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Ảnh</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Danh mục</th>
+                                <th>Giá gốc</th>
+                                <th>Giá bán</th>
+                                <th>Tồn kho</th>
+                                <th>Trạng thái</th>
+                                <th>Đánh giá</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="product-table-body">
+                        </tbody>
+                    </table>
+                    <div class="split-page">
+                        <div class="page-size-box">
+                            <span>Hiển thị:</span>
+                            <select id="page-size-select">
+                                <option value="4">4 / trang</option>
+                                <option value="6" selected>6 / trang</option>
+                                <option value="8">8 / trang</option>
+                            </select>
+                            <span id="page-total-info"></span>
                         </div>
-                        <button class="splitpage-btn" id="next-btn">Sau</button>
-                    </div>
-                    <div class="page-goto">
-                        <span>Đến trang:</span>
-                        <input type="number" id="page-input" min="1" placeholder="1">
+                        <div class="page-nav">
+                            <button class="splitpage-btn" id="prev-btn">Trước</button>
+                            <div id="page-numbers" class="page-numbers">
+
+                            </div>
+                            <button class="splitpage-btn" id="next-btn">Sau</button>
+                        </div>
+                        <div class="page-goto">
+                            <span>Đến trang:</span>
+                            <input type="number" id="page-input" min="1" placeholder="1">
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
+        <div id="orders-tab-content" class="tab-content" style="display: none;">
+            <section class="orders-section">
+                <div class="table-container">
+                    <table class="admin-table" id="orders-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Mã đơn</th>
+                                <th>Thời gian</th>
+                                <th>Chi tiết sản phẩm</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-table-body">
+
+                        </tbody>
+                    </table>
+                    <div class="split-page">
+                        <div class="page-size-box">
+                            <span>Hiển thị:</span>
+                            <select id="order-page-size-select">
+                                <option value="4">4 / trang</option>
+                                <option value="6" selected>6 / trang</option>
+                                <option value="8">8 / trang</option>
+                            </select>
+                            <span id="order-page-total-info"></span>
+                        </div>
+                        <div class="page-nav">
+                            <button class="splitpage-btn" id="order-prev-btn">Trước</button>
+                            <div id="order-page-numbers" class="page-numbers">
+
+                            </div>
+                            <button class="splitpage-btn" id="order-next-btn">Sau</button>
+                        </div>
+                        <div class="page-goto">
+                            <span>Đến trang:</span>
+                            <input type="number" id="order-page-input" min="1" placeholder="1">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
     </main>
 
     <div class="modal-overlay" id="product-modal">
@@ -158,8 +207,12 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="product-image">Đường dẫn ảnh sản phẩm (URL) *</label>
-                    <input type="text" id="product-image" placeholder="images/p1.jpg hoặc URL ảnh" required>
+                    <label>Ảnh sản phẩm *</label>
+                    <input type="file" id="product-image-file" accept="image/png, image/jpeg, image/webp">
+                    <div class="image-preview-wrapper">
+                        <span id="product-image-placeholder">Chọn ảnh</span>
+                        <img id="product-image-preview" style="display: none;" />
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" id="cancel-modal-btn">Hủy</button>

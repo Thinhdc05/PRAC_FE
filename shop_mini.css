@@ -276,6 +276,7 @@ h3 {
     border: 2px solid #111827;
     border-radius: 12px;
     padding: 4px 10px;
+    text-align: center;
 }
 
 .product-header {

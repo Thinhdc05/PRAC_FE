@@ -296,6 +296,16 @@ function checkout() {
     });
     saveProducts(products);
     renderProducts();
+    const newOrder={
+        id:"DH"+Date.now(),
+        items: [...cart],
+        totalAmount: subtotal,
+        status:"paid",
+        timestamp: new Date().toLocaleString()
+    }
+    const orders=getOrders();
+    orders.unshift(newOrder)
+    saveOrders(orders)
     cart = [];
     saveCart(cart);
     renderCart();

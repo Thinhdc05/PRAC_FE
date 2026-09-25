@@ -1,7 +1,8 @@
 const STORAGE_KEYS = {
     PRODUCTS: "SHOP_MINI_PRODUCTS",
     CART: "SHOP_MINI_CART",
-    BALANCE: "SHOP_MINI_BALANCE"
+    BALANCE: "SHOP_MINI_BALANCE",
+    ORDERS: "SHOP_MINI_ORDERS"
 }
 
 const PRODUCTS = [
@@ -170,4 +171,23 @@ function splitPages(items, page = 1, pageSize = 6) {
         pageSize,
         items: splitPageItems
     };
+}
+function getOrders() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEYS.ORDERS);
+        if (raw) {
+            const data = JSON.parse(raw);
+            return Array.isArray(data) ? data : [];
+        }
+    } catch (e) {
+        console.error("Lỗi khi đọc đơn hàng từ Storage:", e)
+    }
+    return [];
+}
+function saveOrders(data) {
+    try {
+        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(data))
+    } catch (e) {
+        console.error("Lỗi khi lưu đơn hàng vào Storage:", e)
+    }
 }
