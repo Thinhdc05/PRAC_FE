@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết phim</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/component.css">
+    <link rel="stylesheet" href="css/detail.css">
+</head>
+
+<body>
+    <header class="navbar">
+        <div class="container navbar-content">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🎬</span>
+                <span class="logo-text">CINEMA<span class="logo-accent">HUB</span></span>
+            </a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-link active">TRANG CHỦ</a>
+                <a href="#" class="nav-link">PHIM LẺ</a>
+                <a href="#" class="nav-link">PHIM BỘ</a>
+                <a href="#" class="nav-link">THỂ LOẠI</a>
+            </nav>
+            <div class="user-actions">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Tìm kiếm phim..." id="search-input">
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="container detail-container">
+        <section class="detail-hero">
+            <div class="detail-poster">
+                <img id="detail-poster-img" src="" alt="Poster">
+            </div>
+            <div class="detail-info">
+                <h1 id="detail-title"> đang tải phim</h1>
+                <p class="origin-name" id="detail-origin-name"></p>
+                <div class="detail-meta" id="detail-meta"></div>
+                <div class="detail-genres" id="detail-genres"></div>
+                <a href="#" id="btn-watch" class="btn btn-primary">▶ Xem Phim Ngay</a>
+                <div class="detail-desc">
+                    <h3>Nội Dung Phim</h3>
+                    <p id="detail-content"></p>
+                </div>
+            </div>
+        </section>
+        <section class="episodes-section">
+            <h2>DANH SÁCH TẬP PHIM</h2>
+            <div class="episodes-grid" id="episodes-grid"></div>
+        </section>
+    </main>
+    <script type="module" src="js/detail.js"></script>
+</body>
+
+</html>
