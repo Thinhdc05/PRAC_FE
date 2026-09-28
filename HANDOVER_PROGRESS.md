@@ -1,81 +1,51 @@
-# 📋 BÁO CÁO TIẾN ĐỘ & BÀN GIAO DỰ ÁN PRAC_FE (HANDOVER PROGRESS)
+# 📋 BÁO CÁO TIẾN ĐỘ & BÀN GIAO TOÀN DIỆN (HANDOVER PROGRESS)
 
-> **Dành cho AI tiếp quản tại phiên làm việc tiếp theo:** 
-> Vui lòng đọc kỹ file này kết hợp với `.agents/skills/fe-teaching-method/SKILL.md` để tiếp tục giữ đúng phong cách giảng dạy: **mổ xẻ cơ chế ngầm Browser/JS Engine, clean code không comment thừa, không dùng LaTeX, tuyệt đối không tự sửa code mà đưa ra vấn đề để người học tự code.**
-
----
-
-## 🧭 1. TỔNG QUAN NGỮ CẢNH DỰ ÁN
-
-- **Hệ điều hành:** Windows (hoặc macOS trên máy công ty).
-- **Nhánh Git:** `main`.
-- **Cấu trúc 2 trang liên thông qua LocalStorage:**
-  1. `shop_mini.html` + `shop_mini.css` + `shop_mini.js`: Trang mua sắm khách hàng.
-  2. `admin.html` + `admin.css` + `admin.js`: Trang Dashboard quản trị sản phẩm.
-  3. `products-data.js`: Nguồn chân lý dùng chung (Storage Keys, hàm đọc/ghi sản phẩm, hàm phân trang `splitPages`).
-  4. `splitpage.css`: File CSS phân trang dùng chung cho cả 2 trang (Component-based).
+> **Dành cho AI & Người học tại phiên làm việc tiếp theo (Máy công ty):**
+> Vui lòng đọc kỹ file này kết hợp với:
+> 1. `JS_CHECKLIST_ROADMAP.md`: Theo dõi 13 nhóm kiến thức JS nền tảng để sẵn sàng học React.
+> 2. `JS_STUDY_NOTES.md`: Sổ tay đúc kết bản chất ngầm, ánh xạ 1:1 với Roadmap.
+> 3. `.agents/rules/roadmap-coaching.md` & `.agents/skills/js-roadmap-coach/SKILL.md`: Nguyên tắc huấn luyện "Hiện trường vụ án", không code hộ, không dùng LaTeX, giải thích 4 tầng thông tin (Định nghĩa, V8 ô nhớ RAM, Bẫy Senior, Kết nối React).
 
 ---
 
-## ✅ 2. TIẾN ĐỘ ĐÃ HOÀN THÀNH XUẤT SẮC
+## 🧭 1. TỔNG QUAN TIẾN ĐỘ HUẤN LUYỆN 13 CHUYÊN ĐỀ JS
 
-### A. Clean Luồng Giỏ Hàng & Thanh Toán (`shop_mini.js`)
-- **Fix Bug Clear Total Price:** Đã bổ sung reset `cartTotal`, `cartDiscount`, `cartFinalTotal` về `"0đ"` trong nhánh `if (cart.length === 0)` của `renderCart()`, tránh bug tiền vẫn giữ nguyên khi giỏ đã rỗng.
+Đã hoàn thành xuất sắc **9 / 13 Mục** với chất lượng cao nhất:
 
-### B. Nhiệm vụ Tối Ưu Tốc Độ Sửa Bản Ghi (Thay thế `.map()`)
-- Thay thế triệt để `.map()` bằng **`.findIndex()`** và Object Spread `{ ...item, ...data }`:
-  - Trong `admin.js` (hàm submit form sửa sản phẩm): Tìm index bằng `findIndex`, dừng sớm khi thấy ID trùng, cập nhật tại chỗ `products[index] = { ...products[index], ...productData }`.
-  - Trong `shop_mini.js` (hàm `addToCart`): Tìm index trong giỏ, tăng số lượng tại chỗ `cart[index] = { ...cart[index], quantity: cart[index].quantity + 1 }`.
-  - Đã hiểu sâu cơ chế V8 Heap, Garbage Collection và Reference Type trong JS.
-
-### C. Nhiệm vụ Phân Trang (Pagination Engine) Dùng Chung Cả 2 Trang
-- **Hàm lõi `splitPages(items, page, pageSize)` trong `products-data.js`:**
-  - Cắt mảng con bằng `.slice(startIndex, endIndex)` thuần túy (Pure Function).
-  - Có chốt chặn an toàn `Math.max(1, Math.min(page, totalPages))` tự sửa số âm, số 0 hoặc số vượt quá tổng trang khi xóa hàng/search.
-- **Tách Component CSS riêng `splitpage.css`:**
-  - Style hiện đại, Flexbox căn đều, hiệu ứng hover, active màu xanh, `:disabled` có `opacity: 0.5` và `cursor: not-allowed`.
-- **Ráp hoàn chỉnh vào `admin.html` & `admin.js`:**
-  - Khung HTML phân trang gồm: dropdown chọn số lượng (4, 6, 8 dòng/trang), nút Trước/Sau, dãy nút số sinh động qua vòng lặp, ô nhập số "Đến trang".
-  - Gắn sự kiện: Bắt sự kiện trên các nút số bằng kỹ thuật **Event Delegation** (`closest(".page-number-btn")`).
-  - Xử lý UX: Tự động reset `currentPage = 1` khi người dùng gõ tìm kiếm hoặc đổi dropdown lọc.
-- **Ráp hoàn chỉnh vào `shop_mini.html` & `shop_mini.js`:**
-  - Chuẩn hóa luồng: **Filter danh mục/search TRƯỚC -> Cắt trang `splitPages` SAU** trên mảng đã lọc.
-  - Vẽ sản phẩm theo `pageData.items.map`.
-  - Đồng bộ thanh phân trang `renderSplitPage(pageData)`.
+| Chuyên đề | Trạng thái | Ghi chú cốt lõi |
+| :--- | :---: | :--- |
+| **1. Biến, Kiểu dữ liệu, Toán tử** | ✅ 100% | Bug `typeof null === 'object'`, `null == undefined`, TDZ, ô nhớ Heap vs Stack |
+| **2. Điều kiện & Vòng lặp** | ✅ 100% | Bẫy Falsy (`0`, `""`, `NaN`), `for...of` vs `for...in`, `Object.keys()` |
+| **3. Function (Trái tim JS & React)** | ✅ 100% | Arrow function không có `this`, Closure 3 điều kiện, Pure function |
+| **4. Array (Bắt buộc phải chắc)** | ✅ 100% | `map`, `filter`, `reduce` bẫy mảng rỗng, `sort` mutate UTF-16, Bộ ba Immutable |
+| **5. Object & Immutable** | ✅ 100% | Dot vs Bracket notation, Shallow vs Deep copy, bẫy `structuredClone`, Rest operator xóa an toàn |
+| **6. Cú pháp ES6+ trong React** | ✅ 100% | Template literal, Destructuring Array vs Object (tại sao `useState` trả về mảng), `??` vs `||`, Named vs Default Export, so sánh Classic Script |
+| **7. DOM & Sự kiện** | ✅ 100% | `e.target` vs `e.currentTarget`, `id` vs `data-id`, Memory leak `removeEventListener`, `preventDefault` vs `stopPropagation`, Event Delegation |
+| **8. Bất đồng bộ (Async JS)** | ✅ 100% | Single-thread JS vs Multi-thread Browser C++, Callback Hell, Promise 3 trạng thái, `async/await`, bẫy `fetch` 404/500 `response.ok`, `Promise.all` vs `Promise.allSettled`, `AbortController` chống Race Condition |
+| **9. Cơ chế JS (V8 & Runtime)** | ✅ 100% | Scope Chain, Hoisting, Closure React Fiber, Pass by value/reference, Event Loop (Call Stack $\rightarrow$ Microtask VIP $\rightarrow$ Macrotask) |
+| **10. Xử lý lỗi & Debug** | ⏳ **TIẾP THEO** | Đang chuẩn bị phân tích: Tại sao cấm `throw "string"` mà phải `throw new Error`, 3 loại lỗi, Chrome DevTools |
+| **11. Form & Validation** | ⏳ Chờ xử lý | `FormData`, validate regex email, hiển thị lỗi dưới field, chặn submit |
+| **12. Lưu trữ Browser** | ⏳ Chờ xử lý | `localStorage`, `sessionStorage`, Cookie, bẫy chuỗi hóa JSON |
+| **13. Tư duy Component & State** | ⏳ Chờ xử lý | Cầu nối trực tiếp sang React, luồng dữ liệu 1 chiều |
 
 ---
 
-## 📌 3. KẾ HOẠCH BƯỚC TIẾP THEO (LÀM TRÊN MÁY CÔNG TY)
+## 🎯 2. ĐIỂM DỪNG HIỆN TẠI & NHIỆM VỤ TIẾP THEO (TRÊN MÁY CÔNG TY)
 
-### 🎯 NHIỆM VỤ TIẾP THEO: Quản lý Danh sách Đơn hàng đã thanh toán trong Admin
+### 📍 Điểm dừng phiên trước:
+- Đã giải mã toàn bộ câu hỏi thực chiến về **API Web Phim (`phimapi.com` / KKPhim API)**:
+  - Hiểu rõ tại sao `phimapi.com` là Open Public API có `access-control-allow-origin: *`.
+  - Phân biệt với `csdelaytech.vercel.app` (Next.js frontend của mentor).
+  - Đã có link tài liệu chính thức: `https://kkphim.com/api-document`.
+  - Nắm vững 3 endpoint chính: Danh sách mới cập nhật, Chi tiết phim kèm link embed xem video thật, Tìm kiếm phim.
 
-Mentor yêu cầu: *"Làm thêm 1 danh sách đơn hàng đã thanh toán bên trong admin (khi người dùng bấm thanh toán bên ngoài portal)"*.
-
-#### Kế hoạch thực hiện:
-1. **Trong `products-data.js`:**
-   - Thêm `STORAGE_KEYS.ORDERS = "mini_shop_orders"`.
-   - Thêm 2 hàm `getOrders()` và `saveOrders(orders)`.
-2. **Trong `shop_mini.js` (hàm `checkout`):**
-   - Khi thanh toán thành công, đóng gói Order Object:
-     ```javascript
-     const newOrder = {
-         id: "DH-" + Date.now(),
-         createdAt: new Date().toLocaleString("vi-VN"),
-         items: [...cart],
-         totalAmount: subtotal,
-         status: "paid"
-     };
-     ```
-   - Push vào mảng orders và lưu LocalStorage qua `saveOrders`.
-3. **Trong `admin.html`:**
-   - Thêm 2 Tab chuyển đổi: `[📦 Quản lý Sản phẩm]` và `[🧾 Quản lý Đơn hàng]`.
-   - Thêm bảng hiển thị đơn hàng (STT, Mã đơn, Thời gian, Tên các món đã mua, Tổng tiền, Trạng thái badge xanh).
-4. **Trong `admin.js`:**
-   - Viết hàm `renderOrders()` đọc từ `getOrders()` và đổ ra bảng.
-   - Bắt sự kiện chuyển Tab.
-
----
-
-## 🚀 4. CÁC NHIỆM VỤ CÒN LẠI SAU ĐÓ
-1. **Upload File Ảnh thật:** Thay input text bằng `input type="file" multiple`, đọc ảnh bằng `FileReader` (Base64), validate dung lượng `< 1MB`, định dạng `.jpg, .png, .webp`.
-2. **Responsive CSS toàn diện:** Viết Media Queries cho Mobile (< 768px), Tablet (768px - 1024px), Desktop cho cả 2 trang.
+### 🚀 Bắt đầu ngay khi mở máy công ty:
+Tiến hành **MỤC 10: XỬ LÝ LỖI VÀ DEBUG**:
+1. **Câu hỏi đang chờ giải đáp:**
+   - Tại sao trong dự án chuyên nghiệp, Tech Lead **tuyệt đối cấm** viết `throw "Lỗi rồi"` mà bắt buộc phải dùng `throw new Error("Lỗi rồi")`? (Vũ khí bí mật: **Stack Trace**).
+2. **Các nội dung của Mục 10 cần đi qua:**
+   - Đọc hiểu Error Message và truy vết nguồn gốc qua Stack trace.
+   - 3 loại lỗi: Syntax error (Cú pháp), Runtime error (Khi chạy), Logic bug (Nghiệp vụ).
+   - Chrome DevTools: Breakpoint, Conditional breakpoint, Call Stack, Step Over/Into/Out.
+   - Các Panel: Network (Payload/Header/Timing), Application (LocalStorage), Console, Elements.
+3. Sau đó tiếp tục lần lượt **Mục 11, 12, 13** để hoàn thành trọn vẹn 100% Roadmap!
