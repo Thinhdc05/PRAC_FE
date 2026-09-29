@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thực Hành Debugger - Máy Tính Đơn Hàng</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #1e293b;
+            padding: 28px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #38bdf8;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px 14px;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: #38bdf8;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #0369a1;
+        }
+
+        .bill-box {
+            margin-top: 24px;
+            padding: 16px;
+            background-color: #0f172a;
+            border-radius: 10px;
+            border: 1px dashed #475569;
+            display: none;
+        }
+
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        .bill-total {
+            border-top: 1px solid #334155;
+            padding-top: 10px;
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 16px;
+            color: #38bdf8;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 16px;
+            text-align: center;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>🛒 THANH TOÁN ĐƠN HÀNG</h2>
+
+        <div class="form-group">
+            <label for="product-select">Chọn món ăn / đồ uống:</label>
+            <select id="product-select">
+                <option value="35000">Cà phê Muối (35.000đ)</option>
+                <option value="25000">Bánh Mì Thịt (25.000đ)</option>
+                <option value="55000">Trà Sữa Trân Châu (55.000đ)</option>
+                <option value="120000">Combo Pizza (120.000đ)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="quantity-input">Số lượng:</label>
+            <input type="number" id="quantity-input" value="2" min="1">
+        </div>
+
+        <div class="form-group">
+            <label for="coupon-input">Mã giảm giá (Thử: GIAM20 hoặc FREESHIP):</label>
+            <input type="text" id="coupon-input" placeholder="Nhập mã nếu có...">
+        </div>
+
+        <button class="btn" id="btn-calc">▶ Tính Tiền Hóa Đơn</button>
+
+        <div class="bill-box" id="bill-box">
+            <div class="bill-row">
+                <span>Tiền hàng:</span>
+                <span id="bill-subtotal">0đ</span>
+            </div>
+            <div class="bill-row">
+                <span>Giảm giá:</span>
+                <span id="bill-discount" style="color: #4ade80;">-0đ</span>
+            </div>
+            <div class="bill-row">
+                <span>Phí giao hàng:</span>
+                <span id="bill-shipping">0đ</span>
+            </div>
+            <div class="bill-row bill-total">
+                <span>TỔNG THANH TOÁN:</span>
+                <span id="bill-total">0đ</span>
+            </div>
+        </div>
+
+        <p class="hint">
+            💡 <strong>Mẹo Debug:</strong> Mở DevTools (F12) → Tab Sources → Mở file này và đặt Breakpoint (chấm đỏ) ở dòng 154 bên dưới, sau đó bấm nút "Tính Tiền"!
+        </p>
+    </div>
+
+    <script>
+        // Hàm tính tiền giảm giá
+        function getDiscountAmount(subtotal, code) {
+            const cleanCode = (code || "").trim().toUpperCase();
+            if (cleanCode === "GIAM20") {
+                return subtotal * 0.2; // Giảm 20%
+            }
+            if (cleanCode === "GIAM50") {
+                return subtotal * 0.5; // Giảm 50%
+            }
+            return 0;
+        }
+
+        // Hàm tính phí ship (Phí chuẩn 25k, đơn >= 100k hoặc mã FREESHIP thì miễn phí)
+        function getShippingFee(subtotal, code) {
+            const cleanCode = (code || "").trim().toUpperCase();
+            if (cleanCode === "FREESHIP" || subtotal >= 100000) {
+                return 0; // Miễn phí giao hàng
+            }
+            return 25000;
+        }
+
+        // Bắt sự kiện khi người dùng bấm nút Tính Tiền
+        const btnCalc = document.querySelector("#btn-calc");
+        btnCalc.addEventListener("click", () => {
+            
+            // 1. Đọc dữ liệu từ Form
+            const price = Number(document.querySelector("#product-select").value);
+            const quantity = Number(document.querySelector("#quantity-input").value);
+            const coupon = document.querySelector("#coupon-input").value;
+
+            // 2. Tính tiền hàng (Đơn giá x Số lượng)
+            const subtotal = price * quantity;
+
+            // 3. Tính giảm giá
+            const discount = getDiscountAmount(subtotal, coupon);
+
+            // 4. Tính tiền ship
+            const shipping = getShippingFee(subtotal, coupon);
+
+            // 5. Tổng thanh toán
+            const total = subtotal - discount + shipping;
+
+            // 6. Hiển thị ra màn hình
+            document.querySelector("#bill-subtotal").textContent = subtotal.toLocaleString("vi-VN") + "đ";
+            document.querySelector("#bill-discount").textContent = "-" + discount.toLocaleString("vi-VN") + "đ";
+            document.querySelector("#bill-shipping").textContent = shipping.toLocaleString("vi-VN") + "đ";
+            document.querySelector("#bill-total").textContent = total.toLocaleString("vi-VN") + "đ";
+            document.querySelector("#bill-box").style.display = "block";
+        });
+    </script>
+</body>
+</html>

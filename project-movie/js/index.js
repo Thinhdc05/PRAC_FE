@@ -2,6 +2,8 @@ import { MovieAPI } from "./api.js";
 import { getFullImageUrl } from "./config.js";
 const movieGrid = document.querySelector("#new-movies-grid");
 const searchInput = document.querySelector("#search-input");
+const searchDropdown = document.querySelector("#search-dropdown");
+
 
 function renderMovieGrid(movies) {
     if (!movieGrid) return;
@@ -34,7 +36,8 @@ function renderMovieGrid(movies) {
     }).join("");
 }
 async function initHome() {
-    console.log("đang tải danh sách phim");
+    renderSkeletonGrid(12);
+    await new Promise(resolve => setTimeout(resolve, 3000));
     const res = await MovieAPI.getNewMovies(1);
     if (res && res.data && res.data.items) {
         renderMovieGrid(res.data.items);
@@ -48,16 +51,75 @@ if (searchInput) {
         const keyword = e.target.value.trim();
         searchTimeout = setTimeout(async () => {
             if (keyword === "") {
-                initHome();
+                searchDropdown.style.display = "none";
+                searchDropdown.innerHTML = "";
                 return;
             }
+            searchDropdown.innerHTML = `
+            <div class="search-loading">
+                <div class="spinner"></div>
+                <span>Đang tìm kiếm phim...</span>
+            </div>
+            `;
+            searchDropdown.style.display = "block";
+            await new Promise(resolve => setTimeout(resolve, 3000));
             const res = await MovieAPI.searchMovies(keyword);
             if (res && res.data && res.data.items) {
-                renderMovieGrid(res.data.items);
+                renderSearchDropdown(res?.data?.items || []);
             }
         }, 400);
 
     })
+}
+function renderSearchDropdown(movies) {
+    if (!searchDropdown) return;
+    if (!movies || movies.length === 0) {
+        searchDropdown.innerHTML = `
+            <div>
+                Không tìm thấy phim nào
+            </div>
+        `;
+        searchDropdown.style.display = "block";
+        return;
+    }
+    searchDropdown.innerHTML = movies.slice(0, 6).map(movie => {
+        const rating = movie.tmdb?.vote_average ? movie.tmdb.vote_average.toFixed(1) : "N/A";
+        const poster = getFullImageUrl(movie.poster_url);
+        return `
+            <a href="detail.html?slug=${movie.slug}" class="search-item">
+                <img src="${poster}" alt="${movie.name}" class="search-item-thumb" loading="lazy">
+                <div class="search-item-info">
+                    <h4 class="search-item-title">${movie.name}</h4>
+                    <div class="search-item-meta">
+                        <span>${movie.year}</span>
+                        <span>•</span>
+                        <span style="color: var(--gold-star)">⭐ ${rating}</span>
+                        <span>•</span>
+                        <span>${movie.episode_current || "Full"}</span>
+                    </div>
+                </div>
+            </a>
+        `;
+    }).join("");
+
+    searchDropdown.style.display = "block";
+}
+
+document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-box")) {
+        if (searchDropdown) searchDropdown.style.display = "none";
+    }
+});
+
+function renderSkeletonGrid(count = 12) {
+    if (!movieGrid) return;
+    movieGrid.innerHTML = Array.from({ length: count }).map(() => `
+        <div class="movie-card" style="pointer-events: none;">
+            <div class="skeleton skeleton-thumb"></div>
+            <div class="skeleton skeleton-title"></div>
+            <div class="skeleton skeleton-meta"></div>
+        </div>
+    `).join("");
 }
 
 /* 

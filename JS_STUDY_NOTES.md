@@ -892,6 +892,603 @@ Trong React State, **TUYỆT ĐỐI KHÔNG DÙNG** các hàm mutate làm thay đ
 > ```
 > *(Giải thích: `A` và `D` chạy đồng bộ trên Call Stack trước. Khi Call Stack rỗng, Promise `C` nằm ở Microtask VIP được bốc lên chạy trước. Cuối cùng mới tới `setTimeout` `B` nằm ở Macrotask phổ thông).*
 
+---
+
+## 10. Xử lý lỗi và debug (Error Handling & Debugging)
+
+---
+
+### 1. Ném lỗi chủ động: `throw new Error("Thông báo lỗi")`:
+- **Định nghĩa từ gốc rễ:**
+  - `Error`: Là một **Hàm khởi tạo (Constructor Function)** có sẵn được tích hợp sâu trong lõi của ngôn ngữ JavaScript.
+  - Khi ta dùng từ khóa `new` kết hợp với `Error("Nội dung thông báo")`, ta đang đúc ra một **Đối tượng lỗi (Error Object)**.
+  - **Điểm đặc biệt:** Đối tượng này KHÔNG PHẢI là một object thông thường (như `{}` hay mảng) hay một chuỗi chữ. Nó là một đối tượng đặc quyền được liên kết trực tiếp với tầng sâu của JavaScript Engine (như bộ máy **V8 Engine** của Google Chrome và Node.js).
+- **Cấu trúc 4 thuộc tính bên trong một đối tượng `Error`:**
+  1. `error.name` (Tên loại lỗi):
+     - Mặc định có giá trị là chuỗi `"Error"`. Nếu bạn dùng các lớp lỗi con thì nó sẽ mang tên tương ứng (`"TypeError"`, `"ReferenceError"`...).
+     - Thuộc tính này giúp hệ thống và lập trình viên phân loại xem sự cố vừa xảy ra thuộc nhóm lỗi nào để có phương án cấp cứu phù hợp.
+  2. `error.message` (Thông điệp lỗi):
+     - Là chuỗi văn bản thuần túy do bạn truyền vào bên trong ngoặc tròn `new Error("Tài khoản không đủ số dư")`.
+     - Thuộc tính này chứa lời giải thích rõ ràng bằng ngôn ngữ con người đọc được về lý do tại sao dòng code bị nổ. Nó là dữ liệu thường được bóc tách ra để hiển thị cảnh báo lên giao diện cho người dùng hoặc ghi log.
+  3. `error.stack` (VŨ KHÍ TỐI THƯỢNG - còn gọi là **Stack Trace / Dấu vết ngăn xếp**):
+     - **Đây là thuộc tính giá trị nhất và đặc biệt nhất mà không một kiểu dữ liệu nào khác có được!**
+     - *Cơ chế ngầm V8:* Ngay tại khoảnh khắc (mili-giây) lệnh `new Error()` được thực thi, V8 Engine lập tức kích hoạt cơ chế chụp ảnh nội bộ: **chụp một bức ảnh X-quang toàn bộ Call Stack** (ngăn xếp các hàm đang nằm trong bộ nhớ RAM tại đúng thời điểm đó).
+     - Bức ảnh X-quang `error.stack` này lưu lại chi tiết đến từng chân tơ kẽ tóc:
+       - Tên file đang chạy (kèm đường dẫn tuyệt đối).
+       - Số thứ tự dòng code và số thứ tự cột xảy ra sự cố.
+       - Toàn bộ lịch sử phân cấp các hàm: Hàm nào gọi hàm nào, hàm đó lại được gọi từ đâu... theo thứ tự từ lúc bắt đầu cho đến đúng vị trí phát nổ!
+  4. `error.cause` (Nguyên nhân căn nguyên - Chuẩn mới ES2022):
+     - Cho phép bạn xâu chuỗi lỗi (Error Chaining): Khi gặp một lỗi mạng cấp thấp, bạn có thể bọc nó vào một lỗi nghiệp vụ cấp cao: `new Error("Thanh toán thất bại", { cause: errorGoc })`. Thuộc tính `.cause` giúp lưu giữ nguyên vẹn lỗi gốc ban đầu mà không làm mất thông tin.
+- **Lệnh `throw` là gì? (Cần phanh khẩn cấp / Phóng ghế phi công):**
+  - Từ khóa `throw` là lệnh cưỡng chế dừng chương trình ngay lập tức.
+  - Khi gặp `throw`, JavaScript Engine sẽ **lập tức hủy bỏ toàn bộ các dòng code còn lại nằm phía dưới trong hàm đó**, đóng băng tiến trình bình thường và quăng đối tượng lỗi văng ngược lên các tầng hàm cha để tìm người hứng (`catch`).
+- **Bẫy phỏng vấn Senior (Tại sao Tech Lead cấm tiệt `throw "string"`?):**
+  - *Hiện trường vụ án:* Viết `throw "Lỗi mạng rồi";` thay vì `throw new Error("Lỗi mạng rồi");`.
+  - *Hậu quả tai hại nhãn tiền:*
+    - Chuỗi string là kiểu nguyên thủy (Primitive), **hoàn toàn KHÔNG CÓ thuộc tính `.message`** (`"Lỗi mạng".message === undefined`). Nếu code của bạn hoặc các thư viện gọi `error.message`, nó sẽ nhận về giá trị `undefined` và hiển thị lên màn hình câu thông báo ngớ ngẩn: *"Lỗi: undefined"*, làm giấu tiệt thông tin thật!
+    - Chuỗi string **hoàn toàn KHÔNG CÓ thuộc tính `.stack` (Stack Trace)**: Bạn hoàn toàn bị "mù tịt"! Bạn chỉ thấy một dòng chữ trơ trọi, không tài nào biết được câu chữ đó phát sinh từ file nào, dòng số bao nhiêu giữa một dự án chứa 100.000 dòng code.
+    - Trên Console của trình duyệt: `throw "string"` chỉ in ra một dòng chữ chết, **không hề có đường link màu xanh** để bạn click nhảy đến dòng code gây lỗi.
+    - Các hệ thống giám sát lỗi tự động trên môi trường thật (như **Sentry**, **Datadog**, **LogRocket**) sẽ bị tê liệt: Chúng không thể bóc tách Stack Trace, không thể gom nhóm lỗi (issue grouping) và không thể gửi cảnh báo chính xác cho đội ngũ kỹ thuật.
+- **Gia phả 5 loại lỗi tích hợp (`error.name`) cần thuộc nằm lòng:**
+  1. `TypeError` ("Bắt con cá leo cây / Nhầm kiểu dữ liệu"): Chiếm 80% lỗi thực tế khi đi làm. Xảy ra khi bạn bắt một giá trị làm việc mà kiểu dữ liệu của nó không thể làm được. Ví dụ: `null.name`, `undefined.trim()`, hoặc gọi một biến không phải hàm: `const x = 10; x();`.
+  2. `ReferenceError` ("Tìm người không tồn tại"): Truy cập một biến chưa từng được khai báo, hoặc gọi biến `let`/`const` trước dòng khai báo (dính bẫy Vùng chết tạm thời TDZ).
+  3. `SyntaxError` ("Nói ngọng / Sai ngữ pháp"): Viết sai cú pháp ngữ pháp của JavaScript (thiếu dấu ngoặc nhọn `}`, thừa dấu phẩy, viết sai từ khóa). Lỗi này bị trình phân tích cú pháp (Parser) chặn lại ngay từ khâu đọc code trước khi chương trình kịp chạy một tích tắc nào.
+  4. `RangeError` ("Ăn quá no, bể bụng / Vượt giới hạn vật lý"): Giá trị vượt quá biên cho phép của JavaScript. Điển hình nhất là đệ quy vô tận làm tràn ngăn xếp bộ nhớ (`Maximum call stack size exceeded`), hoặc tạo mảng với độ dài âm `new Array(-1)`.
+  5. `URIError` ("Ghi sai địa chỉ nhà"): Dùng các hàm xử lý mã hóa đường dẫn web (`decodeURIComponent("%")`) với chuỗi ký tự bị hỏng chuẩn UTF-8.
+- **Kết nối React:**
+  - Trong React, khi một Component con bị ném lỗi trong quá trình render, toàn bộ cây giao diện sẽ bị sập trắng xóa (White Screen of Death).
+  - Để cứu ứng dụng, React cung cấp cơ chế **Error Boundary** (sử dụng lifecycle `componentDidCatch(error, errorInfo)`). Error Boundary sẽ bắt lấy đối tượng `Error`, đọc `error.stack` để gửi về Server giám sát, đồng thời hiển thị một giao diện thay thế nhẹ nhàng (Fallback UI như *"Đã có sự cố, vui lòng tải lại trang"*) thay vì làm sập toàn bộ ứng dụng của người dùng.
+
+---
+
+### 2. Bắt lỗi an toàn: `try / catch / finally`:
+- **Định nghĩa 3 khu vực chức năng:**
+  - Khối `try { ... }`: Là khu vực dành cho **"Luồng suôn sẻ" (Happy Path)**. Bạn đặt vào đây những đoạn code tiềm ẩn nguy cơ nổ lỗi cao (như gọi API qua mạng, phân tích chuỗi JSON từ Server `JSON.parse()`, đọc dữ liệu người dùng nhập).
+  - Khối `catch (error) { ... }`: Là **"Trạm y tế cấp cứu tập trung"**. Bất kỳ khi nào có lỗi nổ ra bên trong lãnh thổ của khối `try` (dù là do hệ thống tự văng ra như `TypeError` hay do bạn chủ động `throw`), JavaScript Engine sẽ lập tức dừng khối `try` và chuyển giao quyền điều khiển xuống đây.
+    - *Tham số `error` ở đâu ra?* Chính là quả bóng lỗi (đối tượng `Error`) do khối `try` ném xuống. Khối `catch` đón lấy quả bóng này để bạn ghi log hoặc hiển thị thông báo dịu dàng cho khách hàng.
+  - Khối `finally { ... }`: Là **"Đội ngũ dọn dẹp hiện trường"**.
+    - **CƠ CHẾ ĐẶC BIỆT:** Khối `finally` **LUÔN LUÔN CHẠY 100%**, bất kể khối `try` chạy thành công rực rỡ hay bị sập gãy rơi vào `catch`.
+    - Thậm chí, ngay cả khi bên trong khối `try` hoặc `catch` bạn có gõ lệnh thoát hàm sớm `return`, V8 Engine vẫn bắt buộc phải ghé qua thực thi cho bằng xong khối `finally` rồi mới cho hàm chính thức kết thúc!
+    - *Ứng dụng thực tế:* Dùng để tắt vòng xoay Loading (`setLoading(false)`), đóng kết nối Database, hoặc giải phóng tài nguyên.
+- **Cơ chế ném bóng - chụp bóng (Exception Propagation / Call Stack Unwinding):**
+  - Hãy tưởng tượng các hàm lồng nhau như một tòa nhà nhiều tầng: Hàm `main()` gọi hàm `xemPhim()`, hàm `xemPhim()` gọi hàm `taiVideo()`.
+  - Khi hàm sâu nhất là `taiVideo()` gặp lỗi và `throw new Error()`:
+    1. Nếu bản thân hàm `taiVideo()` không có khối `try...catch` bọc quanh, V8 Engine sẽ gỡ bỏ hàm này khỏi Call Stack và ném quả bóng lỗi bay ngược lên hàm cha là `xemPhim()`.
+    2. Nếu hàm `xemPhim()` cũng không có `try...catch`, quả bóng lỗi tiếp tục bị đẩy bay ngược lên tầng trên nữa là `main()`.
+    3. Quá trình leo ngược Call Stack này gọi là **Call Stack Unwinding**. Nó cứ tiếp tục bay ngược lên cho đến khi gặp được một hàm nào có mang "găng tay" `try...catch` thì dừng lại và được khối `catch` xử lý an toàn.
+    4. Nếu bay hết sạch các tầng hàm mà vẫn không có ai bắt, quả bóng sẽ văng thẳng ra môi trường toàn cục (Window / Node.js Process), làm in một dòng lỗi đỏ chót `Uncaught Error` lên Console và làm sập tiến trình!
+- **Bẫy tử huyệt Bất đồng bộ (Async Gotcha):**
+  - `try...catch` đồng bộ **HOÀN TOÀN BẤT LỰC trước callback bất đồng bộ (như `setTimeout`, Event Listener)**:
+    ```javascript
+    try {
+      setTimeout(() => {
+        throw new Error("Sập rồi!"); // 💣 Quả bom phát nổ sau 1 giây
+      }, 1000);
+    } catch (error) {
+      console.log("Đã bắt được lỗi:", error.message);
+      // ⚠️ CẢNH BÁO: KHỐI CATCH NÀY SẼ KHÔNG BAO GIỜ BẮT ĐƯỢC LỖI TRÊN!
+    }
+    ```
+  - *Bản chất cơ chế ngầm V8 & Event Loop:*
+    1. Khi khối `try` chạy, nó gọi `setTimeout` rồi kết thúc ngay trong tích tắc (khoảng 0.1 mili-giây).
+    2. Toàn bộ khối `try...catch` đã hoàn thành nhiệm vụ và **đã bị đẩy văng ra khỏi Call Stack từ 1 giây trước**!
+    3. Một giây sau, khi timer đếm xong, callback chứa dòng lệnh `throw` mới được Event Loop bốc từ Macrotask Queue đẩy lên Call Stack để chạy. Lúc này trên Call Stack đã hoàn toàn vắng bóng khối `try...catch` bảo vệ -> Lỗi nổ tung thành `Uncaught Error` làm sập app!
+  - 👉 *Cách giải cứu chuẩn mực:*
+    - Cách 1: Đặt `try...catch` ngay **bên trong chính ruột của hàm callback**.
+    - Cách 2: Biến tác vụ bất đồng bộ thành Promise và kết hợp dùng `async / await` (vì từ khóa `await` có khả năng treo dừng luồng của hàm `async` lại ngay tại khối `try`, giữ cho khối `try...catch` tiếp tục tồn tại trên Call Stack để chờ kết quả trả về hoặc bắt lấy lỗi).
+
+---
+
+### 3. Đọc hiểu Error Message và truy vết nguồn gốc qua Stack trace:
+- **Cấu trúc giải phẫu của một dòng lỗi đỏ trong Console:**
+  Khi một lỗi phát nổ, trên Console sẽ xuất hiện một đoạn văn bản theo mẫu sau:
+  ```text
+  TypeError: Cannot read properties of undefined (reading 'title')
+      at renderMovie (detail.js:45:22)
+      at loadMovieDetail (detail.js:18:9)
+      at async initPage (detail.js:5:5)
+  ```
+- **Quy tắc 3 bước đọc hiểu và truy vết tội phạm (Stack Trace):**
+  1. **Bước 1: Đọc dòng đầu tiên (Tên lỗi + Thông điệp):**
+     - `TypeError`: Chỉ ra bản chất sự cố (đang ép kiểu sai, gọi hàm sai kiểu).
+     - `Cannot read properties of undefined (reading 'title')`: Chỉ ra chính xác hành động gây án: Bạn đang dùng dấu chấm `.` để truy cập thuộc tính `.title` từ một thứ có giá trị là `undefined`! (Nghĩa là đối tượng phim `movie` bị `undefined`, không tồn tại).
+  2. **Bước 2: Soi vào dòng `at` đầu tiên ngay sát dưới (Tâm chấn của vụ nổ):**
+     - `at renderMovie (detail.js:45:22)`:
+     - Đây là tọa độ phát nổ đầu tiên: Hàm `renderMovie`, nằm tại file `detail.js`, dòng số **45**, cột số **22**.
+     - Trong 90% trường hợp, chỉ cần nhìn vào dòng đầu tiên này là bạn đã tìm ra đúng dòng code gây ra tội lỗi.
+  3. **Bước 3: Đọc các dòng `at` tiếp theo từ trên xuống dưới (Hành trình gây án):**
+     - Dòng 2: `at loadMovieDetail (detail.js:18:9)` -> Cho biết hàm `renderMovie` không tự nhiên chạy, mà nó được kích hoạt bởi hàm `loadMovieDetail` tại dòng số 18.
+     - Dòng 3: `at async initPage (detail.js:5:5)` -> Cho biết hàm `loadMovieDetail` lại được khởi chạy từ hàm `initPage` tại dòng số 5 lúc vừa mở trang web.
+  - 👉 **Kỹ năng thực chiến:** Trình duyệt hiện các chữ `detail.js:45:22` dưới dạng **đường link màu xanh gạch chân**. Bạn chỉ cần click chuột trái vào đường link đó, trình duyệt sẽ lập tức mở file và đưa con trỏ nhảy thẳng tới đúng dòng 45 để bạn kiểm tra!
+
+---
+
+### 4. Kỹ thuật Debug trên Browser DevTools (Breakpoint, Điều hướng & Các tab theo dõi):
+- **Tại sao lạm dụng `console.log()` là thói quen xấu và nguy hiểm?**
+  - Làm bẩn mã nguồn dự án: Khiến code chằng chịt các dòng log tạm bợ, mất thời gian đi tìm và xóa từng dòng trước khi bàn giao sản phẩm.
+  - Nguy cơ bảo mật nghiêm trọng: Rất nhiều lập trình viên sơ ý log cả Token đăng nhập, mật khẩu, hoặc thông tin thẻ tín dụng của khách hàng lên Console Production, tạo cơ hội cho hacker đánh cắp dữ liệu.
+  - Tính chất bị động và "làm mù": `console.log` chỉ in ra một giá trị chết tại một thời điểm đã trôi qua. Nó không thể cho phép bạn dừng thời gian lại để soi vào các biến xung quanh, không xem được lịch sử các hàm trong RAM.
+- **Breakpoint (Điểm dừng đóng băng thời gian) là gì?**
+  - Là chiếc "phanh ma thuật" cho phép bạn ra lệnh cho trình duyệt: *"Khi nào luồng chạy của JavaScript chạm tới dòng này, hãy đóng băng toàn bộ chương trình lại ngay lập tức!"*.
+  - Tại điểm dừng, thời gian trong JavaScript bị ngưng đọng: Giao diện trên màn hình giữ nguyên trạng thái, và toàn bộ bộ nhớ RAM của trang web tại khoảnh khắc đó được phơi bày hoàn toàn trước mắt bạn.
+- **2 Cách đặt Breakpoint trong thực tế:**
+  1. *Cách 1 (Thao tác chuột - Sạch sẽ nhất):* Mở tab **Sources** trong DevTools (hoặc mở file trong VS Code) -> Tìm đến dòng code nghi vấn -> Click chuột trái vào khoảng trống bên cạnh số thứ tự dòng code (sẽ xuất hiện một dấu chấm tròn màu xanh hoặc đỏ).
+     - *Ưu điểm:* Cực kỳ sạch sẽ, không làm thay đổi bất kỳ ký tự nào trong file mã nguồn.
+  2. *Cách 2 (Mã lệnh):* Gõ trực tiếp từ khóa **`debugger;`** vào một dòng code trong file JavaScript.
+     - *Cơ chế:* Khi bạn mở F12 DevTools và chạy ứng dụng, hễ gặp dòng chữ `debugger;` này ở bất kỳ đâu, trình duyệt sẽ tự động phanh gấp chương trình lại ngay tại đó giống hệt như một Breakpoint.
+- **Kỹ thuật Senior: Conditional Breakpoint (Điểm dừng có điều kiện):**
+  - *Tình huống:* Bạn có một vòng lặp chạy qua 10.000 sản phẩm. Bạn biết ứng dụng chỉ bị lỗi ở sản phẩm có `id === 8888` hoặc sản phẩm có giá âm `price < 0`. Nếu đặt Breakpoint thường, bạn sẽ phải bấm F10 thủ công 8.888 lần đến mỏi nhừ tay!
+  - *Cách dùng:* Chuột phải vào số thứ tự dòng code -> Chọn **Add conditional breakpoint...** -> Nhập biểu thức logic: `item.id === 8888` hoặc `item.price < 0`.
+  - *Hiệu quả:* Trình duyệt sẽ cho 9.999 sản phẩm bình thường chạy qua với tốc độ tối đa, và **CHỈ DỪNG LẠI DUY NHẤT KHI ĐIỀU KIỆN CỦA BẠN TRẢ VỀ `true`**! Tiết kiệm hàng giờ đồng hồ tìm lỗi.
+- **Bộ 4 phím tắt điều hướng "tua chậm camera" từng bước:**
+  - **`F10` (Step Over - Bước qua):** Cho máy chạy dòng code hiện tại và bước sang dòng tiếp theo trong cùng hàm. Nếu dòng hiện tại có gọi một hàm con khác, nó sẽ tự động chạy xong hàm con đó trong hậu trường mà không chui vào ruột hàm con.
+  - **`F11` (Step Into - Chui vào trong) / Icon mũi tên chỉ xuống `↓`:**
+    - Cho phép máy chui sâu vào tận bên trong ruột của hàm con ở dòng hiện tại để xem chi tiết từng dòng code nhỏ bên trong hàm đó chạy ra sao.
+    - *Lưu ý sống còn trên máy Mac (macOS):* Phím `F11` mặc định của macOS bị gán cho tính năng hệ thống là "Show Desktop" (Ẩn hết cửa sổ để hiện màn hình chính). Vì vậy, người dùng Mac phải bấm tổ hợp **`Fn + F11`**, HOẶC dùng chuột click trực tiếp vào biểu tượng mũi tên chỉ xuống `↓` trên thanh công cụ Debug của trình duyệt.
+  - **`Shift + F11` (Step Out - Nhảy vọt ra ngoài):** Sau khi đã xem đủ bên trong ruột hàm con, bấm phím này để máy tự chạy hết phần còn lại của hàm con đó và nhảy vọt trở lại vị trí hàm cha bên ngoài.
+  - **`F8` (Resume - Thả phanh):** Thả tự do cho chương trình tiếp tục chạy với tốc độ bình thường cho đến khi nó đụng phải một Breakpoint kế tiếp (hoặc chạy hết code nếu không còn điểm dừng nào).
+- **3 Tab theo dõi bộ nhớ thần thánh trong lúc đóng băng:**
+  1. **Tab `Scope` (Kính hiển vi soi biến trong RAM):**
+     - Hiển thị danh sách tất cả các biến đang tồn tại trong bộ nhớ tại đúng dòng bạn đang dừng:
+     - *Local:* Các biến nội bộ được khai báo bên trong hàm hiện tại.
+     - *Closure:* Các biến của hàm cha mà hàm hiện tại đang "bắt giữ" và ghi nhớ.
+     - *Global / Script:* Các biến toàn cục (`window`).
+  2. **Tab `Watch` (Bảng đồng hồ theo dõi biểu thức):**
+     - Cho phép bạn bấm dấu `+` và gõ bất kỳ biểu thức tính toán nào bạn muốn theo dõi liên tục (ví dụ: `totalPrice`, `items.length > 0`, `user.isVip`). Giá trị này sẽ tự động nhảy số cập nhật sau mỗi lần bạn bấm `F10`.
+  3. **Tab `Call Stack` (Ngăn xếp các hàm đang lồng nhau):**
+     - Liệt kê cây phả hệ các hàm đang triệu hồi nhau. Bạn có thể click chuột vào từng tầng hàm trong danh sách Call Stack để xem lại quá khứ của các biến ở các hàm cha cấp cao hơn.
+
+---
+
+### 5. Sử dụng thành thạo các panel trong Chrome DevTools:
+- **1. Panel `Elements` (Soi cấu trúc giao diện và CSS):**
+  - Cho phép soi trực tiếp cây DOM thực tế đang hiển thị trên trình duyệt (khác với mã HTML tĩnh ban đầu do JavaScript có thể đã thêm bớt thẻ).
+  - Soi và sửa trực tiếp mã CSS ở tab con *Styles* để xem thử giao diện đổi màu/kích thước ngay lập tức mà không cần lưu file.
+  - Tab con *Computed*: Xem các kích thước thật (Padding, Margin, Border, Width, Height) đã được trình duyệt tính toán ra số pixel cuối cùng.
+  - Giả lập trạng thái tương tác: Bấm nút `:hov` để ép một phần tử bật trạng thái `:hover`, `:active`, `:focus` phục vụ việc căn chỉnh giao diện.
+- **2. Panel `Console` (Bảng điều khiển tương tác):**
+  - Hiển thị mọi thông báo `console.log()`, cảnh báo vàng `console.warn()`, và thông báo sập lỗi đỏ `console.error()`.
+  - Đóng vai trò như một môi trường chạy code trực tiếp (REPL): Bạn có thể gõ bất kỳ biến hoặc lệnh JavaScript nào và nhấn `Enter` để kiểm tra kết quả ngay tại chỗ.
+- **3. Panel `Sources` (Trung tâm gỡ lỗi và quản lý mã nguồn):**
+  - Chứa toàn bộ cây thư mục các file HTML, CSS, JS mà trang web đã tải về máy bạn.
+  - Nơi chính yếu để thực hiện kỹ thuật Debug: Đặt Breakpoint, đặt Conditional Breakpoint, xem Scope, Watch và Call Stack.
+- **4. Panel `Network` (Trạm radar giám sát lưu lượng giao tiếp máy chủ):**
+  - Ghi lại từng gói tin mà trình duyệt gửi đi và nhận về qua Internet (API, hình ảnh, file CSS, file JS).
+  - *Bộ lọc tiện dụng:* Bấm nút **Fetch/XHR** để chỉ hiển thị riêng các cuộc gọi API lấy dữ liệu.
+  - *4 Tab soi chi tiết của một cuộc gọi API:*
+    - Tab *Headers:* Soi địa chỉ URL gọi đi, phương thức HTTP (`GET`, `POST`), mã phản hồi (*Status Code* như 200, 404, 500), và Token xác thực.
+    - Tab *Payload:* Soi dữ liệu mà trình duyệt vừa đóng gói gửi lên máy chủ (đặc biệt quan trọng với API tạo mới/cập nhật dữ liệu).
+    - Tab *Response / Preview:* Soi dữ liệu dạng chuỗi JSON do Server gửi ngược về máy bạn để render ra giao diện.
+    - Tab *Timing:* Bảng phân tích thời gian từng mili-giây (thời gian kết nối, thời gian chờ Server xử lý TTFB - Time to First Byte) giúp phát hiện API nào chạy chậm chạp.
+  - *Tùy chọn Preserve log:* Tích vào ô này để DevTools không bị xóa sạch lịch sử mạng khi trang web vô tình bị tải lại (Reload).
+- **5. Panel `Application / Storage` (Kho lưu trữ dữ liệu phía trình duyệt):**
+  - Quản lý toàn bộ dữ liệu Client-side Storage của trang web:
+    - **`Local Storage`:** Dữ liệu lưu vĩnh viễn trên máy người dùng, tắt trình duyệt bật lại vẫn còn (thường lưu Theme tối/sáng, cài đặt cá nhân).
+    - **`Session Storage`:** Dữ liệu chỉ tồn tại trong phiên làm việc của tab hiện tại, đóng tab là mất sạch.
+    - **`Cookies`:** Các chuỗi dữ liệu nhỏ do Server gửi kèm để quản lý phiên đăng nhập (Session ID, JWT Token).
+  - Cho phép lập trình viên soi giá trị các Key - Value, chỉnh sửa trực tiếp, hoặc bấm icon thùng rác để xóa trắng nhằm kiểm tra trạng thái trang web khi người dùng chưa đăng nhập.
+
+---
+
+### 6. Phân biệt rõ: Lỗi cú pháp (Syntax error), Lỗi khi chạy (Runtime error), và Lỗi nghiệp vụ (Logic bug):
+- **Bảng so sánh tổng hợp 3 cấp độ lỗi:**
+
+| Đặc điểm phân biệt | 1. Lỗi Cú pháp (Syntax Error) | 2. Lỗi Khi Chạy (Runtime Error) | 3. Lỗi Nghiệp vụ (Logic Bug) |
+| :--- | :--- | :--- | :--- |
+| **Bản chất đời thường** | "Nói ngọng, viết sai chính tả, sai ngữ pháp" | "Đang chạy bộ trên đường bằng phẳng thì vấp phải hòn đá ngã gãy chân" | "Bảo đi chợ mua rau cải thì lại đi mua nhầm chai dầu hỏa mang về" |
+| **Thời điểm phát hiện** | **Trước khi code chạy** (Lúc trình phân tích Parser quét file mã nguồn). | **Trong lúc code đang chạy** (Vừa gặp phải dữ liệu hoặc tình huống bất thường). | **Code chạy xong xuôi mượt mà** nhưng kết quả đầu ra bị sai lệch. |
+| **Dấu hiệu nhận biết** | VS Code gạch chân đỏ lòe ngay khi đang gõ; Console in lỗi đỏ `SyntaxError` và **không chạy bất kỳ dòng code nào trong file**. | Code chạy được nửa chừng thì đột ngột khựng lại, Console bắn ra lỗi đỏ (`TypeError`, `ReferenceError`). | **Console hoàn toàn sạch bóng, không có bất kỳ dòng chữ đỏ nào!** Ứng dụng chạy rất trơn tru nhưng dữ liệu hiển thị bị sai. |
+| **Ví dụ kinh điển** | Viết thiếu ngoặc nhọn `if (x > 0 {`, đặt tên biến sai quy tắc `let 123name;`. | Đọc thuộc tính của biến `null`/`undefined` (`user.name`), mất mạng khi fetch API. | Tính tiền giảm giá đáng lẽ phải trừ tiền thì viết nhầm dấu `+` làm khách bị cộng thêm tiền: `total = price + discount;`. |
+| **Mức độ nguy hiểm** | **Thấp nhất:** Dễ phát hiện nhất và sửa nhanh nhất vì máy chỉ đích danh dòng sai. | **Trung bình:** Làm sập màn hình của người dùng. Có thể phòng ngừa bằng `try...catch` và toán tử an toàn `?.`. | **CỰC KỲ NGUY HIỂM (Cơn ác mộng số 1)!** Máy móc không biết là bạn viết sai ý muốn, chỉ có con người phát hiện khi khách hàng khiếu nại mất tiền. |
+| **Vũ khí giải quyết** | Trình biên dịch / Linter (ESLint), đọc kỹ số dòng báo lỗi của Parser. | Bọc `try...catch`, kiểm tra điều kiện phòng vệ trước (`if (!user) return;`), Optional Chaining `user?.name`. | **Bắt buộc phải dùng công cụ Debugger** (đặt Breakpoint, bấm F10 theo dõi từng biến) hoặc viết các bài kiểm thử tự động (Unit Test). |
+
+---
+---
+
+## 11. Form và validation (Xử lý Form & Kiểm định dữ liệu)
+
+---
+
+### 1. Đọc và chuẩn hóa dữ liệu từ form (`FormData`, `input.value.trim()`):
+- **Định nghĩa & Cơ chế ngầm của thẻ `<form>`:**
+  - *Hành vi mặc định sơ khai (1990s):* Khi bấm `<button type="submit">`, trình duyệt tự động gom các input và nạp lại toàn bộ trang web (Full Page Reload) để gửi HTTP request lên địa chỉ ở thuộc tính `action`.
+  - *Hậu quả trong Web hiện đại / React:* Reload trang sẽ **xóa sạch 100% bộ nhớ RAM của JavaScript** (State, biến, giỏ hàng).
+  - *Cần phanh khẩn cấp:* Lệnh **`e.preventDefault()`** trong hàm lắng nghe sự kiện `submit` ra lệnh cho trình duyệt triệt tiêu hành vi reload mặc định, trao toàn quyền kiểm soát cho JavaScript (`fetch()` / AJAX).
+- **Vũ khí bốc trọn gói dữ liệu: `new FormData(formElement)`:**
+  - `FormData` là một Web API Interface chuyên dụng đại diện cho gói dữ liệu `multipart/form-data`.
+  - *Cách dùng 1 dòng biến thành Object JS:*
+    ```javascript
+    const data = Object.fromEntries(new FormData(form));
+    // -> { username: "thinh", email: "thinh@gmail.com" }
+    ```
+  - *Phương thức quan trọng:*
+    - `formData.get("name")`: Lấy giá trị của 1 trường đầu tiên.
+    - `formData.getAll("hobby")`: Dành riêng cho nhóm Checkbox trùng tên `name="hobby"`, trả về một Mảng chứa đủ mọi giá trị người dùng đã tích chọn (`["Đá bóng", "Bơi lội"]`).
+- **Bẫy tử huyệt số 1 của `FormData` (Hiện trường vụ án):**
+  - Để `FormData` có thể đọc được dữ liệu của một ô `<input>`, thẻ đó **BẮT BUỘC PHẢI CÓ THUỘC TÍNH `name`** (`<input name="email" id="email" />`). Nếu chỉ đặt `id` mà quên `name`, `FormData` hoàn toàn coi ô đó "tàng hình" và trả về rỗng!
+- **Chuẩn hóa với `.trim()` & Bản chất luôn là String:**
+  - **MỌI giá trị lấy từ ô `<input>` đều có kiểu dữ liệu là STRING**, kể cả `<input type="number">` hay `type="date"`. Nếu lấy tuổi cộng thêm 5: `"25" + 5 = "255"` (nối chuỗi tai hại). Luôn phải ép kiểu số bằng `Number(val)`.
+  - `input.value.trim()`: Cắt bỏ khoảng trắng thừa ở 2 đầu chuỗi, giữ nguyên dấu cách hợp lệ ở giữa các từ trong họ tên (`"   Nguyễn Văn Thịnh   "` -> `"Nguyễn Văn Thịnh"`).
+
+---
+
+### 2. Validate các trường hợp phổ biến (Required, Min/Max Length, Number, Email Regex):
+- **1. Bắt buộc (Required):**
+  - Kiểm tra xem người dùng có bỏ trống hoặc cố tình chỉ gõ toàn dấu cách:
+    ```javascript
+    if (!value.trim()) {
+      // Báo lỗi: "Không được để trống!"
+    }
+    ```
+- **2. Độ dài ký tự (Min / Max Length):**
+  - Dùng thuộc tính `.length` của chuỗi để kiểm tra mật khẩu, tên đăng nhập:
+    ```javascript
+    if (password.length < 6 || password.length > 32) {
+      // Báo lỗi: "Mật khẩu phải từ 6 đến 32 ký tự!"
+    }
+    ```
+- **3. Số hợp lệ và Giới hạn khoảng (Number & Range):**
+  - Ép kiểu bằng `Number(value)` và bắt buộc kiểm tra xem có bị biến thành số ma `NaN` bằng hàm `Number.isNaN()`:
+    ```javascript
+    const ageNum = Number(ageInput.value);
+    if (Number.isNaN(ageNum) || ageNum < 18 || ageNum > 100) {
+      // Báo lỗi: "Tuổi phải là số nguyên từ 18 đến 100!"
+    }
+    ```
+- **4. Định dạng Email chuẩn với Regular Expression (Regex):**
+  - Mẫu Regex chuẩn hóa an toàn: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
+    - `^`: Bắt đầu chuỗi.
+    - `[^\s@]+`: Ít nhất 1 ký tự không phải khoảng trắng và không phải `@`.
+    - `@`: Bắt buộc có đúng 1 ký tự `@`.
+    - `[^\s@]+`: Tên miền (Domain).
+    - `\.`: Dấu chấm ngăn cách tên miền (`.com`, `.vn`).
+    - `[^\s@]+$`: Đuôi mở rộng và kết thúc chuỗi.
+  - *Cách kiểm tra:* `if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { /* Báo lỗi email sai định dạng */ }`
+
+---
+
+### 3. Hiển thị thông báo lỗi đúng ngay dưới field tương ứng:
+- **Cấu trúc HTML tiêu chuẩn cho Form Group:**
+  ```html
+  <div class="form-group">
+    <label for="email">Địa chỉ Email</label>
+    <input type="text" id="email" name="email" />
+    <span class="error-msg" id="email-error"></span>
+  </div>
+  ```
+- **So sánh 3 thuộc tính hiển thị text và Bẫy bảo mật XSS:**
+  - ❌ **Cấm dùng `.innerHTML`:** Nếu thông báo lỗi chứa chuỗi do người dùng nhập (ví dụ: `emailError.innerHTML = 'Email ' + inputVal + ' không hợp lệ'`), hacker có thể nhập mã độc `<img src=x onerror=alert('Hack')>` dẫn đến lỗ hổng nghiêm trọng **XSS (Cross-Site Scripting)**.
+  - ⚠️ **Hạn chế dùng `.innerText`:** Chậm hơn vì kích hoạt trình duyệt tính toán lại giao diện (Reflow / Layout) để kiểm tra CSS ẩn hiện.
+  - ✅ **Chuẩn Senior dùng `.textContent`:** Vừa an toàn tuyệt đối (luôn coi mọi thứ là chuỗi chữ thuần túy, không thực thi HTML), vừa có tốc độ thao tác DOM nhanh nhất.
+
+---
+
+### 4. Chặn form submit khi dữ liệu không hợp lệ (Mô hình cờ `isValid`):
+- **Quy trình 3 bước xử lý lỗi chuẩn:**
+  1. *Bước 1 (Dọn dẹp trước):* Xóa sạch toàn bộ thông báo lỗi đỏ cũ của các lần bấm trước (`errorSpan.textContent = ""`).
+  2. *Bước 2 (Kiểm tra & Gán lỗi):* Dùng một biến cờ `let isValid = true;`. Duyệt qua từng ô input, nếu ô nào vi phạm thì gán thông báo lỗi vào `textContent` của ô đó và đánh dấu `isValid = false;`.
+  3. *Bước 3 (Bóp phanh Early Return):*
+     ```javascript
+     if (!isValid) {
+       return; // DỪNG LẠI NGAY LẬP TỨC! Không cho phép chạy dòng code gọi API phía dưới!
+     }
+     ```
+
+---
+
+### 5. Chuẩn hóa dữ liệu trước khi gửi đi (Sanitize, Trim whitespace, Ép kiểu):
+- Trước khi đóng gói gửi lên máy chủ hoặc lưu Database, dữ liệu người dùng thô cần được "gọt giũa sạch sẽ":
+  1. **Trim khoảng trắng ở 2 đầu:** `email.trim().toLowerCase()` (đưa email về chữ thường để tránh phân biệt hoa thường khi đăng nhập).
+  2. **Dọn sạch dấu cách kép ở giữa họ tên:** `fullName.trim().replace(/\s+/g, " ")`.
+  3. **Ép kiểu dữ liệu rõ ràng:** Chuyển các trường số lượng, giá tiền, ID từ String về đúng kiểu Number (`Number(quantity)`).
+
+---
+
+### 6. Reset form sau khi submit thành công (`form.reset()`):
+- **Bản chất của `form.reset()`:**
+  - Là phương thức có sẵn của đối tượng `HTMLFormElement` trong DOM.
+  - Khi được gọi: `form.reset();`, trình duyệt tự động dọn sạch tất cả các ô `<input>`, `<textarea>`, và chuyển các checkbox/radio về trạng thái ban đầu của mã HTML mà **không cần phải gán thủ công từng dòng `input.value = ""`**.
+  - Luôn được gọi sau khi API gửi dữ liệu thành công để trả giao diện về trạng thái sẵn sàng cho lượt nhập mới.
+
+---
+
+### 7. Tránh submit nhiều lần (Double-click submit / Bấm liên tiếp):
+- **Hậu quả tai hại:** Khi mạng bị lag, người dùng sốt ruột bấm nút Submit 4 lần liên tiếp -> Gửi 4 request cùng lúc lên máy chủ -> Trừ tiền 4 lần hoặc tạo ra 4 đơn hàng trùng lặp trên Database.
+- **Giải pháp chuẩn kết hợp thuộc tính `disabled` và khối `finally`:**
+  ```javascript
+  const submitBtn = form.querySelector("button[type='submit']");
+
+  try {
+    // 1. NGAY LẬP TỨC VÔ HIỆU HÓA NÚT BẤM VÀ ĐỔI GIAO DIỆN:
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Đang xử lý đơn hàng...";
+
+    // 2. Gọi API bất đồng bộ:
+    await guiDonHangLenServer(payload);
+    alert("Thành công!");
+    form.reset();
+
+  } catch (error) {
+    alert("Có sự cố mạng, vui lòng thử lại!");
+  } finally {
+    // 3. BẮT BUỘC MỞ LẠI NÚT DÙ THÀNH CÔNG HAY THẤT BẠI:
+    // (Tránh trường hợp bị lỗi mạng mà nút bấm bị xám xịt vĩnh viễn, người dùng không thể bấm gửi lại)
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Gửi đơn hàng";
+  }
+  ```
+
+---
+
+### 🔗 KẾT NỐI VỚI REACT (Tiền đề sống còn):
+1. **Controlled Components vs Uncontrolled Components:**
+   - *Uncontrolled Components:* Sử dụng đúng bản chất của Vanilla JS (dùng `new FormData(e.target)` hoặc `useRef()` để khi nào bấm Submit mới đọc dữ liệu một lần).
+   - *Controlled Components:* Mỗi ô input được liên kết chặt chẽ với một State trong React: `value={email}` và `onChange={(e) => setEmail(e.target.value)}`. Mỗi phím gõ của người dùng đều kích hoạt component re-render.
+2. **Thư viện Form thực chiến trong React:**
+   - Sau này khi đi làm dự án React lớn, bạn sẽ không viết validate thủ công bằng tay nữa mà sử dụng thư viện **React Hook Form** hoặc **Formik** kết hợp với thư viện định nghĩa luật kiểm tra **Zod** / **Yup**. 
+   - Tuy nhiên, toàn bộ tư duy về `e.preventDefault()`, `name` attribute, Regex email, `disabled` trạng thái `isSubmitting`, và reset form đều bắt nguồn 100% từ nền tảng Vanilla JS trên!
+
+---
+---
+
+## 12. Kiến thức trình duyệt và API (Browser APIs & HTTP Architecture)
+
+---
+
+### 1. Kiến trúc HTTP cơ bản: `GET`, `POST`, `PUT / PATCH`, `DELETE`:
+- **Định nghĩa các động từ HTTP (HTTP Methods / Verbs):**
+  - **`GET`:** Lấy dữ liệu từ máy chủ về. Tuyệt đối không làm thay đổi trạng thái dữ liệu trên máy chủ (Idempotent & Safe). Không có phần Body dữ liệu gửi kèm.
+  - **`POST`:** Tạo mới một tài nguyên (Tạo tài khoản, đăng bình luận, gửi đơn hàng). Mỗi lần gọi `POST` thành công thường sinh ra một bản ghi mới với ID mới.
+  - **`DELETE`:** Xóa tài nguyên trên máy chủ theo ID chỉ định.
+- **Cuộc chiến `PUT` vs `PATCH` (Thay mới hoàn toàn vs Chắp vá từng phần):**
+  - **`PUT` (Replace Entirely - Đổi cả chiếc xe):**
+    - Mang ý nghĩa thay thế toàn bộ bản ghi. Nếu bản ghi có 10 trường mà bạn chỉ gửi lên `{ isWatched: true }`, theo đúng chuẩn RESTful, Server sẽ ghi đè trắng và 9 trường còn lại sẽ bị biến thành `null` hoặc xóa sổ!
+  - **`PATCH` (Partial Modification - Vá săm xe / Thay linh kiện):**
+    - Mang ý nghĩa cập nhật từng phần. Bạn muốn sửa 1 trường hay 5 trường đều được, Server **chỉ cập nhật đúng những trường bạn gửi lên** và bảo toàn nguyên vẹn tất cả các trường dữ liệu khác.
+
+---
+
+### 2. Chu trình Request / Response (Vòng đời yêu cầu - phản hồi):
+- **Cấu trúc của gói tin gửi đi (HTTP Request):**
+  1. *Request Line:* Phương thức (`GET`, `POST`) + Đường dẫn URL (`/api/movies`) + Phiên bản HTTP (`HTTP/1.1` hoặc `HTTP/2`).
+  2. *Headers:* Các thông tin siêu dữ liệu (Metadata) như `Content-Type: application/json`, `Authorization: Bearer <token>`, `User-Agent`.
+  3. *Body (Payload):* Dữ liệu dạng chuỗi JSON hoặc FormData gửi lên (chỉ có ở `POST`, `PUT`, `PATCH`).
+- **Cấu trúc của gói tin nhận về (HTTP Response):**
+  1. *Status Line:* Mã trạng thái phản hồi (*Status Code* như 200, 404, 500) kèm thông điệp ngắn (*Status Text* như `OK`, `Not Found`).
+  2. *Response Headers:* Máy chủ phản hồi kiểu dữ liệu (`Content-Type: application/json`), độ dài gói tin, cấu hình Cookie (`Set-Cookie`).
+  3. *Response Body:* Dữ liệu thực tế gửi về cho Frontend render (thường là chuỗi JSON).
+
+---
+
+### 3. Định dạng JSON (`JSON.stringify()` và `JSON.parse()`):
+- **Bản chất của JSON (JavaScript Object Notation):**
+  - Là định dạng văn bản thuần túy (Plain Text) độc lập với mọi ngôn ngữ lập trình, dùng làm chuẩn chung để truyền dữ liệu qua mạng Internet.
+- **Phân biệt `String(obj)` vs `JSON.stringify(obj)` & Bẫy `"[object Object]"`:**
+  - *Ép kiểu String thường (`String(obj)` hoặc `obj.toString()`):* Chỉ in ra nhãn định danh kiểu dữ liệu `"[object Object]"`, vứt bỏ toàn bộ key-value bên trong, không thể khôi phục lại dữ liệu!
+  - *Đóng gói tuần tự hóa (`JSON.stringify(obj)`):* Soi từng thuộc tính và chuyển hóa toàn bộ cấu trúc Object/Array thành chuỗi văn bản có cấu trúc: `'{"name":"Thịnh","age":25}'`.
+  - *Giải nén phục hồi (`JSON.parse(str)`):* Đọc chuỗi văn bản JSON và tái tạo lại thành Object/Array sống động trong bộ nhớ RAM của JavaScript.
+  - 💥 **Bẫy sập Runtime:** `JSON.parse()` sẽ quăng lỗi đỏ sập ứng dụng `SyntaxError: Unexpected token` nếu chuỗi truyền vào không đúng chuẩn JSON (ví dụ chuỗi bị `undefined` hoặc HTML lỗi 500). Luôn bọc trong `try...catch` khi parse dữ liệu rủi ro!
+
+---
+
+### 4. Ý nghĩa các dải HTTP Status Code cần thuộc nằm lòng:
+- **Dải 2xx (Thành công - Success):**
+  - `200 OK`: Yêu cầu thành công rực rỡ, trả về dữ liệu bình thường.
+  - `201 Created`: Tạo mới tài nguyên thành công (thường trả về sau lệnh `POST` tạo tài khoản, tạo bài viết).
+  - `204 No Content`: Thao tác thành công nhưng không có dữ liệu trả về (thường dùng cho `DELETE`).
+- **Dải 4xx (Lỗi do phía Client / Frontend gửi sai):**
+  - `400 Bad Request`: Dữ liệu gửi lên không đúng định dạng (thiếu trường bắt buộc, sai cú pháp).
+  - `401 Unauthorized` *(Thực chất là Unauthenticated - Chưa xác thực)*: Người dùng chưa đăng nhập, chưa gửi Token hoặc Token đã hết hạn.
+  - `403 Forbidden` *(Thực chất là Unauthorized - Không có quyền)*: Đã đăng nhập thành công, nhưng tài khoản không có quyền hạn truy cập vào tài nguyên này (Ví dụ: Member đòi xóa dữ liệu Admin).
+  - `404 Not Found`: Đường link hoặc ID tài nguyên không tồn tại trên máy chủ.
+  - `409 Conflict`: Xung đột dữ liệu (Ví dụ: Đăng ký tài khoản với email đã tồn tại trong Database).
+- **Dải 5xx (Lỗi do phía Server sập):**
+  - `500 Internal Server Error`: Code máy chủ bị crash (lỗi code Backend, chết Database).
+  - `502 Bad Gateway`: Máy chủ Proxy / Nginx không kết nối được tới server ứng dụng.
+  - `503 Service Unavailable`: Máy chủ đang quá tải hoặc đang bảo trì.
+
+---
+
+### 5. Phân biệt Query params (`?page=1&limit=10`) và Path params (`/products/:id`):
+- **Path Params (Tham số đường dẫn):**
+  - Nằm trực tiếp trong đường dẫn, ngăn cách bởi `/`.
+  - *Mục đích:* **Định danh chính xác duy nhất 1 tài nguyên** (Resource Identifier).
+  - *Ví dụ:* `/movies/avatar-2` hoặc `/users/12345`. Mang tính bắt buộc để xác định đối tượng cần xem.
+- **Query Params (Tham số truy vấn):**
+  - Bắt đầu sau dấu `?`, phân tách các cặp `key=value` bởi dấu `&`.
+  - *Mục đích:* Dùng để **Lọc (Filter), Tìm kiếm (Search), Phân trang (Paging), và Sắp xếp (Sorting)** trên một danh sách.
+  - *Ví dụ:* `/movies?genre=action&year=2024&page=2`. Mang tính tùy chọn (Optional).
+
+---
+
+### 6. Request Header và cơ chế xác thực Token (JWT & Bearer Token):
+- **Ý nghĩa chữ `Bearer`:** Xuất phát từ "to bear" (người mang/cầm chiếc vé). Mang ý nghĩa *"Ai cầm chiếc vé hợp lệ trên tay thì người đó được vào cổng"*.
+  - Định dạng Header: `Authorization: Bearer <chuoi_jwt_token>`
+- **Giải phẫu cấu trúc 3 phần của JWT (`Header.Payload.Signature`):**
+  1. *Header:* Chứa thuật toán ký (`{"alg":"HS256"}`), mã hóa Base64Url.
+  2. *Payload:* Chứa dữ liệu user (`userId`, `role`, `exp`), mã hóa Base64Url.
+     - 💥 *Lưu ý sống còn:* Base64Url KHÔNG PHẢI LÀ MÃ HÓA BẢO MẬT. Bất kỳ ai cũng đọc được Payload trên `jwt.io` -> Cấm tiệt lưu Password/Số thẻ vào đây!
+  3. *Signature (Chữ ký điện tử):* Trộn `Header + "." + Payload` với `SECRET_KEY` bí mật của Server thông qua thuật toán HMAC-SHA256 để chống giả mạo dữ liệu.
+- **Cặp bài trùng `Access Token` vs `Refresh Token` & Kỹ thuật Token Rotation:**
+  - `Access Token`: Sống ngắn (15 phút), dùng để gọi API thường xuyên.
+  - `Refresh Token`: Sống dài (7 đến 30 ngày), dùng để "chờ đợi" người dùng trong lúc họ tắt máy tính đi ngủ hoặc nghỉ ngơi. Khi mở máy lại, Frontend dùng Refresh Token xin cấp Access Token mới mà không bắt người dùng gõ lại mật khẩu.
+  - *Token Rotation (Xoay vòng):* Mỗi lần dùng Refresh Token cũ, Server lập tức hủy bỏ nó và cấp Refresh Token mới toanh. Nếu phát hiện một token cũ bị dùng lại lần 2 -> Cảnh báo tài khoản bị lộ -> Hủy toàn bộ phiên đăng nhập trên toàn cầu ngay lập tức.
+
+---
+
+### 7. Lưu trữ phía client: `localStorage` (vĩnh viễn) vs `sessionStorage` (theo phiên tab):
+- **So sánh vòng đời (Lifecycle):**
+  - `localStorage`: Lưu trữ dữ liệu vĩnh viễn không thời hạn. Đóng tab, tắt trình duyệt, khởi động lại máy tính bật lên vẫn còn nguyên. Chỉ biến mất khi người dùng xóa cache hoặc code gọi `localStorage.clear()`.
+  - `sessionStorage`: Chỉ tồn tại trong phiên làm việc của **duy nhất tab hiện tại**. Mở 2 tab cùng 1 trang web thì dữ liệu hoàn toàn độc lập. Đóng tab đó lại là dữ liệu bị xóa sạch sẽ 100%.
+- **Bàn tròn bảo mật: Lưu Token ở đâu?**
+  - `localStorage`: Dễ dùng, nhưng dễ bị tấn công đánh cắp bởi mã độc **XSS** (Cross-Site Scripting) thông qua `localStorage.getItem()`.
+  - `httpOnly Cookie`: An toàn nhất vì JavaScript bị cấm tiệt không được phép đọc. Trình duyệt tự động gửi kèm Cookie lên Server, miễn nhiễm hoàn toàn với XSS.
+
+---
+
+### 8. Hiểu khái niệm cơ bản về CORS (Cross-Origin Resource Sharing):
+- **Cơ chế Same-Origin Policy (Chính sách cùng nguồn):**
+  - Một nguồn (Origin) được xác định bởi: **Giao thức (Protocol) + Tên miền (Domain) + Cổng (Port)**. Khác bất kỳ 1 trong 3 yếu tố này đều bị coi là Khác nguồn (Cross-Origin).
+- **Tại sao Postman gọi được mà Trình duyệt lại báo lỗi đỏ CORS?**
+  - CORS là **cơ chế bảo vệ người dùng do TRÌNH DUYỆT chủ động thực thi**, nhằm ngăn chặn các trang web độc hại tự ý gửi request có kèm cookie cá nhân của bạn đến các trang web khác.
+  - Postman không phải trình duyệt nên không áp dụng chính sách CORS.
+- **Cách khắc phục chuẩn:**
+  - Phía Backend phải gửi kèm Header cho phép: `Access-Control-Allow-Origin: *` hoặc chỉ định đúng tên miền Frontend `http://localhost:3000`.
+  - Phía Frontend (trong môi trường phát triển): Thiết lập **Dev Proxy** trong `vite.config.js` để gửi gián tiếp qua server nội bộ nhằm đánh lừa trình duyệt.
+
+---
+
+### 9. Tải file lên server bằng `FormData` và `FileReader` / `URL.createObjectURL`:
+- **Xem trước ảnh (Preview) tức thì:**
+  - *Cách 1 (Khuyên dùng - Siêu nhanh):*
+    ```javascript
+    const blobUrl = URL.createObjectURL(file); // Tạo link ảo trỏ vào RAM
+    previewImg.src = blobUrl;
+    ```
+  - *Cách 2 (Truyền thống):* Dùng `FileReader` đọc ra chuỗi Base64: `reader.readAsDataURL(file)`.
+- **Đóng gói tải file lên Server:**
+  ```javascript
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  fetch("/api/upload", {
+    method: "POST",
+    body: formData // ⚠️ CẤM tự ý set header Content-Type! Trình duyệt sẽ tự động thêm multipart/form-data kèm boundary chuẩn xác!
+  });
+  ```
+
+---
+---
+
+## 13. Git và cấu trúc code (Git Workflow & Code Architecture)
+
+---
+
+### 1. Các lệnh Git hàng ngày (`clone`, `branch`, `add`, `commit`, `push`, `pull`):
+- **Bản chất của Git:**
+  - Git là hệ thống quản lý phiên bản phân tán (Distributed Version Control System). Mỗi máy tính cá nhân đều lưu trữ trọn vẹn toàn bộ lịch sử của dự án.
+- **Quy trình làm việc hàng ngày (Daily Git Workflow):**
+  1. `git clone <url>`: Sao chép toàn bộ kho mã nguồn từ máy chủ đám mây (GitHub, GitLab) về máy tính cá nhân để bắt đầu làm việc.
+  2. `git checkout -b feat/ten-tinh-nang` (hoặc `git switch -c`): Tạo và nhảy ngay sang một nhánh độc lập để code tính năng mới, tuyệt đối không code chung trên nhánh gốc.
+  3. `git status`: Soi xem những file nào vừa được thêm mới, sửa đổi hoặc xóa bỏ.
+  4. `git add <ten-file>` (hoặc `git add .`): Đưa các thay đổi vào **Staging Area** (khu vực đóng gói chuẩn bị chụp ảnh).
+  5. `git commit -m "feat: mô tả súc tích"`: Đóng dấu một bức ảnh chụp (Snapshot) lưu vết vào lịch sử cục bộ.
+     - *Chuẩn mực viết commit (Conventional Commits):*
+       - `feat:` Thêm tính năng mới (ví dụ: `feat: add movie search dropdown`).
+       - `fix:` Sửa lỗi (ví dụ: `fix: handle empty search keyword`).
+       - `refactor:` Tối ưu hóa/dọn dẹp code mà không làm thay đổi hành vi giao diện.
+       - `docs:` Viết tài liệu ghi chú hoặc README.
+       - `style:` Chỉnh sửa khoảng trắng, CSS, format code.
+  6. `git push origin feat/ten-tinh-nang`: Đẩy nhánh tính năng từ máy cá nhân lên GitHub để sẵn sàng tạo Pull Request.
+  7. `git pull origin develop`: Kéo các đoạn code mới nhất của đồng nghiệp từ nhánh `develop` về máy mình để gộp và kiểm tra tính tương thích.
+- **Phân biệt `git fetch` vs `git pull`:**
+  - `git fetch`: Giống như đi ra hòm thư xem có thư mới hay không. Tải dữ liệu về để máy biết có commit mới, nhưng **hoàn toàn không đụng chạm gì vào code bạn đang gõ**.
+  - `git pull`: Bằng `git fetch` + `git merge`. Lấy thư về và đổ ập ngay vào file hiện tại. Có nguy cơ phát sinh xung đột nếu bạn đang sửa dở.
+- **Tại sao cấm tiệt code và push thẳng lên `main` / `master`?**
+  - Nhánh `main` là nhánh đại diện cho sản phẩm thật đang phục vụ hàng triệu người dùng thực tế (**Production**).
+  - Push thẳng lên `main` bỏ qua khâu kiểm duyệt, một lỗi nhỏ sẽ làm sập toàn bộ hệ thống của công ty! Nhánh `main` luôn bị khóa (Protected Branch), chỉ cho phép nạp code thông qua Pull Request có sự phê duyệt của Tech Lead.
+
+---
+
+### 2. Xử lý conflict cơ bản khi merge / pull:
+- **Nguyên nhân phát sinh Conflict (Xung đột mã nguồn):**
+  - Xảy ra khi 2 lập trình viên cùng sửa vào **cùng một dòng code** (hoặc các dòng liền kề) trong cùng 1 file, và một người đã đẩy code lên trước. Khi người thứ 2 kéo code về hoặc merge nhánh, Git không thể tự ý quyết định lấy code của ai nên dừng lại và giao quyền phán quyết cho con người.
+- **Cấu trúc 3 ký hiệu phân cách chiến sự của Git:**
+  ```javascript
+  <<<<<<< HEAD
+  // Đoạn mã do chính BẠN viết trên máy cá nhân
+  const API_URL = "https://phimapi.com/v1";
+  =======
+  // Đoạn mã do ĐỒNG NGHIỆP đẩy lên server trước đó
+  const API_URL = "https://phimapi.com/v2";
+  >>>>>>> develop
+  ```
+  - `<<<<<<< HEAD`: Bắt đầu vùng code của bạn.
+  - `=======`: Vạch ranh giới ngăn cách 2 phe.
+  - `>>>>>>> <nhanh>`: Kết thúc vùng code của đồng nghiệp từ remote về.
+- **Quy trình 4 bước gỡ Conflict chuẩn chỉnh:**
+  1. *Thảo luận & Chọn lựa:* Ngồi lại cùng đồng nghiệp xem lấy bản nào (Accept Current Change, Accept Incoming Change, hoặc kết hợp logic của cả hai).
+  2. *Dọn sạch rác Git:* **BẮT BUỘC xóa bỏ hoàn toàn tất cả các dòng ký tự `<<<<<<<`, `=======`, `>>>>>>>`**.
+  3. *Kiểm thử:* Chạy thử ứng dụng trên máy để đảm bảo code không bị lỗi cú pháp hoặc hỏng luồng chạy.
+  4. *Đóng gói hoàn tất:* Gõ `git add .` -> `git commit -m "fix: resolve merge conflict"` -> `git push`. Nút Merge trên GitHub sẽ tự động sáng xanh trở lại.
+
+---
+
+### 3. Tư duy tổ chức thư mục dự án sạch sẽ:
+- Một dự án chuyên nghiệp luôn phân tách các tầng trách nhiệm thành các thư mục rõ ràng:
+  - **`api/` (hoặc `services/`):** Nơi duy nhất được phép giao tiếp với máy chủ (`fetch`, Axios). Tập trung các hàm gọi mạng (`getMovieList()`, `login()`). Giúp khi máy chủ đổi URL ta chỉ cần vào 1 nơi duy nhất để sửa.
+  - **`utils/` (hoặc `helpers/`):** Chứa các hàm tiện ích thuần túy (Pure Functions), độc lập hoàn toàn với giao diện: `formatVND(tien)`, `formatDate(ngay)`, `debounce(fn, delay)`.
+  - **`constants/`:** Nơi lưu trữ các giá trị bất biến, biến môi trường: `CONFIG`, `STORAGE_KEYS = { TOKEN: 'token' }`, mã trạng thái. Tiệt trừ triệt để việc viết bừa bãi các chuỗi cứng ("Magic Strings") khắp dự án.
+  - **`validation/`:** Chứa các biểu thức Regex và hàm kiểm định dữ liệu form (`validateEmail()`, `validatePassword()`).
+  - **`components/`:** Chứa các khối giao diện tái sử dụng nhiều nơi (Navbar, Footer, MovieCard, Spinner).
+
+---
+
+### 4. Nguyên tắc Single Responsibility (Nguyên tắc Đơn nhiệm - SRP):
+- **Định nghĩa cốt lõi:** *"Mỗi hàm hoặc mỗi module chỉ nên có duy nhất MỘT lý do để thay đổi (Chỉ làm đúng một việc và làm thật tốt)"*.
+- **Hiện trường vụ án phản mẫu (Anti-pattern - "Hàm quái vật"):**
+  - Viết một hàm `handleForm()` dài 200 dòng: vừa đọc dữ liệu input, vừa kiểm tra regex email, vừa format chuỗi, vừa gọi API, vừa cập nhật giao diện DOM, vừa hiện alert!
+  - *Hậu quả:* Chỉ cần đổi màu thông báo hay đổi tên trường API là hàm bị vỡ nát, cực kỳ khó đọc và không thể viết Unit Test được.
+- **Tái cấu trúc chuẩn Senior:**
+  - Hàm `validateForm()`: Chỉ làm nhiệm vụ kiểm tra dữ liệu và trả về lỗi.
+  - Hàm `authService.login()`: Chỉ làm nhiệm vụ gửi request lên Server.
+  - Hàm `renderErrorUI()`: Chỉ làm nhiệm vụ hiển thị chữ đỏ lên màn hình.
+
+---
+
+### 5. Đặt tên biến và hàm rõ nghĩa, chuẩn quy ước camelCase / UPPER_CASE:
+- **1. Quy ước lạc đà (`camelCase`):**
+  - Dành cho: Biến thông thường, thuộc tính của Object, và tên Hàm.
+  - *Ví dụ:* `movieTitle`, `currentUser`, `fetchMovieDetail()`, `calculateTotalPrice()`.
+- **2. Quy ước chữ hoa gạch dưới (`UPPER_SNAKE_CASE`):**
+  - Dành cho: Hằng số cố định toàn cục, cấu hình hệ thống không bao giờ thay đổi suốt vòng đời ứng dụng.
+  - *Ví dụ:* `API_BASE_URL`, `DEFAULT_PAGE_SIZE`, `MAX_RETRY_COUNT`, `JWT_SECRET_KEY`.
+- **3. Quy ước viết hoa chữ đầu (`PascalCase`):**
+  - Dành cho: Tên Class, Constructor Function, và **toàn bộ tên React Components** sau này (`MovieCard`, `HeroBanner`, `LoginForm`).
+- **Nghệ thuật đặt tên có ý nghĩa (Meaningful Naming):**
+  - Tên hàm hành động luôn bắt đầu bằng **Động từ**: `get...`, `fetch...`, `handle...`, `render...`, `check...`.
+  - Biến Boolean luôn bắt đầu bằng tiền tố khẳng định: `is...`, `has...`, `should...` (`isLoading`, `hasError`, `isWatched`, `shouldUpdate`).
+  - Cấm tiệt việc đặt tên biến 1 ký tự cẩu thả (`a`, `b`, `temp`, `data1`) khiến đồng nghiệp đọc không hiểu biến đó chứa cái gì.
+
+---
+
+### 6. Sử dụng công cụ format code tự động: ESLint và Prettier:
+- **Phân biệt hai "vệ sĩ" bảo vệ mã nguồn:**
+  - **ESLint (Cảnh sát kiểm tra chất lượng và logic mã nguồn):**
+    - Soi và bắt các lỗi tiềm ẩn: Khai báo biến mà không dùng (Dead code), truy cập biến chưa định nghĩa, dùng so sánh lỏng `==` thay vì `===`, quên `return` trong hàm map.
+  - **Prettier (Thợ trang điểm định dạng thẩm mỹ):**
+    - Không quan tâm code đúng hay sai logic. Nó chỉ quan tâm hình thức: Tự động thụt lề 2 dấu cách, tự thêm dấu chấm phẩy `;`, tự ngắt dòng khi quá 80 ký tự, chuyển đổi đồng nhất dấu nháy đơn hay kép.
+- **Tính năng "Save là đẹp" (Format on Save):**
+  - Cài đặt extension Prettier trong VS Code và bật `editor.formatOnSave: true`.
+  - Mỗi lần bạn bấm phím `Cmd + S` (hoặc `Ctrl + S`), Prettier sẽ tự động căn chỉnh toàn bộ file code thẳng hàng tăm tắp trong tích tắc. Đảm bảo cả một đội ngũ 20 lập trình viên đều viết ra những dòng code có quy chuẩn trình bày giống hệt nhau như một người viết!
+
+---
+---
+
+## 🏆 TỔNG KẾT TOÀN DIỆN LỘ TRÌNH 13 CHUYÊN ĐỀ JAVASCRIPT NỀN TẢNG (READY FOR REACT)
+
+Trải qua một hành trình bền bỉ, chúng ta đã đúc kết và lấp sạch toàn bộ lỗ hổng qua **13 Chuyên đề cốt lõi**:
+1. **Biến, kiểu dữ liệu và toán tử:** Ô nhớ Primitive vs Reference, cơ chế ép kiểu ngầm, `===` vs `Object.is()`.
+2. **Điều kiện và vòng lặp:** Falsy values, Short-circuit `&&` / `||`, Nullish Coalescing `??`.
+3. **Function:** Function Declaration vs Expression, Hoisting, Arrow Function (Lexical `this`), Closure, Default parameters.
+4. **Array:** Đột biến vs Bất biến, bộ ba huyền thoại `.map()`, `.filter()`, `.reduce()`, kỹ thuật Shallow copy vs Deep copy.
+5. **Object và immutable:** Pass-by-reference, cơ chế sao chép nông, kỹ thuật đóng băng `Object.freeze()`.
+6. **Cú pháp ES6+:** Destructuring, Spread / Rest, Template Literals, Enhanced Object Literals, Optional Chaining `?.`.
+7. **DOM và sự kiện:** Cây DOM, Event Bubbling / Capturing, Event Delegation, bẫy Memory Leak.
+8. **Bất đồng bộ:** Call Stack, Web APIs, Event Loop, Microtask vs Macrotask, Promise, `async / await`, `AbortController`.
+9. **Cơ chế JavaScript ngầm:** Scope & Scope Chain, Hoisting & TDZ, Closure ứng dụng trong React `useState`.
+10. **Xử lý lỗi và debug:** `throw new Error()` vs `throw "string"`, V8 Stack Trace, `try...catch...finally`, Breakpoint DevTools, phân biệt 3 loại lỗi.
+11. **Form và validation:** `e.preventDefault()`, `new FormData()`, bẫy XSS với `.textContent`, chống Double-submit, `form.reset()`.
+12. **Kiến thức trình duyệt và API:** HTTP Methods (`PUT` vs `PATCH`), JSON serialization, Status Codes (401 vs 403), JWT & Token Rotation, CORS, `URL.createObjectURL()`.
+13. **Git và cấu trúc code:** Feature branch workflow, giải quyết Conflict, Single Responsibility, ESLint & Prettier.
+
+👉 **BẠN ĐÃ CHÍNH THỨC SỞ HỮU NỀN TẢNG JAVASCRIPT VỮNG VÀNG 100% ĐỂ BƯỚC VÀO THẾ GIỚI REACT MÀ KHÔNG HỀ CÒN BẤT KỲ ĐIỂM MÙ NÀO!**
+
+
+
+
+
+
 
 
 

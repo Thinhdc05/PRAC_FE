@@ -8,13 +8,13 @@
 - [x] **1. Biến, kiểu dữ liệu và toán tử**
 - [x] **2. Điều kiện và vòng lặp**
 - [x] **3. Function — phần rất quan trọng**
-- [ ] **4. Array — bắt buộc phải chắc**
-- [ ] **5. Object và immutable**
-- [ ] **6. Cú pháp ES6+ dùng nhiều trong React**
-- [ ] **7. DOM và sự kiện**
-- [ ] **8. Bất đồng bộ**
-- [ ] **9. Cơ chế JavaScript cần hiểu ở mức vừa đủ**
-- [ ] **10. Xử lý lỗi và debug**
+- [x] **4. Array — bắt buộc phải chắc**
+- [x] **5. Object và immutable**
+- [x] **6. Cú pháp ES6+ dùng nhiều trong React**
+- [x] **7. DOM và sự kiện**
+- [x] **8. Bất đồng bộ**
+- [x] **9. Cơ chế JavaScript cần hiểu ở mức vừa đủ**
+- [x] **10. Xử lý lỗi và debug**
 - [ ] **11. Form và validation**
 - [ ] **12. Kiến thức trình duyệt và API**
 - [ ] **13. Git và cấu trúc code**
@@ -194,19 +194,19 @@ console.log("D");
 
 ## 10. Xử lý lỗi và debug
 
-- [ ] Ném lỗi chủ động: `throw new Error("Thông báo lỗi")`.
-- [ ] Bắt lỗi an toàn: `try / catch`.
-- [ ] Đọc hiểu Error Message và truy vết nguồn gốc qua Stack trace.
-- [ ] Kỹ thuật Debug trên Browser DevTools:
+- [x] Ném lỗi chủ động: `throw new Error("Thông báo lỗi")`.
+- [x] Bắt lỗi an toàn: `try / catch`.
+- [x] Đọc hiểu Error Message và truy vết nguồn gốc qua Stack trace.
+- [x] Kỹ thuật Debug trên Browser DevTools:
   - Breakpoint và Conditional breakpoint (điểm dừng có điều kiện).
   - Điều hướng: Step over (F10), Step into (F11), Step out (Shift+F11).
   - Các tab theo dõi: Scope variables, Watch expressions, Call Stack.
-- [ ] Sử dụng thành thạo các panel trong Chrome DevTools:
+- [x] Sử dụng thành thạo các panel trong Chrome DevTools:
   - Console.
   - Network (soi request payload, response, headers, timing).
   - Application / Storage (`localStorage`, cookies).
   - Elements (soi DOM, CSS computed).
-- [ ] Phân biệt rõ: Lỗi cú pháp (Syntax error), Lỗi khi chạy (Runtime error), và Lỗi nghiệp vụ (Logic bug).
+- [x] Phân biệt rõ: Lỗi cú pháp (Syntax error), Lỗi khi chạy (Runtime error), và Lỗi nghiệp vụ (Logic bug).
 
 ---
 
@@ -214,42 +214,42 @@ console.log("D");
 
 *Trước khi học các thư viện Form trong React (React Hook Form, Formik), phải thuần thục bằng Vanilla JS:*
 
-- [ ] Đọc và chuẩn hóa dữ liệu từ form (`FormData`, `input.value.trim()`).
-- [ ] Validate các trường hợp phổ biến: Bắt buộc (required), độ dài ký tự (min/max length), số hợp lệ, định dạng email regex.
-- [ ] Hiển thị thông báo lỗi đúng ngay dưới field tương ứng.
-- [ ] Chặn form submit khi dữ liệu không hợp lệ.
-- [ ] Chuẩn hóa dữ liệu trước khi gửi đi (sanitize, trim whitespace, ép kiểu số).
-- [ ] Reset form sau khi submit thành công (`form.reset()`).
-- [ ] Tránh submit nhiều lần (Double-click submit: disable nút bấm khi đang xử lý).
+- [x] Đọc và chuẩn hóa dữ liệu từ form (`FormData`, `input.value.trim()`).
+- [x] Validate các trường hợp phổ biến: Bắt buộc (required), độ dài ký tự (min/max length), số hợp lệ, định dạng email regex.
+- [x] Hiển thị thông báo lỗi đúng ngay dưới field tương ứng.
+- [x] Chặn form submit khi dữ liệu không hợp lệ.
+- [x] Chuẩn hóa dữ liệu trước khi gửi đi (sanitize, trim whitespace, ép kiểu số).
+- [x] Reset form sau khi submit thành công (`form.reset()`).
+- [x] Tránh submit nhiều lần (Double-click submit: disable nút bấm khi đang xử lý).
 
 ---
 
 ## 12. Kiến thức trình duyệt và API
 
-- [ ] Kiến trúc HTTP cơ bản: `GET`, `POST`, `PUT / PATCH`, `DELETE`.
-- [ ] Chu trình Request / Response.
-- [ ] Định dạng JSON (`JSON.stringify()` và `JSON.parse()`).
-- [ ] Ý nghĩa các dải Status Code:
+- [x] Kiến trúc HTTP cơ bản: `GET`, `POST`, `PUT / PATCH`, `DELETE`.
+- [x] Chu trình Request / Response.
+- [x] Định dạng JSON (`JSON.stringify()` và `JSON.parse()`).
+- [x] Ý nghĩa các dải Status Code:
   - `200` OK, `201` Created.
   - `400` Bad Request, `401` Unauthorized, `403` Forbidden, `404` Not Found, `409` Conflict.
   - `500` Internal Server Error.
-- [ ] Phân biệt Query params (`?page=1&limit=10`) và Path params (`/products/:id`).
-- [ ] Request Header và cơ chế xác thực Token cơ bản (Bearer Token).
-- [ ] Lưu trữ phía client: `localStorage` (vĩnh viễn) vs `sessionStorage` (theo phiên tab).
-- [ ] Hiểu khái niệm cơ bản về CORS (Cross-Origin Resource Sharing).
-- [ ] Tải file lên server bằng `FormData` và `FileReader`.
+- [x] Phân biệt Query params (`?page=1&limit=10`) và Path params (`/products/:id`).
+- [x] Request Header và cơ chế xác thực Token cơ bản (Bearer Token).
+- [x] Lưu trữ phía client: `localStorage` (vĩnh viễn) vs `sessionStorage` (theo phiên tab).
+- [x] Hiểu khái niệm cơ bản về CORS (Cross-Origin Resource Sharing).
+- [x] Tải file lên server bằng `FormData` và `FileReader`.
 
 ---
 
 ## 13. Git và cấu trúc code
 
-- [ ] Các lệnh Git hàng ngày: `clone`, `branch`, `add`, `commit`, `push`, `pull`.
-- [ ] Xử lý conflict cơ bản khi merge / pull.
-- [ ] Tư duy tổ chức thư mục dự án sạch sẽ:
+- [x] Các lệnh Git hàng ngày: `clone`, `branch`, `add`, `commit`, `push`, `pull`.
+- [x] Xử lý conflict cơ bản khi merge / pull.
+- [x] Tư duy tổ chức thư mục dự án sạch sẽ:
   - `api/` hoặc `services/`: Nơi gọi mạng.
   - `utils/` hoặc `helpers/`: Các hàm tiện ích dùng chung (format tiền, ngày tháng...).
   - `constants/`: Biến cố định, Storage keys, Enum trạng thái.
   - `validation/`: Các hàm kiểm tra dữ liệu form.
-- [ ] Nguyên tắc Single Responsibility (Mỗi hàm/file chỉ làm một nhiệm vụ).
-- [ ] Đặt tên biến và hàm rõ nghĩa, chuẩn quy ước camelCase / UPPER_CASE.
-- [ ] Sử dụng công cụ format code tự động: ESLint và Prettier.
+- [x] Nguyên tắc Single Responsibility (Mỗi hàm/file chỉ làm một nhiệm vụ).
+- [x] Đặt tên biến và hàm rõ nghĩa, chuẩn quy ước camelCase / UPPER_CASE.
+- [x] Sử dụng công cụ format code tự động: ESLint và Prettier.
