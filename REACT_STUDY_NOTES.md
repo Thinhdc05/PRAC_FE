@@ -1,0 +1,247 @@
+# 📓 SỔ TAY ĐÚC KẾT KIẾN THỨC REACT CHUYÊN SÂU (REACT STUDY NOTES)
+
+---
+
+## 0. Setup dự án chuẩn công nghiệp (Vite & Clean Architecture)
+
+---
+
+### 1. Bản chất Vite & Sự thoái trào của Create-React-App:
+- **Nỗi đau của Webpack / CRA:** Khi dự án lớn lên, mỗi lần lưu file (Save), Webpack phải phân tích và đóng gói (bundle) lại toàn bộ hàng nghìn module JS, quạt máy kêu to và phải chờ 5-10s.
+- **Vũ khí của Vite (Native ES Modules & Esbuild):**
+  - Tận dụng Native ESM có sẵn trên trình duyệt: Trình duyệt cần file nào thì request đúng file đó, không đóng gói trước.
+  - Tốc độ khởi động server chỉ trong 0.1 giây, cơ chế Hot Module Replacement (HMR) vá module sống tức thì.
+
+---
+
+### 2. Luồng khởi động 3 bước của ứng dụng React:
+- **Bước 1 (`index.html`):** Là file HTML duy nhất của toàn bộ Single Page App (SPA). Chứa cái chậu rỗng `<div id="root"></div>` và thẻ `<script type="module" src="/src/main.jsx"></script>`.
+- **Bước 2 (`src/main.jsx`):** Cầu nối giữa Real DOM và React.
+  - Lấy cái chậu thật: `document.getElementById('root')`.
+  - Khởi tạo gốc Virtual DOM: `createRoot(...)`.
+  - Cắm cây component vào chậu: `.render(<StrictMode><App /></StrictMode>)`.
+- **Bước 3 (`src/App.jsx`):** Component Tổ tiên (Root Component) bao trọn toàn bộ các component con của ứng dụng.
+
+---
+
+### 3. Cấu trúc thư mục chuẩn sạch (Clean Architecture):
+- `src/components/`: Chứa các Component giao diện tái sử dụng (`MovieCard.jsx`, `Modal.jsx`...).
+- `src/data/`: Chứa mock data, dữ liệu tĩnh ban đầu.
+- Reset CSS toàn cục trong `src/index.css`, xóa bỏ các CSS mặc định gây co cụm bố cục (`place-items: center`).
+
+---
+
+## 1. Tư duy React & Cú pháp JSX (React Mental Model & JSX)
+
+---
+
+### 1. Sự chuyển dịch tư duy: Mệnh lệnh (Imperative) vs Khai báo (Declarative):
+- **Nỗi đau của JavaScript thuần (Imperative - Mệnh lệnh "Chỉ tay 5 ngón"):**
+  - Khi có một dữ liệu thay đổi (ví dụ giỏ hàng tăng số lượng), lập trình viên phải tự tay viết hàng chục dòng lệnh điều khiển trình duyệt: tìm đích danh từng thẻ DOM (`document.querySelector`), đọc giá trị, tính toán, và gán ngược lại (`innerHTML`, `textContent`).
+  - *Hậu quả:* Khi giao diện phình to, việc đồng bộ giữa Dữ liệu và Giao diện trở thành thảm họa. Chỉ cần sửa nhầm 1 class HTML là code JS bị đứt gãy, dẫn đến lỗi lệch giao diện ("số lượng một đằng mà tổng tiền một nẻo").
+- **Cuộc cách mạng của React (Declarative - Khai báo "Tôi chỉ cần kết quả"):**
+  - React đưa ra triết lý toán học kinh điển: **`UI = f(State)`** *(Giao diện người dùng chỉ là kết quả phản chiếu của Dữ liệu State)*.
+  - Lập trình viên không cần quan tâm trên màn hình có bao nhiêu thẻ cần sửa. Ta chỉ cần làm đúng 1 việc: **Cập nhật dữ liệu State**.
+  - React tự động tính toán và vẽ lại toàn bộ những nơi cần thiết trên giao diện mà không cần ta phải can thiệp thủ công vào DOM.
+
+---
+
+### 2. Bản chất của JSX (JavaScript XML):
+- **JSX thực chất là gì?**
+  - JSX KHÔNG PHẢI là HTML, và cũng KHÔNG PHẢI là một ngôn ngữ lập trình độc lập.
+  - Nó là một **Cú pháp mở rộng (Syntax Extension)** của JavaScript, đóng vai trò là một **Ngôn ngữ mô tả giao diện (UI Description Language)**.
+  - Nó mượn hình hài trực quan của thẻ HTML (`<div>`, `<h1>`, `<button>`) để lập trình viên dễ hình dung cấu trúc giao diện, nhưng bên dưới lại sở hữu trọn vẹn 100% sức mạnh logic tính toán của JavaScript.
+- **Dưới nắp ca-pô (Compiler Transformation):**
+  - Trình duyệt và V8 Engine hoàn toàn không hiểu cú pháp thẻ nhọn đứng giữa code JS (`SyntaxError: Unexpected token '<'`).
+  - Trước khi chạy, trình biên dịch (Babel hoặc SWC trong Vite) sẽ âm thầm chuyển hóa dòng JSX thành hàm JavaScript thuần túy:
+    ```jsx
+    // Mã JSX ta viết:
+    const element = <h1 className="title">Xin chào</h1>;
+
+    // Mã JavaScript thực tế sau khi dịch:
+    const element = React.createElement("h1", { className: "title" }, "Xin chào");
+    ```
+  - Cặp thẻ nhọn thực chất chỉ là một "vỏ bọc đường" (Syntactic Sugar) giúp giấu đi các lời gọi hàm `React.createElement()` dài dòng và rối mắt.
+
+---
+
+### 3. Bản chất Virtual DOM & Chu trình 3 bước (Render -> Diffing -> Commit):
+- **Virtual DOM trong RAM là cái gì?**
+  - Khi hàm `React.createElement()` chạy xong, nó KHÔNG hề tạo ra thẻ HTML thật. Nó chỉ trả về một **Plain JavaScript Object thông thường cực kỳ nhẹ nằm trong bộ nhớ RAM**:
+    ```javascript
+    {
+      type: 'h1',
+      props: { className: 'title', children: 'Xin chào' }
+    }
+    ```
+  - Cây lồng ghép của hàng nghìn Object JavaScript này trong RAM chính là **Virtual DOM (DOM ảo)**.
+- **Ẩn dụ đời thực:**
+  - *Real DOM:* Giống ngôi nhà gạch vữa bê tông thật ngoài đời. Muốn sửa cái bàn mà đập cả bức tường ra xây lại thì cực kỳ tốn công và tốn chi phí (chuỗi tính toán Reflow -> Repaint rất nặng của trình duyệt).
+  - *Virtual DOM:* Giống bản vẽ thiết kế trên tờ giấy A4 trong RAM. Tẩy xóa sửa chữa trên giấy chỉ tốn 0.1 mili-giây nhẹ tênh.
+- **Chu trình 3 bước cập nhật giao diện:**
+  1. **Bước 1: Render (Tính toán bản vẽ mới trong RAM):** React gọi hàm Component để tính toán và sinh ra cây Virtual DOM mới. Chú ý: "Render" trong React chỉ là tính toán Object trong RAM, chưa hề vẽ lên màn hình!
+  2. **Bước 2: Diffing (Soi kính lúp tìm vết khác biệt):** React chạy thuật toán Diffing Algorithm so sánh cây Virtual DOM cũ và mới, tìm ra đúng những điểm khác biệt tối thiểu.
+  3. **Bước 3: Commit (Vá Real DOM):** React chỉ tác động đúng những node DOM thật có sự thay đổi (ví dụ chỉ sửa đúng 1 con số tỷ số), giữ nguyên 99% các thẻ còn lại, sau đó trình duyệt vẽ lại (Paint) nhẹ nhàng với tốc độ 60 FPS.
+- **Bẫy phỏng vấn Senior (Virtual DOM có thực sự "nhanh hơn DOM thật" không?):**
+  - *Đáp án chuẩn:* **KHÔNG!** Thao tác DOM trực tiếp được tối ưu thủ công bằng tay trong JS thuần luôn chạy nhanh hơn Virtual DOM vì React phải tốn thêm RAM tạo Object và tốn CPU chạy thuật toán Diffing.
+  - *Giá trị thực sự của Virtual DOM:* Mang lại **Hiệu năng có thể dự đoán được (Predictable Performance)** cho các dự án khổng lồ, và giải phóng sức lao động giúp lập trình viên viết code theo lối Khai báo thanh lịch.
+
+---
+
+### 4. Bốn quy tắc bất di bất dịch của cú pháp JSX:
+- **1. Quy tắc 1 thẻ cha bao bọc & Sự cứu cánh của React Fragment (`<>...</>`):**
+  - *Tại sao bị cấm viết 2 thẻ đứng cạnh nhau?* Dưới nắp ca-pô, JSX bị dịch thành các hàm `React.createElement()`. Trong JavaScript, một lệnh `return` KHÔNG THỂ trả về 2 giá trị độc lập cùng một lúc (`return A B;` là lỗi cú pháp JS cơ bản).
+  - *Giải pháp Fragment:* Dùng cặp thẻ rỗng `<> ... </>` làm "chiếc túi nilon trong suốt" gom các phần tử lại cho lệnh `return` mang đi. Khi ra Real DOM, React tự động gỡ bỏ chiếc túi này, không để lại bất kỳ thẻ `<div>` thừa thãi nào làm hỏng layout CSS.
+- **2. Quy ước đặt tên thuộc tính (`className`, `htmlFor`):**
+  - JSX dịch ra Object JS (`{ className: "title" }`). Trong JavaScript, **`class`** (khai báo Class OOP) và **`for`** (vòng lặp) là **từ khóa bảo lưu (Reserved Keywords)**. Để tránh xung đột cú pháp, React đổi thành `className` và `htmlFor`.
+- **3. Cặp ngoặc nhọn `{}`: Cánh cổng thần kỳ đưa JavaScript sống vào giao diện:**
+  - Đứng ngoài ngoặc nhọn là ngôn ngữ mô tả giao diện. Mở ngoặc nhọn `{ ... }` là bước vào lãnh địa JavaScript thuần túy: tính toán cộng trừ, gọi hàm, biến số.
+  - *Bẫy biểu thức (Expression) vs Câu lệnh (Statement):* Bên trong `{}` chỉ được chứa **Biểu thức (thứ sinh ra một giá trị)** vì nó nằm trong tham số của hàm `createElement`. Tuyệt đối cấm tiệt nhét câu lệnh `if...else` hay vòng lặp `for` vào trong `{}`. Đó là lý do ta luôn dùng **Toán tử 3 ngôi `? :`** và hàm mảng **`.map()`**.
+- **4. Quy tắc thẻ tự đóng (Self-closing tags):**
+  - Mọi thẻ mở trong JSX bắt buộc phải có thẻ đóng, hoặc phải tự đóng bằng dấu gạch chéo ở cuối: `<img src="..." />`, `<input type="..." />`, `<br />`, `<hr />`. Quên dấu `/` sẽ bị Compiler quăng lỗi đỏ sập dự án ngay lập tức.
+
+---
+
+## 2. Component, Props & Render có điều kiện (Khối Lego giao diện)
+
+---
+
+### 1. Function Component & Bản chất của quy tắc PascalCase:
+- **Component thực chất là gì?**
+  - Một Component trong React chỉ là một **hàm JavaScript bình thường** trả về một bản vẽ JSX (`UI = f(Data)`).
+  - Khác với hàm JS thuần trả về chuỗi HTML string (`innerHTML`), Component trả về các Virtual DOM Object sống động trong RAM.
+- **Dưới nắp ca-pô Compiler (Tại sao bắt buộc phải viết hoa chữ cái đầu - PascalCase?):**
+  - Compiler (Babel / SWC) phân biệt giữa thẻ HTML nội sinh và Component dựa trên chữ cái đầu tiên:
+    - **Viết chữ thường (`<button />`, `<movieCard />`):** Compiler biên dịch thành `React.createElement("button")` (Chuỗi string). Trình duyệt tìm trong từ điển HTML5, không có thẻ nào tên là `movieCard` -> sinh ra thẻ rỗng vô nghĩa, code component bên trong không bao giờ được gọi.
+    - **Viết hoa PascalCase (`<MovieCard />`):** Compiler giữ nguyên biến tham chiếu `React.createElement(MovieCard)` (Identifier hàm không có nháy kép). React sẽ trực tiếp thực thi hàm `MovieCard()` để lấy ra bản vẽ JSX.
+- **Quy tắc Return:**
+  - Component có thể trả về: JSX, `null` (ẩn hoàn toàn, không vẽ gì ra DOM), chuỗi/số, hoặc một mảng các phần tử JSX.
+  - *Bẫy phổ biến:* Quên lệnh `return` khiến hàm trả về `undefined`, React ném lỗi đỏ ngay lập tức.
+
+---
+
+### 2. Props & Cú pháp Destructuring sạch đẹp:
+- **Bản chất của Props trong JavaScript:**
+  - Props (viết tắt của Properties) thực chất chính là **tham số đầu vào của hàm Component**.
+  - Dưới nắp ca-pô, dù bạn có viết 10 hay 100 thuộc tính trên thẻ JSX (`<MovieCard title="Avatar" year={2022} isHD={true} />`), Compiler luôn đóng gói tất cả thành **một Plain JavaScript Object duy nhất** và nhét vào tham số đầu tiên của hàm:
+    ```javascript
+    React.createElement(MovieCard, { title: "Avatar", year: 2022, isHD: true });
+    ```
+- **Quy tắc ngoặc nhọn `{}` vs Nháy kép `""`:**
+  - Chuỗi text đơn giản: dùng nháy kép `title="Avatar"`.
+  - Mọi kiểu dữ liệu còn lại của JS (Number, Boolean, Array, Object, Function): bắt buộc dùng cặp ngoặc nhọn `{}` (`year={2022}`, `genres={["Hành động"]}`, `onClick={() => play()}`).
+- **Kỹ thuật Destructuring chuẩn mực:**
+  - Thay vì lặp lại `props.title`, `props.year`, ta dùng Object Destructuring bóc tách trực tiếp ngay tại danh sách tham số:
+    ```jsx
+    function MovieCard({ title, year, isHD }) { ... }
+    ```
+- **Dòng dữ liệu một chiều (One-Way Data Flow):**
+  - Dữ liệu luôn chảy theo một chiều duy nhất: từ Cha truyền xuống Con thông qua Props (như thác nước đổ từ trên cao). Con không được tự ý gửi đè dữ liệu ngược lên Cha qua Props.
+
+---
+
+### 3. Bản chất Immutability của Props & Triết lý Pure Function:
+- **Tại sao Props là Read-Only (Chỉ đọc)?**
+  - Khi bạn cố tình sửa đổi thuộc tính trực tiếp (`props.title = "Mới"`), trình duyệt ném lỗi `TypeError: Cannot assign to read only property...`.
+  - *Cơ chế V8:* Ở chế độ phát triển, React chạy lệnh `Object.freeze(props)` trước khi trao Object này cho Component. Toàn bộ vùng nhớ của Props bị đóng băng vĩnh viễn trong RAM.
+- **Ẩn dụ chiếc vé xem phim:**
+  - Rạp chiếu phim in vé đưa cho bạn (Props). Bạn không được lấy bút tẩy xóa sửa số ghế (không mutate props). Nếu bạn muốn ghi chú, hãy lấy cuốn sổ tay riêng của mình ra viết (tạo biến cục bộ mới).
+- **Triết lý Hàm thuần khiết (Pure Function):**
+  - Công thức: `UI = f(Props)`.
+  - Một Component phải luôn là hàm thuần khiết: Cùng một input Props -> Luôn luôn sinh ra cùng một output UI, và tuyệt đối không gây Side Effects làm biến đổi môi trường bên ngoài.
+  - Muốn biến đổi dữ liệu? **Tạo ra biến phái sinh mới (Derived Value)**, không bao giờ được mutate props gốc.
+
+---
+
+### 4. Props mặc định (Default Values) & Chiếc hộp ma thuật `props.children`:
+- **Default Values (Giá trị mặc định an toàn):**
+  - Tận dụng Default Parameters của ES6 ngay khi destructuring:
+    ```jsx
+    function MovieCard({ title, year = "Chưa rõ", posterUrl = "/no-poster.jpg" }) { ... }
+    ```
+  - Nếu Cha không truyền hoặc truyền `undefined`, V8 tự động fallback về giá trị mặc định, ngăn chặn hoàn toàn lỗi vỡ giao diện (`broken image`).
+- **Chiếc hộp ma thuật `props.children` (Slot Pattern / Component Composition):**
+  - `children` là một **từ khóa định danh mặc định (reserved prop)** của React.
+  - Mọi thứ được kẹp ở giữa 2 thẻ mở `<Box>` và thẻ đóng `</Box>` đều được React tự động gán vào biến `props.children`.
+  - Giúp xây dựng các Component bao bọc (Wrapper / Card / Modal) có khả năng tái sử dụng vô tận: Vỏ khung giữ nguyên thiết kế (viền, đổ bóng, nút đóng), còn phần ruột bên trong linh hoạt biến hóa tùy ý cha nhét vào.
+
+---
+
+### 5. Render có điều kiện (Conditional Rendering) & Chiếc bẫy số 0 (The Zero Trap):
+- **Tại sao không viết được câu lệnh `if...else` trong JSX?**
+  - Cặp ngoặc nhọn `{}` chỉ nhận Biểu thức (Expression - trả về giá trị). Câu lệnh `if` là Statement (không sinh ra giá trị), do đó gây lỗi cú pháp.
+- **Hai vũ khí chủ lực:**
+  - *Toán tử 3 ngôi (`condition ? <TrueUI /> : <FalseUI />`):* Dùng khi chọn 1 trong 2 nhánh giao diện khác nhau (VIP vs Thường).
+  - *Toán tử Logic AND (`condition && <UI />`):* Dùng khi điều kiện đúng thì hiện, điều kiện sai thì ẩn biến mất hoàn toàn. React tự động bỏ qua không vẽ các giá trị `false`, `null`, `undefined`.
+- **Chiếc bẫy kinh điển: "Bẫy số 0" (The Zero Trap):**
+  - *Hiện tượng:* `{unreadCount && <span>...</span>}` khi `unreadCount = 0` sẽ in con số `0` to tướng lên màn hình thay vì ẩn đi.
+  - *Nguyên nhân V8:* Trong JS, `0 && ...` gặp `0` (falsy) lập tức short-circuit trả về đúng con số `0`. Nhưng trong React, `0` là một kiểu dữ liệu Number hợp lệ, React liền vẽ số `0` ra DOM!
+  - *Khắc phục chuẩn:* Luôn ép điều kiện thành kiểu Boolean thực thụ (`unreadCount > 0 && ...` hoặc `Boolean(unreadCount) && ...`).
+
+---
+
+### 6. Render danh sách với `.map()` & Bí mật sinh tử của thuộc tính `key`:
+- **Tại sao dùng `.map()` mà không dùng `forEach`?**
+  - `forEach` trả về `undefined`, không vẽ được gì ra giao diện.
+  - `.map()` chuyển hóa mảng dữ liệu thô thành một **mảng mới chứa các phần tử JSX**, React tự động giải nén mảng này để render liên tiếp lên màn hình.
+- **Thuộc tính `key` - Thẻ Căn Cước Công Dân (CCCD) của Virtual DOM:**
+  - `key` giúp thuật toán Diffing Algorithm của React nhận diện danh tính độc nhất của từng phần tử qua các lần render.
+  - Khi thêm/xóa phần tử ở đầu mảng, nhờ có `key`, React chỉ cần tạo mới đúng 1 node DOM và tái sử dụng toàn bộ các node cũ, đảm bảo tốc độ 60 FPS mượt mà.
+- **Chiếc bẫy dùng `key={index}` (Index as Key Anti-pattern):**
+  - Chỉ số `index` (0, 1, 2) chỉ phản ánh vị trí tạm thời trong mảng, không phản ánh danh tính của dữ liệu.
+  - Khi xóa một phần tử ở đầu, các phần tử phía sau bị đôn lên nhận index mới, khiến React giữ nhầm state nội bộ (ô checkbox, form input...) của phần tử cũ gán sang phần tử mới -> Dữ liệu hiển thị sai lệch tai hại.
+  - *Quy tắc sống còn:* Luôn dùng ID duy nhất và ổn định từ cơ sở dữ liệu (`movie.id`). Chỉ dùng `index` khi danh sách là tĩnh 100%, không bao giờ sắp xếp, thêm hay xóa.
+
+---
+
+## 3. State, `useState`, `useReducer` & Thinking in React (Trái tim tương tác)
+
+---
+
+### 1. Khái niệm State & Tại sao biến thường `let` không làm React vẽ lại giao diện?
+- **Nỗi đau của biến thường `let likes = 0`:**
+  - 1. *Không có còi báo động (No Trigger):* V8 tăng biến trong RAM nhưng React không có cơ chế giám sát biến thường, do đó không kích hoạt chu trình Re-render.
+  - 2. *Bị xóa sổ khi hàm chạy lại:* Kể cả khi có re-render, hàm Component được gọi lại từ dòng 1, dòng `let likes = 0` lại được thực thi và reset dữ liệu về 0. Biến cục bộ bốc hơi khỏi Call Stack sau mỗi lần hàm chạy xong.
+- **Hook `useState(initialValue)`:**
+  - Trả về mảng 2 phần tử `[state, setState]` thông qua cú pháp Array Destructuring để tự do đặt tên.
+  - Giá trị state được lưu ở vùng nhớ Heap ngoài vòng đời của hàm (React Fiber node).
+  - Hàm `setState` nhận giá trị mới, lưu vào ngăn kéo và phát tín hiệu Re-render gọi lại Component.
+
+---
+
+### 2. Bản chất cú pháp của hàm `set`:
+- **Công thức vàng:** `setTenState( Biểu thức tính ra GIÁ TRỊ MỚI )`.
+- Đối số bên trong `set(...)` luôn luôn là một **Biểu thức (Expression)** tính toán ra giá trị mới (số mới, chuỗi mới, Object mới, Array mới).
+- **Chiếc bẫy Arrow Function trong sự kiện `onClick`:**
+  - `onClick={setLikes(likes + 1)}` (Có ngoặc tròn): Hàm bị JavaScript thực thi ngay lập tức khi render -> Gây vòng lặp vô tận (Infinite Loop Crash: *"Too many re-renders"*).
+  - `onClick={() => setLikes(likes + 1)}` (Bọc trong arrow function): Đóng gói câu lệnh vào hộp, chỉ mở hộp thực thi khi người dùng **thực sự click chuột**.
+
+---
+
+### 3. Quy tắc Bất biến (Immutability) khi cập nhật State:
+- **Tại sao dùng `.push()` hay gán đè thuộc tính thì React "trơ như đá"?**
+  - Mảng và Object là kiểu Tham chiếu (Reference Type) lưu trong bộ nhớ Heap.
+  - Khi dùng `watchlist.push(item)`, phần ruột thay đổi nhưng địa chỉ ô nhớ (`0xAA11`) giữ nguyên.
+  - Phép so sánh nông (Shallow equality) của React: `0xAA11 === 0xAA11` -> React thấy địa chỉ không đổi nên kết luận dữ liệu không thay đổi và hủy bỏ việc vẽ lại!
+- **Bộ ba quyền lực cập nhật Mảng:**
+  - *Thêm:* `[...oldArray, newItem]` (Tạo mảng mới tinh với Spread Operator).
+  - *Xóa:* `oldArray.filter(item => item.id !== idCanXoa)` (Trả về mảng mới đã lọc bỏ phần tử).
+  - *Sửa:* `oldArray.map(item => item.id === id ? { ...item, isWatched: !item.isWatched } : item)`.
+- **Cập nhật Object:**
+  - `setFilters({ ...filters, [fieldName]: newValue })` (Sao chép toàn bộ thuộc tính cũ bằng Spread `{...}` để tránh bị bốc hơi các trường khác).
+
+---
+
+### 4. Triết lý State Snapshot & Cập nhật dạng hàm (`prev => ...`):
+- **Bản chất Snapshot (Bức ảnh chụp tĩnh):**
+  - Trong mỗi lần render, State giống như một bức ảnh chụp tĩnh đã bị đóng băng tại thời điểm đó.
+  - Gọi `setLikes(likes + 1)` liên tiếp 3 lần trong cùng 1 hàm: cả 3 dòng đều nhận `likes = 0`, trở thành `setLikes(0 + 1)`. Đồng thời React có cơ chế **Batching (Gom cụm)** đợi hàm chạy xong mới render 1 lần duy nhất với giá trị `1`.
+- **Vũ khí Functional Update (`prev => ...`):**
+  - Thay vì truyền giá trị trực tiếp, ta truyền một công thức tính: `setLikes(prev => prev + 1)`.
+  - React đưa các hàm này vào Hàng đợi (Queue), lần lượt lấy kết quả của hàm trước làm đầu vào (`prev`) cho hàm sau.
+- **Hai tình huống bắt buộc phải dùng `prev => ...` trong thực tế:**
+  - *1. Toggle trạng thái Boolean:* `setIsOpen(prev => !prev)` (Tự động đảo ngược trạng thái trước đó một cách an toàn mà không cần quan tâm giá trị hiện tại).
+  - *2. Tác vụ Bất đồng bộ (Async / `setTimeout` / API):* Trong `setTimeout`, biến state gốc bị kẹt ở giá trị cũ của quá khứ (Stale Closure). Dùng `prev => ...` đảm bảo luôn đọc được giá trị mới nhất trong ngăn kéo tại thời điểm hàm hẹn giờ thức dậy.
+
+
+

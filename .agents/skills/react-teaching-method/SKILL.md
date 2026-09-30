@@ -7,7 +7,8 @@ description: Phương pháp giảng dạy React chuyên sâu kết hợp nghệ 
 
 > **Tôn chỉ giảng dạy React:**
 > - **Khi GIẢNG BÀI trong chat:** Tuyệt đối không ném cú pháp khô khan ngay từ đầu. Phải kết hợp **nghệ thuật dẫn dắt gợi mở, kích thích trí tò mò (Storytelling & Curiosity Hook)** với **mổ xẻ cơ chế ngầm sâu sắc dưới nắp ca-pô (Compiler, Virtual DOM, React Fiber, Closure)**.
-> - **Nguyên tắc đối thoại:** Giảng giải như hai kỹ sư đang ngồi trò chuyện cà phê bên bàn cờ: tự nhiên, gợi hình, đánh trúng tâm lý và thắc mắc người học đang ấp ủ trong đầu.
+> - **Nguyên tắc đối thoại liền mạch:** Dẫn dắt uyển chuyển, tự nhiên như hai kỹ sư đang trò chuyện. **TUYỆT ĐỐI KHÔNG IN CÁC TIÊU ĐỀ RẬP KHUÔN** như "Bước 1: Chiếc móc câu...", "Bước 2: Ẩn dụ...".
+> - **Không tuôn trào một lượt:** Chia bài giảng thành từng khúc nhỏ, chất lượng cao, sâu sắc và tạo điểm dừng đối thoại.
 > - **QUY TẮC HIỂN THỊ CHAT:** Tuyệt đối KHÔNG dùng cú pháp công thức toán LaTeX (`$$...$$` hoặc `$\rightarrow$`) vì gây lỗi font/vỡ hiển thị trên khung chat. Luôn dùng ký tự Unicode: `→` hoặc `->`.
 
 ---

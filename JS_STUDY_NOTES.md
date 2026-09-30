@@ -299,14 +299,17 @@ Trong JavaScript, khi chuyển đổi sang kiểu Đúng/Sai (Boolean), **MỌI 
 ---
 
 ### 8. Bộ ba quyền lực Thêm - Sửa - Xóa Bất Biến (Immutable) trong React:
-Trong React State, **TUYỆT ĐỐI KHÔNG DÙNG** các hàm mutate làm thay đổi ô nhớ gốc (`push`, `pop`, `splice`, `sort`, `reverse`). Luôn tuân thủ 3 công thức:
-1. **THÊM phần tử (Dùng Spread `...`):**
-   `const newCart = [...cart, newItem];`
-2. **XÓA phần tử (Dùng `.filter()`):**
-   `const newCart = cart.filter(item => item.id !== deleteId);`
-3. **SỬA phần tử (Dùng `.map()`):**
-   `const newCart = cart.map(item => item.id === targetId ? { ...item, quantity: item.quantity + 1 } : item);`
-*(Công thức sửa bằng `map` tạo ra mảng mới và object mới cho riêng phần tử cần sửa, giúp React nhận biết chính xác sự thay đổi để re-render tối ưu nhất).*
+- **Cơ chế ngầm của React:**
+  - React kiểm tra sự thay đổi của State bằng thuật toán so sánh nông (Shallow Comparison: `Object.is(oldState, newState)`). Nó chỉ kiểm tra xem **ĐỊA CHỈ Ô NHỚ (Reference)** có bị thay đổi hay không.
+  - Các hàm mutate (`push`, `pop`, `splice`, `sort`, `reverse`) sửa trực tiếp dữ liệu bên trong nhưng **GIỮ NGUYÊN ĐỊA CHỈ Ô NHỚ CŨ**. Do đó `oldState === newState` luôn là `true` -> React bị "lừa" là không có gì mới và **TỪ CHỐI RE-RENDER (Giao diện bị đóng băng/đơ)**!
+- **Giải pháp sống còn:** Luôn dùng các phương thức tạo ra **ĐỊA CHỈ Ô NHỚ MỚI TOANH (New Reference)** theo 3 công thức:
+  1. **THÊM phần tử (Dùng Spread `...`):**
+     `const newCart = [...cart, newItem];`
+  2. **XÓA phần tử (Dùng `.filter()`):**
+     `const newCart = cart.filter(item => item.id !== deleteId);`
+  3. **SỬA phần tử (Dùng `.map()`):**
+     `const newCart = cart.map(item => item.id === targetId ? { ...item, quantity: item.quantity + 1 } : item);`
+  *(Công thức sửa bằng `map` tạo ra mảng mới và object mới cho riêng phần tử cần sửa, ép React thấy địa chỉ ô nhớ mới để re-render chính xác và tối ưu nhất).*
 
 ---
 ---
