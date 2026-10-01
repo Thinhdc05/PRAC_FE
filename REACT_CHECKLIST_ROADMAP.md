@@ -45,18 +45,18 @@
   - Cập nhật State kiểu Array (Bộ ba Thêm `[...arr]`, Xóa `.filter()`, Sửa `.map()`).
 - [x] Cập nhật State dạng hàm (Functional Updates: `setCount(prev => prev + 1)`): Giải quyết việc đọc giá trị cũ.
 - [x] Cơ chế gom cụm cập nhật State (Automatic Batching trong React 18+).
-- [ ] Hook `useReducer`: Quản lý State phức tạp nhiều trường liên quan (Action, Reducer function, Dispatch) — bước đệm vững chắc cho Redux/Zustand.
-- [ ] Nguyên tắc **"Thinking in React"**: Chia nhỏ component, xác định State nằm ở đâu & Kỹ thuật Kéo State lên cha (**Lifting State Up**).
-- [ ] 🛠️ **Mini-Project 2:** Xây dựng Giỏ hàng Mini (`ShoppingCart`) bằng `useReducer` (Thêm, Xóa, Tăng/Giảm số lượng, tính tổng tiền, ngăn số âm).
+- [x] Hook `useReducer`: Quản lý State phức tạp nhiều trường liên quan (Action, Reducer function, Dispatch) — bước đệm vững chắc cho Redux/Zustand.
+- [x] Nguyên tắc **"Thinking in React"**: Chia nhỏ component, xác định State nằm ở đâu & Kỹ thuật Kéo State lên cha (**Lifting State Up**).
+- [x] 🛠️ **Mini-Project 2:** Xây dựng Giỏ hàng Mini (`ShoppingCart`) bằng `useReducer` (Thêm, Xóa, Tăng/Giảm số lượng, tính tổng tiền, ngăn số âm).
 
 ---
 
 ## 4. Xử lý sự kiện (Event Handling) & Form hiện đại
-- [ ] Synthetic Events: Hệ thống sự kiện tổng hợp của React khác gì Native DOM Events?
-- [ ] Truyền tham số vào Event Handler: Phân biệt `onClick={handleClick}` vs `onClick={() => handleClick(id)}`.
-- [ ] Controlled Components (Form có kiểm soát bằng State) vs Uncontrolled Components.
-- [ ] Thực chiến Form hiện đại: Thư viện **React Hook Form** kết hợp **Zod Schema** để validate dữ liệu chuẩn doanh nghiệp.
-- [ ] Lướt qua tính năng mới: Form Actions trong React 19 (Server Actions & `useActionState`).
+- [x] Synthetic Events: Hệ thống sự kiện tổng hợp của React khác gì Native DOM Events?
+- [x] Truyền tham số vào Event Handler: Phân biệt `onClick={handleClick}` vs `onClick={() => handleClick(id)}`.
+- [x] Controlled Components (Form có kiểm soát bằng State) vs Uncontrolled Components.
+- [x] Thực chiến Form hiện đại: Thư viện **React Hook Form** kết hợp **Zod Schema** để validate dữ liệu chuẩn doanh nghiệp.
+- [x] Lướt qua tính năng mới: Form Actions trong React 19 (Server Actions & `useActionState`).
 - [ ] 🛠️ **Mini-Project 3:** Xây dựng Form Đăng ký / Đặt vé xem phim chuẩn chỉnh với React Hook Form + Zod (báo lỗi inline tức thì).
 
 ---

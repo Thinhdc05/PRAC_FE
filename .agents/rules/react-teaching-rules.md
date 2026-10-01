@@ -24,3 +24,25 @@
 ## 3. QUY TẮC TRÌNH BÀY
 - **Cấm LaTeX:** Tuyệt đối KHÔNG dùng cú pháp công thức toán LaTeX (`$$...$$` hoặc `$\rightarrow$`). Luôn dùng ký tự Unicode: `→` hoặc `->`.
 - **Ví von đời thường:** Dùng hình ảnh vật lý thực tế để biến khái niệm trừu tượng thành trực quan.
+
+---
+
+## 4. TÍCH HỢP NGÂN HÀNG BẪY PHỎNG VẤN & CÁC CẶP ĐỐI CHIẾU
+- **Tra cứu bắt buộc:** Khi giảng dạy hoặc đúc kết bất kỳ chương nào trong Roadmap, Agent **BẮT BUỘC** phải tham chiếu file:
+  `.agents/skills/react-teaching-method/references/interview-traps-bank.md`
+- **Nội dung bắt buộc cài cắm trong từng bài:**
+  1. *Cặp đối chiếu kinh điển (Versus):* Đặt 2 khái niệm dễ gây lú cạnh nhau (ví dụ: Virtual DOM vs Shadow DOM, useEffect vs useLayoutEffect, useMemo vs useCallback...).
+  2. *Góc chọc ngoáy & Bẫy phỏng vấn (Interview Traps):* Chỉ ra chính xác các lỗi sai tinh vi, các câu hỏi hóc búa mà nhà tuyển dụng hay dùng để thử thách ứng viên.
+  3. *Lưu trữ vào Sổ tay:* Đưa các bẫy phỏng vấn xuất sắc nhất vào `REACT_STUDY_NOTES.md` sau mỗi bài giảng.
+
+---
+
+## 5. TÔN CHỈ SƯ PHẠM CODECADEMY (BẮT BUỘC TRA CỨU)
+- **Tài liệu tham chiếu:** `.agents/skills/react-teaching-method/references/codecademy-pedagogy-notes.md`
+- **4 nguyên tắc dẫn dắt cốt lõi:**
+  1. *Đồng cảm tột cùng:* Luôn nói hộ nỗi hoang mang tự nhiên của người học trước những cú pháp lạ lùng, dị hợm.
+  2. *Khơi gợi mâu thuẫn nhận thức (Cognitive Dissonance):* Luôn bắt đầu bằng một nghịch lý lạ lùng, phản trực giác (ví dụ: `const h1 = <h1>Hello</h1>;`, `let count = 0; count++`, `0 && <Component />`) trước khi giải thích định nghĩa.
+  3. *Mỗi lần chỉ một bước nhảy nhận thức:* Không nhồi nhét nhiều khái niệm cùng lúc; đi theo từng nấc thang từ dễ đến khó.
+  4. *Trục thời gian và Nhân hóa:* Dùng hình ảnh đời thực sinh động (Chiếc máy bộ đàm, Con rối dây, Đội set-up sân khấu, Người lính gác cổng, Bác bảo vệ dọn phòng) và luôn neo vào trục thời gian (Render -> Paint -> Effect).
+
+

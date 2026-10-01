@@ -85,3 +85,39 @@ Mỗi bài giảng khái niệm hoặc cơ chế trong React phải tuân thủ 
   - State được lưu trong các node của cây React Fiber. Khi gọi hàm `setCount`, React lên lịch (schedule) một lần Re-render để chạy lại component với giá trị state mới.
   - Cơ chế Batching: Gom nhiều lệnh `setState` trong cùng 1 tick để chỉ render lại 1 lần duy nhất.
 - **Bẫy Senior:** Tại sao gọi `setCount(count + 1)` 3 lần liên tiếp trong 1 hàm thì `count` chỉ tăng 1? Làm thế nào để giải quyết (Functional Updates: `setCount(prev => prev + 1)`)?
+
+### Mẫu 5: Side Effects & Hook `useEffect`
+- **Hook:** Việc chính của Component là gì? Tại sao gọi API lấy dữ liệu hay đặt `setInterval` ngay trong thân hàm lại làm nổ tung ứng dụng?
+- **Ẩn dụ:** 
+  - *Việc chính vs Việc phụ:* Component chỉ có 1 việc chính là tính toán bản vẽ JSX. Mọi việc chọc ra ngoài (API, Timer, Storage, đổi title) đều là việc phụ.
+  - *Trục thời gian 3 pha:* Render (tính toán) -> Browser Paint (vẽ xong cho user xem) -> `useEffect` (chạy ngầm hậu trường).
+  - *3 Cấp độ Mảng Dependency:* "Kẻ tăng động" (không mảng), "Đội set-up sân khấu làm 1 lần" (`[]`), "Người lính gác cổng" (`[id]`).
+  - *Cleanup Function:* Thủ tục trả phòng khách sạn, dọn sạch rác trước khi đón khách mới.
+- **Under the Hood:** React Fiber schedule passive effects sau khi commit DOM và browser paint.
+- **Bẫy Senior:** Visual Flicker giữa `useEffect` vs `useLayoutEffect`. Tại sao StrictMode chạy effect 2 lần ở Dev? Cleanup chạy TRƯỚC effect kế tiếp chứ không phải chỉ khi unmount.
+
+### Mẫu 6: Kéo State lên cha & Callback Props
+- **Hook:** Hai component anh em ruột (Ô tìm kiếm & Danh sách phim) bị cô lập, làm sao để nói chuyện với nhau khi dữ liệu chỉ chảy 1 chiều từ Cha xuống Con?
+- **Ẩn dụ:** Chiếc máy bộ đàm (Walkie-Talkie). Cha trao cho Con chiếc máy bộ đàm (hàm callback). Con chỉ việc bấm nút gọi, Cha nghe thấy và tự tay cập nhật State của mình.
+- **Under the Hood:** JavaScript First-class Functions, truyền tham chiếu hàm qua Props.
+- **Bẫy Senior:** Lỗi dư thừa state (Derived State: tạo state mới cho dữ liệu có thể tính toán được từ props/state khác).
+
+### Mẫu 7: Controlled Form vs Uncontrolled Form
+- **Hook:** Thẻ `<input>` trong HTML tự do ai gõ gì thì giữ nấy. Sang React tại sao gõ phím mà không có `onChange` thì bàn phím bị "liệt"?
+- **Ẩn dụ:** Con rối dây (Marionette). Ô input là con rối, State là người giật dây. Tay con rối chỉ cử động khi sợi dây State cho phép.
+- **Under the Hood:** Single Source of Truth, React can thiệp vào SyntheticEvent `onChange` để đồng bộ DOM value với state.
+- **Bẫy Senior:** Tại sao React Hook Form dùng Uncontrolled bên dưới để đạt 60 FPS mà không lag như Controlled thủ công?
+
+### Mẫu 8: Hook `useRef`
+- **Hook:** Bạn cần một biến để lưu ID bộ đếm giờ `timerId`. Tại sao khai báo `let timerId` bên ngoài Component là một thảm họa?
+- **Ẩn dụ:** Chiếc két sắt cá nhân bí mật. Giữ đồ qua mọi lần render mà không bao giờ rung chuông báo React vẽ lại màn hình.
+- **Under the Hood:** `useRef` trả về một Plain JS Object cố định `{ current: initialValue }` gắn chặt vào Fiber node của instance đó.
+- **Bẫy Senior:** Khác biệt giữa `useRef` và `useState`: Khi nào dùng ref để lưu giá trị, khi nào dùng ref để trỏ vào DOM node thật?
+
+---
+
+## 📚 TÀI LIỆU THAM CHIẾU BẮT BUỘC
+1. **Kho bẫy phỏng vấn & các cặp đối chiếu tinh hoa:** [.agents/skills/react-teaching-method/references/interview-traps-bank.md](file:///Users/thinh/FE/Prac_FE/PRAC_FE/.agents/skills/react-teaching-method/references/interview-traps-bank.md)
+2. **Tinh hoa sư phạm Codecademy:** [.agents/skills/react-teaching-method/references/codecademy-pedagogy-notes.md](file:///Users/thinh/FE/Prac_FE/PRAC_FE/.agents/skills/react-teaching-method/references/codecademy-pedagogy-notes.md)
+   *(Bắt buộc mở tra cứu trước khi soạn bài giảng và cập nhật study notes).*
+

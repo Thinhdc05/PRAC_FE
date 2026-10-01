@@ -243,5 +243,92 @@
   - *1. Toggle trạng thái Boolean:* `setIsOpen(prev => !prev)` (Tự động đảo ngược trạng thái trước đó một cách an toàn mà không cần quan tâm giá trị hiện tại).
   - *2. Tác vụ Bất đồng bộ (Async / `setTimeout` / API):* Trong `setTimeout`, biến state gốc bị kẹt ở giá trị cũ của quá khứ (Stale Closure). Dùng `prev => ...` đảm bảo luôn đọc được giá trị mới nhất trong ngăn kéo tại thời điểm hàm hẹn giờ thức dậy.
 
+---
+
+### 5. Tư duy "Thinking in React" & Kỹ thuật Kéo State lên cha (Lifting State Up):
+- **Vấn đề "Hai hòn đảo cô lập":**
+  - Hai Component anh em ruột (`SearchBar` và `MovieList`) không thể nói chuyện ngang hàng hoặc tự ý bắn dữ liệu sang cho nhau (Quy tắc One-Way Data Flow).
+- **Kỹ thuật Kéo State lên cha (Lifting State Up):**
+  - Tìm **Tổ tiên chung gần nhất (Nearest Common Ancestor)** của cả hai (thường là `App`).
+  - Nhấc bổng State đặt lên Component Cha.
+  - Cha làm "trạm trung chuyển": truyền giá trị state và hàm cập nhật (callback function) xuống cho các con qua Props.
+- **Quy tắc vàng về Giá trị phái sinh (Derived State):**
+  - *"Nếu một giá trị có thể tính toán được trực tiếp từ State hoặc Props có sẵn, TUYỆT ĐỐI KHÔNG TẠO THÊM STATE CHO NÓ"*.
+  - Ví dụ: `filteredMovies = movies.filter(...)` hoặc `totalPrice = cart.reduce(...)` -> Tính trực tiếp trong hàm khi render, không bao giờ dùng `useState(filteredMovies)` để tránh lỗi lệch dữ liệu.
+
+---
+
+### 6. Hook `useReducer` – Quản lý State phức tạp:
+- **Tại sao cần `useReducer` khi đã có `useState`?**
+  - Cả hai đều cập nhật State. Nhưng `useState` nhét toàn bộ logic tính toán vào trong sự kiện JSX. Khi logic có nhiều bước (kiểm tra giỏ, chặn số âm, tính thuế, áp mã giảm giá), JSX sẽ bị dài và bẩn.
+  - `useReducer` **tách biệt hoàn toàn**: "Giao diện kích hoạt cái gì" (UI) ra khỏi "Dữ liệu được tính toán ra sao" (Business Logic).
+- **Mô hình Khách gọi món & Ông đầu bếp:**
+  - *Khách hàng (Nút bấm JSX):* Chỉ việc rung chuông gọi món `dispatch({ type: "TEN_HANH_DONG", payload: du_lieu })`.
+  - *Ông đầu bếp (`reducer` function):* Nhận `(state, action)`, tự chạy công thức `switch...case` và trả về State mới.
+- **Quy tắc bất di bất dịch của Reducer:**
+  - Phải là **Hàm thuần khiết (Pure Function)**: Tuyệt đối không gọi API, không dùng `Math.random()` hay `Date.now()` bên trong hàm Reducer.
+
+---
+
+## 4. Xử lý sự kiện (Event Handling) & Form hiện đại
+
+---
+
+### 1. Synthetic Events (Hệ thống sự kiện tổng hợp):
+- **Bản chất của SyntheticEvent:**
+  - Là một lớp vỏ bọc trừu tượng (Wrapper) do React tạo ra để bao bọc các sự kiện DOM thật của trình duyệt (Native DOM Events).
+  - *Giá trị thực tế:* Cung cấp một API nhất quán 100% trên mọi trình duyệt (Cross-browser compatibility), ngăn chặn các lỗi lệch hành vi giữa Chrome, Safari, Firefox.
+  - Vẫn giữ nguyên các phương thức kinh điển: `e.preventDefault()` (chặn hành vi mặc định của trình duyệt), `e.stopPropagation()` (chặn sự kiện nổi bọt - Event Bubbling), `e.target.value` (đọc dữ liệu người dùng nhập).
+- **Quy ước cú pháp JSX:**
+  - Luôn dùng chuẩn Lạc đà (camelCase): `onClick`, `onChange`, `onSubmit`, `onKeyDown`.
+  - Luôn truyền **Hàm tham chiếu** (không có dấu ngoặc tròn `()`), tránh để hàm bị thực thi ngay khi vừa render.
+
+---
+
+### 2. Ba kỹ thuật truyền tham số vào Event Handler:
+- **Trường hợp 1 (Không tham số ngoài):**
+  - `<button onClick={handleClick}>Bấm</button>`
+  - React tự động truyền đối tượng sự kiện `e` vào làm tham số đầu tiên của hàm `handleClick(e)`.
+- **Trường hợp 2 (Cần truyền thêm dữ liệu riêng - ví dụ ID):**
+  - Cấm viết: `onClick={handleClick(id)}` (sẽ bị chạy ngay lập tức khi vẽ giao diện).
+  - Chuẩn: `<button onClick={() => handleClick(movie.id)}>Xóa</button>` (Bọc trong Arrow Function để chỉ chạy khi người dùng thực sự click chuột).
+- **Trường hợp 3 (Vừa cần lấy sự kiện `e`, vừa cần truyền ID):**
+  - `<button onClick={(e) => handleClick(e, movie.id)}>Xóa</button>`
+  - Cho phép gọi `e.stopPropagation()` để chặn nổi bọt lên thẻ cha.
+
+---
+
+### 3. Controlled Components (Form có kiểm soát) vs Uncontrolled Components:
+- **Uncontrolled Component (Form "Thả rông" / Hộp thư góp ý):**
+  - Trình duyệt tự lưu trữ giá trị trong DOM thật. React không biết giá trị bên trong ô input là gì cho đến khi người dùng bấm nút Submit và ta đọc qua `ref.current.value`.
+  - Khó kiểm tra lỗi tức thì, không thể tự động kích hoạt/vô hiệu hóa nút bấm theo thời gian thực.
+- **Controlled Component (Form "Giám sát 24/7" / Chiếc gương soi):**
+  - Ô input không được tự giữ dữ liệu, mà phải phản chiếu 100% dữ liệu từ React State.
+  - Công thức 2 chiều: `value={state}` kết hợp `onChange={(e) => setState(e.target.value)}`.
+  - *Siêu năng lực:* Kiểm tra lỗi tức thì (Instant Validation), vô hiệu hóa nút Submit khi chưa điền đủ thông tin, tìm kiếm tự động theo từng phím gõ (Live Search).
+
+---
+
+### 4. Thư viện Form hiện đại: React Hook Form + Zod Schema:
+- **Nỗi đau khi làm Form thủ công bằng `useState`:**
+  - Quá nhiều boilerplate: Form 10 trường cần 10 biến state và 10 biến error state.
+  - Vấn đề hiệu năng: Mỗi phím gõ gây re-render toàn bộ cả component form, dẫn đến lag giật khi form lớn.
+  - Khó khăn khi viết Regex kiểm tra email, mật khẩu thủ công.
+- **Giải pháp chuẩn doanh nghiệp:**
+  - **React Hook Form (RHF):** Quản lý form siêu tốc, gõ phím mượt mà 60 FPS mà không gây re-render thừa. Gắn vào input siêu gọn bằng `<input {...register("email")} />`.
+  - **Zod Schema:** Định nghĩa bộ luật kiểm tra dữ liệu bằng cú pháp khai báo tiếng Việt trực quan (`z.string().email(...)`, `z.string().min(8, ...)`). Tự động chặn dữ liệu bẩn và hiển thị thông báo lỗi chính xác.
+
+---
+
+### 5. Điểm sáng React 19: Form Actions & Hook `useActionState`:
+- **Thuộc tính `action` trên thẻ `<form>`:**
+  - Cho phép truyền trực tiếp một hàm bất đồng bộ (Async Function) vào `action={handleSubmit}`.
+  - Tự động gom dữ liệu vào `formData`, tự động loại bỏ sự cần thiết của `e.preventDefault()`.
+- **Hook `useActionState`:**
+  - `const [state, formAction, isPending] = useActionState(asyncActionFn, initialValue)`.
+  - Tự động cung cấp cờ **`isPending`** (tự thành `true` khi đang gửi API, và `false` khi xong) để khóa nút bấm và hiển thị trạng thái "Đang gửi...", xóa bỏ hoàn toàn boilerplate `try/catch/finally` và `useState(isLoading)`.
+
+
+
 
 
