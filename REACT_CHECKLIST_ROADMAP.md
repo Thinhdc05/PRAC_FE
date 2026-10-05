@@ -93,16 +93,16 @@
 ---
 
 ## 7. Quản lý State nâng cao, Data Fetching & Hook React 19 Hiện đại
-- [ ] Phân định rõ ràng: **Client State** (Theme, Modal, Sidebar) vs **Server State** (Dữ liệu API, Cache, Loading, Error).
-- [ ] Quản lý Client State toàn cục với **Context API** (`createContext`, `useContext`, Provider Pattern) cho Theme Tối/Sáng, Ngôn ngữ.
-- [ ] Quản lý Client State bằng thư viện hiện đại gọn nhẹ: **Zustand** (So sánh với Context API và Redux).
-- [ ] Quản lý Server State thực chiến với **TanStack Query (React Query)**:
+- [x] Phân định rõ ràng: **Client State** (Theme, Modal, Sidebar) vs **Server State** (Dữ liệu API, Cache, Loading, Error).
+- [x] Quản lý Client State toàn cục với **Context API** (`createContext`, `useContext`, Provider Pattern) cho Theme Tối/Sáng, Ngôn ngữ.
+- [x] Quản lý Client State bằng thư viện hiện đại gọn nhẹ: **Zustand** (So sánh với Context API và Redux).
+- [x] Quản lý Server State thực chiến với **TanStack Query (React Query)**:
   - Tự động Caching, Background Refetching, Quản lý `isLoading`, `isError`, và Retry.
   - Loại bỏ hoàn toàn sự cồng kềnh của `useEffect + fetch`.
-- [ ] Các Hook tiên tiến trong React 19:
+- [x] Các Hook tiên tiến trong React 19:
   - Hook `useOptimistic`: Kỹ thuật cập nhật giao diện lạc quan (nhảy like/thả tim ngay lập tức trước khi server phản hồi).
   - Hook `use`: Đọc Promise và Context linh hoạt ngay trong câu lệnh rẽ nhánh `if`.
-- [ ] Tự viết Hook riêng (**Custom Hooks**): Tách rời 100% logic nghiệp vụ ra khỏi UI (`useMovieSearch`, `useDebounce`).
+- [x] Tự viết Hook riêng (**Custom Hooks**): Tách rời 100% logic nghiệp vụ ra khỏi UI (`useMovieSearch`, `useDebounce`).
 - [ ] 🛠️ **Mini-Project 6:** Xây dựng trang Quản lý Yêu thích & Dark Mode dùng Zustand, kết hợp TanStack Query gọi API phim có cache mượt mà.
 
 ---

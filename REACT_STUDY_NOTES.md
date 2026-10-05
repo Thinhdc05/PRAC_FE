@@ -869,10 +869,326 @@ Cú pháp tổng quát: `useEffect(callback, [dependencies])`.
 - Khi dùng `setInterval`, `setTimeout`, hoặc `window.addEventListener` bên trong `useEffect(..., [])`, callback luôn bị đóng băng với biến state của lần render đầu tiên.
 - Luôn nhớ sử dụng `setState(prev => ...)` để luôn tính toán dựa trên dữ liệu mới nhất.
 
+---
 
+## 8. Chương 7.1: Quản lý State toàn cục với Context API (Mổ xẻ chuyên sâu F8)
 
+---
 
+### 1. Bản chất của Context API & Giải phẫu hàm `createContext`:
+- **Bản chất đời sống:** Ngữ cảnh (Context) giống như chiếc tủ lạnh trong gia đình. Mọi thành viên trong nhà đều tiếp cận được mà không cần phải chuyền tay nhau vác tủ lạnh từ phòng này sang phòng khác (Xóa bỏ hoàn toàn quốc nạn **Prop Drilling**).
+- **Hàm `createContext(defaultValue)` thực sự trả về cái gì?**
+  - Trả về **MỘT OBJECT JAVASCRIPT THUẦN TÚY** có cấu trúc:
+    ```javascript
+    {
+      $$typeof: Symbol(react.context),
+      _currentValue: defaultValue,
+      _currentValue2: defaultValue,
+      Provider: { $$typeof: Symbol(react.provider), _context: [Circular] },
+      Consumer: { $$typeof: Symbol(react.context), _context: [Circular] }
+    }
+    ```
+  - **Tại sao viết được `<ThemeContext.Provider>`?** Vì `ThemeContext` là một Object, bên trong chứa thuộc tính `Provider`. Bản thân `Provider` là một Component đặc biệt do React đúc sẵn. Việc gọi component dạng `Object.Property` trong JSX là cú pháp chuẩn của JavaScript.
 
+---
+
+### 2. Chiếc bẫy kinh điển: Giá trị `defaultValue` thực sự dùng khi nào?
+- **Sai lầm phổ biến:** Nghĩ rằng nếu `value` của Provider truyền vào `undefined` hoặc `null` thì React sẽ tự fallback về `defaultValue`.
+- **Sự thật chuẩn Senior:**
+  - `defaultValue` **CHỈ ĐƯỢC KÍCH HOẠT** khi Component con gọi `useContext(ThemeContext)` mà **BÊN TRÊN NÓ HOÀN TOÀN KHÔNG CÓ BẤT KỲ THẺ `<ThemeContext.Provider>` NÀO BAO BỌC** (rất hữu ích khi viết Isolated Unit Tests).
+  - Nếu đã có `<ThemeContext.Provider value={undefined}>`, thì con nhận về **chính xác là `undefined`**, React KHÔNG hề đụng tới `defaultValue`!
+
+---
+
+### 3. Sự tiến hóa: Từ nỗi ác mộng `<Consumer>` đến `useContext`:
+- **Thời Class Component (Trước React 16.8):**
+  - Bắt buộc dùng `<Context.Consumer>` kết hợp kỹ thuật **Render Props (Children là một hàm)**:
+    ```jsx
+    <ThemeContext.Consumer>
+      {theme => <h1>{theme}</h1>}
+    </ThemeContext.Consumer>
+    ```
+  - Nếu dùng 3 context (`Theme`, `User`, `Language`), code bị thụt lề 3-4 tầng kim tự tháp, tạo thành **"Wrapper Hell" / "Callback Hell"** cực kỳ kinh dị và khó bảo trì.
+- **Thời đại Hook (`useContext`):**
+  - San phẳng toàn bộ kim tự tháp chỉ với một dòng: `const theme = useContext(ThemeContext);`. Bản chất ngầm nó thay thế hoàn toàn cho thẻ `<Consumer>`.
+
+---
+
+### 4. Mô hình đóng gói Context chuẩn F8 (Production Pattern):
+- Không khai báo Context lộn xộn trong `App.jsx`. Tách riêng file `src/context/ThemeContext.jsx`:
+  ```jsx
+  import { createContext, useState, useContext } from "react";
+
+  const ThemeContext = createContext();
+
+  export function ThemeProvider({ children }) {
+    const [theme, setTheme] = useState("dark");
+    const toggleTheme = () => setTheme(prev => prev === "dark" ? "light" : "dark");
+
+    return (
+      <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        {children}
+      </ThemeContext.Provider>
+    );
+  }
+
+  // Custom Hook tiện ích: Bên ngoài chỉ cần gọi useTheme(), không cần import cả useContext lẫn ThemeContext
+  export function useTheme() {
+    const context = useContext(ThemeContext);
+    if (!context) {
+      throw new Error("useTheme phải được sử dụng bên trong ThemeProvider!");
+    }
+    return context;
+  }
+  ```
+
+---
+
+### 5. Mặt tối của Context API (Bẫy phỏng vấn Senior):
+- **Cơ chế lan tỏa Re-render (No Selective Subscriptions):**
+  - Khi Provider đổi `value` (bằng so sánh `Object.is`), **TẤT CẢ component nào có gọi `useContext` đó đều bị ép buộc re-render**, dù chúng chỉ cần 1 trường nhỏ xíu trong object value.
+- **`React.memo` hoàn toàn vô dụng:**
+  - `React.memo` chỉ chặn re-render khi Props từ cha không đổi. `useContext` đi ngầm qua Fiber dependency, bỏ qua hoàn toàn khiên chắn `React.memo`.
+- **Quy tắc vàng:** Chỉ dùng Context cho dữ liệu **ít thay đổi tần suất thấp** (Theme Sáng/Tối, Ngôn ngữ đa quốc gia, Thông tin User đăng nhập). Với dữ liệu biến thiên liên tục (Tọa độ chuột, Audio time, Giỏ hàng lớn), phải chuyển sang **Zustand**.
+
+---
+
+## 9. Chương 7.2: Bản chất Redux & Bộ đôi Hook `useSelector` / `useDispatch`
+
+---
+
+### 1. Redux thực chất là gì? (Bóc tách lớp sương mù):
+- **Về mặt kỹ thuật:** Redux là **MỘT THƯ VIỆN JAVASCRIPT ĐỘC LẬP** (cài bằng `npm install redux`), không thuộc quyền sở hữu riêng của React. Có thể chạy độc lập trên JS thuần, Vue, Angular, Node.js.
+- **Về mặt tư tưởng:** Redux là một **Mô hình kiến trúc quản lý dữ liệu tập trung (Centralized State Container)** tuân theo dòng chảy dữ liệu một chiều (Unidirectional Data Flow).
+- **Cầu nối với React:** Thư viện `react-redux` đóng vai trò là chiếc cầu nối, cung cấp thẻ `<Provider>` và 2 hook tiện ích `useSelector`, `useDispatch`.
+
+---
+
+### 2. Nguồn gốc lịch sử — Căn bệnh "Thông báo ma" của Facebook:
+- **Bối cảnh 2014:** Facebook dùng mô hình MVC với Two-way Data Binding. Người dùng đọc thông báo ở Header, số `(1)` biến mất; mở khung Chat ở góc dưới màn hình, số `(1)` ở Header lại giật ngược xuất hiện trở lại!
+- **Nguyên nhân:** Dữ liệu nhảy vòng vèo giữa các Model và View, không ai biết component nào đang âm thầm đè dữ liệu của component nào.
+- **Giải pháp:** Facebook phát minh kiến trúc **Flux (Dòng dữ liệu một chiều)** -> Năm 2015, Dan Abramov đơn giản hóa Flux kết hợp hàm Reducer tạo ra **Redux** *(Reducer + Flux)*.
+
+---
+
+### 3. Ba nguyên tắc bất di bất dịch của Redux:
+1. **Single Source of Truth (Một nguồn sự thật duy nhất):** Toàn bộ trạng thái của cả ứng dụng được lưu trong đúng **MỘT OBJECT JAVASCRIPT DUY NHẤT** gọi là **Store** đặt ngoài component.
+2. **State is Read-Only (State là chỉ đọc):** Không được gán trực tiếp `store.data = ...`. Muốn thay đổi bắt buộc phải gửi một bức thư yêu cầu gọi là **Action** (`{ type: "TÊN_HÀNH_ĐỘNG", payload: du_lieu }`).
+3. **Changes are made with Pure Functions (Thay đổi bằng hàm thuần khiết):** Việc tính toán state mới do hàm **Reducer** `(prevState, action) => nextState` đảm nhận, tuyệt đối không được làm đột biến (mutate) dữ liệu cũ.
+
+---
+
+### 4. Đối chiếu trực diện: `useReducer` vs `Redux`:
+| Tiêu chí | `useReducer` | `Redux` |
+| :--- | :--- | :--- |
+| **Phạm vi quản lý** | Cục bộ (Local State) cho 1 Component hoặc cây con nhỏ. | Toàn cục (Global State) cho toàn bộ trang web. |
+| **Vị trí chiếc két sắt** | Đặt ngay trong phòng riêng của Component. | Đặt ở sảnh chính trung tâm tòa nhà (`store.js`). |
+| **Cài đặt thư viện** | Không cần (Có sẵn trong React Core). | Cần cài `redux` và `react-redux`. |
+| **Bản chất logic** | Đều dùng cơ chế Reducer - Action - Dispatch. Redux là "cha đẻ", `useReducer` là "bản thu nhỏ" được React bê vào core. |
+
+---
+
+### 5. Bộ đôi Hook "phục vụ viên" trong `react-redux`:
+- **`useDispatch()`:** 
+  - Trả về đúng hàm `dispatch` của Store.
+  - Nhiệm vụ: Bỏ phiếu Action vào hòm thư: `dispatch({ type: "ADD_TO_CART", payload: movie })`. Cực kỳ đơn giản, không có logic vòng đời phức tạp.
+- **`useSelector(selectorFn)`:**
+  - Nhận vào một hàm chọn món: `const cart = useSelector(state => state.cart);`.
+  - Nhiệm vụ: Thò tay vào két sắt lấy đúng phần dữ liệu cần thiết.
+  - **Tối ưu hóa ngầm:** Tự động so sánh giá trị trả về của selector. Nếu trường dữ liệu đó không đổi (dù các phần khác trong Store đổi), component **sẽ KHÔNG bị re-render thừa**!
+
+---
+
+## 10. Chương 7.3: Redux Toolkit (RTK) — Cuộc cách mạng giải cứu Redux & Phép màu Immer.js
+
+---
+
+### 1. Tại sao Redux Toolkit (RTK) ra đời?
+- **Nỗi đau Redux cổ điển:**
+  - **Boilerplate Hell:** Cần tạo riêng 4 file (`types.js`, `actions.js`, `reducer.js`, `store.js`) chỉ để làm một chức năng tăng số lượng.
+  - **Immutability Hell:** State lồng nhiều tầng (Nested Objects) buộc phải dùng toán tử Spread `{...}` copy 3-4 lần rất dễ quên và sinh bug.
+- **Sứ mệnh của RTK (`@reduxjs/toolkit`):**
+  - Do chính đội ngũ tác giả Redux tạo ra để chuẩn hóa cách viết Redux hiện đại: **Giảm 80% code thừa thãi**, tích hợp sẵn công cụ tốt nhất.
+
+---
+
+### 2. Bốn bước triển khai chuẩn mực của RTK (Production Flow):
+
+#### Bước 1: Cắt một "miếng bánh" bằng `createSlice` (`src/features/cart/cartSlice.js`):
+```javascript
+import { createSlice } from '@reduxjs/toolkit';
+
+export const cartSlice = createSlice({
+  name: 'cart', // Tiền tố action type tự sinh: "cart/addToCart"
+  initialState: { items: [] },
+  reducers: {
+    // 1. Nhờ có Immer.js: ĐƯỢC PHÉP DÙNG LỆNH PUSH TRỰC TIẾP!
+    addToCart: (state, action) => {
+      const existing = state.items.find(item => item.id === action.payload.id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        state.items.push({ ...action.payload, quantity: 1 });
+      }
+    },
+    removeItem: (state, action) => {
+      state.items = state.items.filter(item => item.id !== action.payload);
+    },
+    clearCart: (state) => {
+      state.items = [];
+    }
+  }
+});
+
+// Tự động xuất xưởng Action Creators:
+export const { addToCart, removeItem, clearCart } = cartSlice.actions;
+// Xuất xưởng Reducer để ghép vào Store:
+export default cartSlice.reducer;
+```
+
+#### Bước 2: Ghép các miếng bánh vào Store bằng `configureStore` (`src/app/store.js`):
+```javascript
+import { configureStore } from '@reduxjs/toolkit';
+import cartReducer from '../features/cart/cartSlice';
+
+export const store = configureStore({
+  reducer: {
+    cart: cartReducer, // Cắm slice vào két sắt
+  },
+  // Tự động kích hoạt Redux DevTools & Redux Thunk (để gọi API bất đồng bộ)
+});
+```
+
+#### Bước 3: Cung cấp Store cho toàn bộ ứng dụng (`src/main.jsx`):
+```jsx
+import { Provider } from 'react-redux';
+import { store } from './app/store';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+);
+```
+
+#### Bước 4: Sử dụng trong Component (`useSelector` & `useDispatch`):
+```jsx
+// 1. Đọc dữ liệu ra:
+const cartItems = useSelector((state) => state.cart.items);
+
+// 2. Gửi hành động vào:
+const dispatch = useDispatch();
+<button onClick={() => dispatch(addToCart(movie))}>Thêm vé</button>
+```
+
+---
+
+### 3. Dưới nắp ca-pô của thư viện `Immer.js` (Phép thuật Mutate an toàn):
+- **Câu hỏi phản trực giác:** Tại sao trong `createSlice` ta viết `state.items.push(...)` hay `existing.quantity += 1` mà không vi phạm nguyên tắc Bất biến (Immutability)?
+- **Cơ chế ngầm:** 
+  - RTK tích hợp ngầm thư viện **Immer.js**.
+  - Immer sử dụng tính năng **`Proxy`** của JavaScript để bọc lấy `state`.
+  - Mọi thao tác gán trực tiếp (`=`, `.push()`, `.splice()`) chỉ được ghi vào một bản sao nháp (**Draft State**).
+  - Sau khi reducer chạy xong, Immer tự động đối chiếu và trả về cho Redux một **Object mới tinh hoàn toàn bất biến**.
+  - Lập trình viên viết code mutate tự nhiên như JS thuần, nhưng kiến trúc bên dưới vẫn bảo đảm an toàn 100%!
+
+---
+
+### 4. Góc nhìn nghề nghiệp & Thực tế tuyển dụng (Career Strategy):
+- **Zustand:** Lựa chọn số 1 cho dự án mới, cá nhân, công ty công nghệ hiện đại vì không cần Provider, cực kỳ tinh gọn.
+- **Redux Toolkit (RTK):** Bắt buộc phải biết vì hơn 70% các dự án quy mô lớn, ngân hàng, fintech, công ty outsourcing lớn (FPT, VNG, Viettel, Shopee...) được xây dựng từ 2018-2023 đều đang dùng Redux. Nắm chắc RTK giúp bạn tự tin đọc hiểu và bảo trì bất kỳ hệ thống doanh nghiệp nào.
+
+---
+
+## 11. Chương 7.4: Cuộc phân tranh Client State vs Server State & TanStack Query
+
+---
+
+### 1. Phân định ranh giới sinh tử:
+| Đặc tính | Client State (State của Trình duyệt) | Server State (State của Máy chủ) |
+| :--- | :--- | :--- |
+| **Quyền sở hữu** | Trình duyệt làm chủ 100%. | Máy chủ (Database) làm chủ. Trình duyệt chỉ mượn bản sao (Snapshot). |
+| **Độ trễ** | Tức thì (Synchronous), không cần mạng. | Bất đồng bộ (Asynchronous), phụ thuộc mạng, có độ trễ, lỗi mạng. |
+| **Bản chất dữ liệu** | Luôn tươi mới và chính xác. | **Dữ liệu có thể bị cũ rích (Stale)** bất cứ lúc nào nếu người khác cập nhật ở server. |
+| **Công cụ quản lý** | `useState`, `useReducer`, `Zustand`. | **TanStack Query (React Query)** hoặc RTK Query. |
+
+---
+
+### 2. Tại sao ngày nay người ta bỏ dùng `useEffect + fetch`?
+- **Không có Cache (Bộ nhớ đệm):** Mỗi lần đổi tab hoặc back lại trang, `useEffect` lại chạy lại từ đầu -> Hiện spinner xoay mòng mòng -> Lãng phí băng thông server.
+- **Rác State:** Phải tốn 3 state (`data`, `isLoading`, `error`) cho mỗi lần gọi API. 10 API tốn 30 biến state!
+- **Không tự động Re-fetch:** Không tự làm mới khi user quay lại tab (Window Focus Refetching).
+
+---
+
+### 3. Cặp bài trùng trong TanStack Query (`@tanstack/react-query`):
+- **`useQuery` (ĐỌC dữ liệu - Phương thức GET):**
+  ```javascript
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['movies'], // Key định danh cache trong RAM
+    queryFn: () => fetch('/api/movies').then(res => res.json()),
+    staleTime: 1000 * 60 * 5, // Dữ liệu được coi là mới trong 5 phút, không refetch thừa
+  });
+  ```
+- **`useMutation` (GHI / SỬA / XÓA dữ liệu - POST, PUT, DELETE):**
+  ```javascript
+  const mutation = useMutation({
+    mutationFn: (newTicket) => axios.post('/api/tickets', newTicket),
+    onSuccess: () => {
+      // Đánh dấu cache 'movies' đã cũ -> Ra lệnh useQuery tự động đi lấy dữ liệu mới về ngay!
+      queryClient.invalidateQueries({ queryKey: ['movies'] });
+    }
+  });
+  ```
+
+---
+
+## 12. Chương 7.5: Các Hook tiên tiến trong React 19 (`useOptimistic` & `use`)
+
+---
+
+### 1. Hook `useOptimistic` (Giao diện "lạc quan"):
+- **Bản chất:** Cho phép giao diện nhảy số trước (trong 0 giây) khi gửi request lên server (như thả tim Facebook, bấm like TikTok).
+- **Cơ chế Rollback:** Nếu request thất bại hoặc mạng đứt, React **tự động hoàn tác (rollback)** về giá trị thật ban đầu mà không cần lập trình viên phải viết code nháp state cũ thủ công.
+
+---
+
+### 2. Hook `use()` (Phá vỡ quy tắc gọi hook cổ hủ):
+- **Được phép nằm trong câu lệnh `if`:** Phá vỡ điều luật cấm gọi hook trong điều kiện từ thời React 16. Giúp đọc Context có điều kiện: `if (showTheme) { const theme = use(ThemeContext); }`.
+- **Mở hộp Promise trực tiếp trong JSX:** Nhận vào một Promise từ API, tự động dừng component và kích hoạt `<Suspense fallback={<Spinner />}>` bên ngoài để chờ dữ liệu về.
+
+---
+
+## 13. Chương 7.6: Bản chất Custom Hook & Thực chiến `useDebounce`
+
+---
+
+### 1. Bản chất thực sự của Custom Hook:
+- Custom Hook **chỉ là một hàm JavaScript bình thường**, nhưng bên trong nó **có gọi các Hook khác của React** (`useState`, `useEffect`, `useRef`...).
+- **Quy tắc bắt buộc:** Tên hàm phải bắt đầu bằng tiền tố **`use...`** để React Linter nhận diện và kiểm soát luật Hook.
+
+---
+
+### 2. Mẫu chuẩn thực chiến: `useDebounce` (Trị bệnh spam gõ phím tìm kiếm):
+```javascript
+import { useState, useEffect } from 'react';
+
+export function useDebounce(value, delay = 500) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    // Đặt hẹn giờ cập nhật sau 'delay' ms:
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    // CLEANUP: Hủy timer cũ nếu người dùng gõ phím tiếp trước khi hết giờ:
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+```
 
 
 

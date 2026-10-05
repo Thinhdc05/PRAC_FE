@@ -1,32 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { MovieBanner } from './components/MovieBanner';
+import { SearchBar } from './components/SearchBar';
+import {MovieList} from'./components/MovieList';
+import{useMovieSearch} from './hooks/useMovieSearch'
 
 function App() {
-  const [job, setJob] = useState('');
-  const [jobs, setJobs] = useState([]);
-  const handelSubmit = () => {
-    setJobs([...jobs, job])
-    setJob('')
-  }
-  const handleDelete=(index)=>{
-    setJobs(prev=>prev.filter((_,i) => i!==index));
-  }
+   const {
+    movies,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasMore,
+    handleSearch,
+    handleLoadMore,
+  } = useMovieSearch();
   return (
     <div>
-      <input type="text" 
-        value={job}
-        onChange={(e)=>setJob(e.target.value)}
-      />
-      <button onClick={handelSubmit}>add</button>
-      <ul>
-        {jobs.map((job,index)=>(
-          <li key={index}>{job}
-          <button onClick={()=>handleDelete(index)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-
+      <SearchBar onSearch={handleSearch} />
+      <MovieBanner movies={movies} />
+      <MovieList movies={movies} isLoading={isLoading} error={error} />
+      {
+        hasMore && !isLoading &&(
+          <button
+          onClick={handleLoadMore}
+          disabled={isLoadingMore}
+          >
+            {isLoadingMore? 'Dang tai them phim':'tai thêm phim'}
+          </button>
+        )
+      }
     </div>
-  ) 
+  )
 }
 
 export default App;
