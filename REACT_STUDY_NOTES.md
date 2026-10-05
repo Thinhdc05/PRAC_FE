@@ -258,15 +258,151 @@
 
 ---
 
-### 6. Hook `useReducer` – Quản lý State phức tạp:
-- **Tại sao cần `useReducer` khi đã có `useState`?**
-  - Cả hai đều cập nhật State. Nhưng `useState` nhét toàn bộ logic tính toán vào trong sự kiện JSX. Khi logic có nhiều bước (kiểm tra giỏ, chặn số âm, tính thuế, áp mã giảm giá), JSX sẽ bị dài và bẩn.
-  - `useReducer` **tách biệt hoàn toàn**: "Giao diện kích hoạt cái gì" (UI) ra khỏi "Dữ liệu được tính toán ra sao" (Business Logic).
-- **Mô hình Khách gọi món & Ông đầu bếp:**
-  - *Khách hàng (Nút bấm JSX):* Chỉ việc rung chuông gọi món `dispatch({ type: "TEN_HANH_DONG", payload: du_lieu })`.
-  - *Ông đầu bếp (`reducer` function):* Nhận `(state, action)`, tự chạy công thức `switch...case` và trả về State mới.
-- **Quy tắc bất di bất dịch của Reducer:**
-  - Phải là **Hàm thuần khiết (Pure Function)**: Tuyệt đối không gọi API, không dùng `Math.random()` hay `Date.now()` bên trong hàm Reducer.
+### 6. Hook `useReducer` – Quản lý State phức tạp (Phương pháp sư phạm 4 bước chuẩn mực):
+- **Khi nào dùng `useState` vs `useReducer`?**
+  - Cả hai đều sinh ra để quản lý State của Component. Bài toán nào giải được bằng `useState` thì cũng giải được bằng `useReducer` và ngược lại.
+  - *Dùng `useState`:* Khi State đơn giản (kiểu nguyên thủy: số, chuỗi, boolean; mảng/object 1 tầng ít logic).
+  - *Dùng `useReducer`:* Khi State phức tạp (Object lồng nhau nhiều tầng, nhiều nhánh hành động rẽ nhánh: thêm, sửa, xóa, lọc...).
+
+---
+
+#### 1. Bảng đối chiếu quy trình: `useState` (3 bước) vs `useReducer` (4 bước):
+- **Với `useState` (3 bước):**
+  1. *Init state:* `const [count, setCount] = useState(0)` (khởi tạo bằng 0).
+  2. *Action:* Kích hoạt hàm set khi click: `() => setCount(count + 1)`.
+  3. *Re-render:* State đổi -> Vẽ lại giao diện.
+- **Với `useReducer` (Nâng cấp lên 4 bước chuẩn mực):**
+  1. *BƯỚC 1 - Init state:* Khởi tạo giá trị ban đầu (`const initState = 0;`).
+  2. *BƯỚC 2 - Actions:* Định nghĩa danh sách các hành động có thể xảy ra:
+     ```javascript
+     const UP_ACTION = 'up';
+     const DOWN_ACTION = 'down';
+     ```
+  3. *BƯỚC 3 - Reducer:* Viết hàm chế biến dữ liệu `reducer(state, action)`:
+     ```javascript
+     const reducer = (state, action) => {
+       switch (action) {
+         case UP_ACTION:
+           return state + 1;
+         case DOWN_ACTION:
+           return state - 1;
+         default:
+           throw new Error('Action không hợp lệ!');
+       }
+     };
+     ```
+  4. *BƯỚC 4 - Dispatch:* Kích hoạt hành động bên trong Component:
+     ```jsx
+     const [count, dispatch] = useReducer(reducer, initState);
+     // Khi click nút:
+     <button onClick={() => dispatch(UP_ACTION)}>Tăng (+)</button>
+     ```
+
+---
+
+#### 2. Luồng chạy dữ liệu dưới nắp ca-pô (Data Flow):
+```text
+[ NGƯỜI DÙNG BẤM NÚT ] -> [ GỌI DISPATCH(ACTION) ] -> [ REACT GỌI REDUCER(STATE, ACTION) ]
+                                                                     |
+                                                                     v
+[ VẼ LẠI GIAO DIỆN (UI) ] <--------- [ TRẢ VỀ STATE MỚI (NEW STATE) ]
+```
+
+---
+
+#### 3. Bước nhảy vọt: Nâng cấp lên bài toán To-Do List (Action có Payload):
+Khi chuyển từ bài đếm số sang To-Do List, một hành động không chỉ có cái tên (Type), mà nó còn phải **mang theo DỮ LIỆU ĐI KÈM (Payload)**:
+- **BƯỚC 1: Init State (Object 2 trường):**
+  ```javascript
+  const initState = {
+    job: '',     // Chữ đang gõ trong ô input
+    jobs: []     // Danh sách các việc
+  };
+  ```
+- **BƯỚC 2: Actions & Action Creators (Hàm đóng gói dữ liệu):**
+  ```javascript
+  const SET_JOB = 'set_job';
+  const ADD_JOB = 'add_job';
+  const DELETE_JOB = 'delete_job';
+
+  const setJob = payload => ({ type: SET_JOB, payload });
+  const addJob = payload => ({ type: ADD_JOB, payload });
+  const deleteJob = payload => ({ type: DELETE_JOB, payload });
+  ```
+- **BƯỚC 3: Reducer (Xử lý cập nhật bất biến):**
+  ```javascript
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case SET_JOB:
+        return { ...state, job: action.payload };
+      case ADD_JOB:
+        return {
+          ...state,
+          jobs: [...state.jobs, action.payload],
+          job: '' // Tự động xóa sạch ô input sau khi thêm
+        };
+      case DELETE_JOB:
+        return {
+          ...state,
+          jobs: state.jobs.filter((_, index) => index !== action.payload)
+        };
+      default:
+        throw new Error('Action không hợp lệ!');
+    }
+  };
+  ```
+- **BƯỚC 4: Component & Dispatch (JSX trắng sạch không còn logic bẩn):**
+  ```jsx
+  function TodoApp() {
+    const [state, dispatch] = useReducer(reducer, initState);
+    const { job, jobs } = state;
+
+    return (
+      <div>
+        <input 
+          value={job} 
+          onChange={e => dispatch(setJob(e.target.value))} 
+        />
+        <button onClick={() => dispatch(addJob(job))}>Thêm</button>
+        <ul>
+          {jobs.map((item, index) => (
+            <li key={index}>
+              {item}
+              <button onClick={() => dispatch(deleteJob(index))}>Xóa</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+  ```
+- **Giá trị cốt lõi:** Tách biệt 100% **Giao diện (UI)** ra khỏi **Não bộ xử lý (Business Logic)**. Giao diện chỉ việc dispatch hành động, còn toàn bộ việc mutate/tính toán mảng được cô lập hoàn toàn trong Reducer!
+- **Quy tắc bất biến của Reducer:** Reducer phải luôn là **Hàm thuần khiết (Pure Function)**: Tuyệt đối không gọi API, không dùng `Math.random()`, không dùng `Date.now()` bên trong Reducer.
+
+---
+
+### 7. Cặp bài toán kinh điển: Radio (Single) vs Checkbox (Multiple) & Chiếc cầu dẫn tới To-Do List:
+- **Bài toán 1: Radio - Tại sao cấm dùng thuộc tính `name` của HTML?**
+  - *Hiểm họa của `name="course"`:* Trình duyệt tự động gom các input có cùng name trên toàn bộ trang. Nếu Component được tái sử dụng 2 lần ở 2 nơi khác nhau, click ở component này sẽ làm nhảy tick ở component kia (Xung đột Name/ID toàn cục). Hơn nữa, trạng thái checked do DOM thật nắm giữ, React hoàn toàn "mù" (Uncontrolled).
+  - *Tư duy Controlled với ID duy nhất:* Tước bỏ quyền của DOM, giao quyền cho State `const [checkedId, setCheckedId] = useState(1)`.
+  - *Công thức kiểm tra:* `checked={checkedId === course.id}` và `onChange={() => setCheckedId(course.id)}`. Chỉ 1 biểu thức Boolean duy nhất quyết định giao diện!
+- **Bài toán 2: Checkbox - Bước nhảy vọt từ Giá trị đơn sang Mảng (Multiple Selection):**
+  - Người dùng có thể chọn nhiều mục -> State bắt buộc phải là một Mảng: `const [checkedIds, setCheckedIds] = useState([])`.
+  - *Kiểm tra hiển thị:* Dùng phương thức mảng `checked={checkedIds.includes(course.id)}`.
+  - *Cơ chế Toggle (Immutability):*
+    ```javascript
+    setCheckedIds(prev => {
+      const isChecked = prev.includes(id);
+      return isChecked 
+        ? prev.filter(item => item !== id) // Đã có -> Gỡ ra (Tạo mảng mới không chứa id này)
+        : [...prev, id];                  // Chưa có -> Thêm vào (Tạo mảng mới nhét id vào cuối)
+    });
+    ```
+- **Bài toán 3: Chiếc cầu dẫn tới To-Do List:**
+  - To-Do List chính là sự kết hợp của tư duy mảng ở trên:
+    - *Thêm việc:* `setJobs(prev => [...prev, job])` (Giống thêm id vào checkbox).
+    - *Xóa việc:* `setJobs(prev => prev.filter((_, i) => i !== indexToDelete))` (Giống gỡ id khỏi checkbox).
+    - *Đánh dấu hoàn thành (Toggle Done):* `setJobs(prev => prev.map((item, i) => i === index ? { ...item, completed: !item.completed } : item))`.
 
 ---
 
@@ -327,6 +463,414 @@
 - **Hook `useActionState`:**
   - `const [state, formAction, isPending] = useActionState(asyncActionFn, initialValue)`.
   - Tự động cung cấp cờ **`isPending`** (tự thành `true` khi đang gửi API, và `false` khi xong) để khóa nút bấm và hiển thị trạng thái "Đang gửi...", xóa bỏ hoàn toàn boilerplate `try/catch/finally` và `useState(isLoading)`.
+
+---
+
+## 5. Vòng đời Component, Side Effects & Hook `useEffect` (Trái tim kết nối thế giới ngoài)
+
+---
+
+### 1. Bản chất Side Effects & "Bản hợp đồng một việc" của Component:
+- **Bản hợp đồng thiêng liêng:** Component chỉ có đúng một nhiệm vụ duy nhất là nhận Props/State và tính toán ra bản vẽ Virtual DOM (JSX) trong RAM nhanh nhất có thể theo công thức thuần khiết: `UI = f(Data)`.
+- **Side Effects (Tác vụ phụ / Phản ứng phụ) là gì?**
+  - Là tất cả những tác vụ tương tác với thế giới bên ngoài vượt ra khỏi phạm vi tính toán JSX: Gọi API (Fetch/Axios), chọc vào Real DOM (`document.title`), đặt bộ đếm giờ (`setTimeout`, `setInterval`), lắng nghe sự kiện toàn cục (`window.addEventListener`), ghi dữ liệu vào `localStorage`.
+- **Thảm họa "Infinite Fetch Loop" nếu viết API giữa thân hàm:**
+  - Viết `fetch()` trực tiếp trong thân hàm -> API trả về gọi `setState` -> Kích hoạt Re-render -> Hàm chạy lại từ đầu -> Lại `fetch()` -> Lại `setState`... -> Đánh sập tab trình duyệt và DDoS server!
+- **Trục thời gian 3 pha sống còn (Timeline):**
+  ```text
+  [ PHA 1: RENDER ]         -->   [ PHA 2: BROWSER PAINT ]   -->   [ PHA 3: USE EFFECT ]
+  Tính toán Virtual DOM           Trình duyệt vẽ giao diện         Hậu trường: React mới âm thầm
+  nhanh chóng trong RAM.          lên màn hình cho User xem.       chạy các tác vụ phụ trong useEffect
+  ```
+  - *Ý nghĩa:* Tách biệt việc vẽ giao diện giúp web luôn đạt 60 FPS mượt mà, người dùng thấy khung giao diện ngay lập tức mà không bị đơ giật do mạng chậm.
+
+---
+
+### 2. Ba cấp độ Dependencies (Mảng phụ thuộc):
+Cú pháp tổng quát: `useEffect(callback, [dependencies])`.
+
+| Cấp độ | Cú pháp | Thời điểm thực thi | Ứng dụng tiêu biểu | Bẫy cần tránh |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Không mảng** | `useEffect(fn)` | Lần đầu + Sau **MỌI LẦN** Re-render | Đo đạc DOM sau mỗi lần vẽ, ghi log hành vi | Tuyệt đối **CẤM** gọi `setState` bên trong (gây lặp vô tận) |
+| **2. Mảng rỗng** | `useEffect(fn, [])` | **CHỈ DUY NHẤT 1 LẦN** sau khi Mount | Gọi API lấy dữ liệu ban đầu, gắn event toàn cục 1 lần | Bẫy Stale Closure nếu dùng biến state cũ bên trong |
+| **3. Có phần tử** | `useEffect(fn, [a, b])` | Lần đầu + Khi **bất kỳ phần tử nào thay đổi** | Search Autocomplete (theo `keyword`), Phân trang (theo `page`), Chi tiết phim (theo `id`) | Bẫy truyền Object/Array mới làm effect chạy liên tục |
+
+- **Cơ chế so sánh ngầm:** React dùng thuật toán **`Object.is()`** (so sánh nông `===`). Với Primitive type (số, chuỗi, boolean) thì an toàn tuyệt đối; với Reference type (Object, Array) thì mỗi lần render có địa chỉ ô nhớ mới sẽ khiến effect bị kích hoạt liên tục.
+
+---
+
+### 3. Bản chất Cleanup Function & Ba ca bệnh thực tế (Kèm bằng chứng Console Log):
+- **Bản chất của Cleanup:** Không chỉ chạy khi Component bị tháo gỡ (Unmount), mà nó **LUÔN LUÔN CHẠY TRƯỚC LẦN EFFECT TIẾP THEO** để dọn sạch rác của lần trước đó!
+
+#### Ca bệnh 1: Preview Avatar (Xóa rác RAM với `URL.revokeObjectURL`)
+- *Hiện tượng rò rỉ RAM:* Dùng `URL.createObjectURL(file)` tạo link blob lưu ảnh trong RAM. Nếu người dùng chọn 50 ảnh liên tiếp mà không cleanup, RAM trình duyệt phình to hàng trăm MB rác (mở link ảnh cũ ở tab mới vẫn xem được bình thường).
+- *Giải pháp:*
+  ```jsx
+  useEffect(() => {
+    console.log("==> 1. Effect: Đang dùng avatar mới:", avatar?.name);
+
+    return () => {
+      console.log("==> 2. Cleanup: Thu hồi giải phóng RAM ảnh cũ:", avatar?.name);
+      avatar && URL.revokeObjectURL(avatar.preview);
+    };
+  }, [avatar]);
+  ```
+- *Bằng chứng thứ tự in Log khi chọn ảnh 1 rồi chọn ảnh 2:*
+  ```text
+  Lần 1 (chọn anh1.png): ==> 1. Effect: Đang dùng avatar mới: anh1.png
+  Lần 2 (chọn anh2.png): ==> 2. Cleanup: Thu hồi giải phóng RAM ảnh cũ: anh1.png  (CHẠY TRƯỚC!)
+                         ==> 1. Effect: Đang dùng avatar mới: anh2.png
+  ```
+
+#### Ca bệnh 2: Window Event Listener (`scroll`, `resize`)
+- *Hiện tượng listener ma:* Khi Component bị ẩn/tháo gỡ (Unmount), nếu không gỡ bỏ `window.removeEventListener`, sự kiện cuộn vẫn âm thầm chạy ngầm trong trình duyệt và cố gọi `setState` vào component đã chết (Lỗi: *Can't perform a React state update on an unmounted component*).
+- *Giải pháp chuẩn:*
+  ```javascript
+  useEffect(() => {
+    const handleScroll = () => { ... };
+    window.addEventListener('scroll', handleScroll);
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  ```
+
+#### Ca bệnh 3: Subscriptions / Fake Chat App (Chuyển phòng chat)
+- *Hiện tượng:* Người dùng chuyển từ Phòng 1 sang Phòng 2. Nếu không hủy đăng ký phòng 1, họ sẽ tiếp tục nhận tin nhắn rác từ cả 2 phòng cùng lúc.
+- *Giải pháp:* Dùng Cleanup để `unsubscribe` kênh cũ ngay trước khi `subscribe` vào kênh mới khi `channelId` thay đổi.
+
+---
+
+### 4. Bẫy Stale Closure (Bao đóng cũ kỹ) với Timer & State:
+- **Hiện tượng "Đồng hồ chết lâm sàng ở số 1":**
+  ```javascript
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCount(count + 1); // 💣 Kẹt ở 1 mãi mãi!
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []); // [] rỗng
+  ```
+- **Bản chất V8 & Lexical Scope:** Callback trong `setInterval` được sinh ra ở lần render 1 và đóng gói (Closure) ôm chặt biến `count = 0`. Dù các lần render sau sinh ra biến `count` mới, nhưng hàm callback bên trong timer không được sinh lại bản mới -> nó mãi mãi nhìn thấy `count = 0` của quá khứ!
+- **Phương thuốc cứu mạng:** Luôn dùng **Functional Update (`setCount(prev => prev + 1)`)**! Ta ủy thác cho React tự chọc vào bộ nhớ Fiber để lấy giá trị tươi mới nhất, giúp callback thoát hoàn toàn khỏi chiếc bẫy Closure.
+
+---
+
+### 5. Cơ chế Stress-test chạy 2 lần của `<React.StrictMode>`:
+- **Thắc mắc:** Tại sao truyền mảng `[]` mà `useEffect` vẫn chạy 2 lần ở console?
+- **Bản chất:** Trong môi trường phát triển (Development), `<React.StrictMode>` cố tình giả lập quy trình:
+  `Mount lần 1 -> GIẢ VỜ Unmount (chạy Cleanup) -> Mount lại lần 2`.
+- **Mục đích:** Đóng vai giám khảo kiểm tra xem lập trình viên có viết hàm Cleanup để dọn dẹp Timer / Event Listener hay không.
+- **Thực tế:** Khi build ứng dụng ra môi trường thật (Production / `npm run build`), cơ chế này tự động tắt và chỉ chạy đúng 1 lần duy nhất!
+
+---
+
+### 6. Chiếc bẫy cấm viết `async` trực tiếp trong `useEffect`:
+- **Thắc mắc kinh điển: "Tại sao viết `fetch().then()` (như F8) thì chạy được, mà đổi sang `async/await` lại bị báo lỗi đỏ?"**
+  - *Khi viết `fetch().then()`:* 
+    Hàm truyền vào `useEffect` là một **Hàm Đồng Bộ bình thường**. Lệnh `fetch` được ném cho Web APIs chạy ngầm, các callback `.then()` được đăng ký vào Microtask Queue. Bản thân hàm của `useEffect` chạy từ đầu đến cuối chỉ mất 0.001ms và kết thúc trả về **`undefined`** -> React thấy đúng chuẩn nên hoàn toàn chấp nhận!
+  - *Khi viết `async () => ...`:*
+    Theo chuẩn JavaScript (ECMAScript), **bất kỳ hàm nào có từ khóa `async` thì BẢN THÂN HÀM ĐÓ LUÔN LUÔN TRẢ VỀ MỘT `Promise`** (kể cả bên trong có `return` hay không)!
+- **Hậu quả dưới nắp ca-pô:**
+  - React quy định: Giá trị `return` của `useEffect` **BẮT BUỘC PHẢI LÀ MỘT HÀM CLEANUP** (hoặc `undefined`).
+  - Khi bạn viết `async`, bạn vừa trao cho React một chiếc `Promise { <pending> }`.
+  - Khi Component Unmount, React cố lấy giá trị trả về đó ra thực thi như một hàm cleanup: `promise()` -> Ném lỗi **`TypeError: cleanup is not a function`** và làm sập ứng dụng!
+- **Mẫu viết chuẩn khi muốn dùng cú pháp `await`:**
+  Định nghĩa một hàm async riêng nằm trọn ở BÊN TRONG, rồi gọi nó ngay lập tức:
+  ```javascript
+  useEffect(() => {
+    // 1. Hàm con async riêng biệt bên trong:
+    const fetchMovies = async () => {
+      try {
+        const res = await fetch('https://phimapi.com/danh-sach/phim-moi');
+        const data = await res.json();
+        setMovies(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    // 2. Kích hoạt gọi hàm:
+    fetchMovies();
+
+    // 3. Hàm ngoài vẫn là hàm đồng bộ, thoải mái return cleanup function nếu cần:
+    return () => { ... };
+  }, []);
+  ```
+
+---
+
+### 7. Tranh chấp dữ liệu (Race Condition) & Vũ khí `AbortController`:
+- **Con quái vật Race Condition là gì?**
+  - Là hiện tượng **cuộc đua dữ liệu mạng bị chạy ngược kết quả** do tốc độ phản hồi không đồng đều giữa các lần request.
+  - *Kịch bản thảm họa:*
+    1. Giây 0: Bấm xem Phim A (`id = 1`) -> Gửi Request 1 (mạng lag, mất 3 giây mới về).
+    2. Giây 1: Sốt ruột bấm sang Phim B (`id = 2`) -> Gửi Request 2 (mạng nhanh, mất 0.5 giây là về).
+    3. Giây 1.5: Phim B về trước -> Màn hình hiện Phim B (Rất đúng!).
+    4. Giây 3.0: Bây giờ Request 1 của Phim A cũ rích mới lết về tới nơi -> Nó gọi `setMovie(Phim A)` -> **Màn hình đột ngột bị giật ngược lại hiển thị Phim A!**
+- **Vũ khí diệt quái vật: `AbortController` kết hợp Cleanup Function:**
+  - `AbortController` là Web API có khả năng giật đứt kết nối mạng của một lệnh `fetch` đang bay dở giữa đường thông qua thuộc tính `signal`.
+  - Nhờ cơ chế: **Cleanup của effect cũ LUÔN LUÔN CHẠY TRƯỚC effect mới**. Khi `movieId` đổi từ A sang B -> Cleanup của A chạy ngay lập tức -> Gọi `controller.abort()` để **tiêu diệt Request Phim A ngay giữa đường**, không cho nó cơ hội về đè dữ liệu lên Phim B!
+- **Mẫu code chuẩn Senior:**
+  ```javascript
+  useEffect(() => {
+    // 1. Tạo còi báo hủy:
+    const controller = new AbortController();
+
+    const fetchMovie = async () => {
+      try {
+        const res = await fetch(`/api/movie/${movieId}`, { 
+          signal: controller.signal // Nối còi vào fetch
+        });
+        const data = await res.json();
+        setMovie(data);
+      } catch (err) {
+        // Nếu lỗi do ta chủ động hủy (AbortError) thì lờ đi, không log lỗi đỏ:
+        if (err.name === 'AbortError') {
+          console.log("Đã hủy thành công request cũ của phim:", movieId);
+        } else {
+          console.error("Lỗi mạng thật sự:", err);
+        }
+      }
+    };
+
+    fetchMovie();
+
+    // 2. CLEANUP: Hủy ngay request của phim cũ khi movieId thay đổi hoặc Unmount!
+    return () => controller.abort();
+  }, [movieId]);
+  ```
+
+---
+
+### 8. Hook `useLayoutEffect` – Người anh em Đồng bộ & Trận chiến chống chớp màn hình (Visual Flicker):
+- **Bản chất Đồng bộ (Synchronous) vs Bất đồng bộ (Asynchronous) trong chu trình vẽ:**
+  - Khái niệm đồng bộ/bất đồng bộ ở đây là **so với Chu trình Vẽ (Browser Paint) trên Main Thread của Trình duyệt**, chứ không phải so với các dòng lệnh JS thông thường!
+  - Main Thread chỉ có thể làm 1 trong 2 việc: hoặc chạy JS, hoặc vẽ màn hình.
+- **Sự khác biệt sinh tử về Trục thời gian:**
+  - **`useEffect` (Bất đồng bộ / Passive):**
+    ```text
+    React sửa Real DOM -> Trình duyệt VẼ LÊN MÀN HÌNH (User thấy) -> useEffect mới chạy ở nhịp Event Loop tiếp theo!
+    ```
+  - **`useLayoutEffect` (ĐỒNG BỘ / Blocking):**
+    ```text
+    React sửa Real DOM -> CHẶN ĐỨNG TRÌNH DUYỆT! -> useLayoutEffect chạy xong xuôi -> Trình duyệt MỚI ĐƯỢC PHÉP VẼ!
+    ```
+- **Thí nghiệm "Chớp nháy giao diện" (The Visual Flicker Trap):**
+  - Yêu cầu: Nếu `count > 3` thì tự động ép quay về `0`.
+  - *Với `useEffect`:* Người dùng bấm lên 4 -> Trình duyệt vẽ số 4 lên màn hình -> Mắt người thấy số 4 -> Sau đó `useEffect` mới chạy gọi `setCount(0)` -> Vẽ lại số 0 -> **Mắt nhìn thấy số 4 bị nhấp nháy giật cục (Glitch/Flicker)**!
+  - *Với `useLayoutEffect`:* Người dùng bấm lên 4 -> React cập nhật DOM nhưng `useLayoutEffect` chặn ngay cửa -> Đổi thành 0 trước khi vẽ -> Trình duyệt chỉ vẽ duy nhất số 0 -> **Triệt tiêu 100% hiện tượng chớp nháy!**
+- **Quy tắc vàng Senior (99% vs 1%):**
+  - **99% trường hợp:** Luôn dùng `useEffect` vì nó không chặn Main Thread, giúp giao diện đạt 60 FPS mượt mà.
+  - **1% trường hợp duy nhất:** Chỉ dùng `useLayoutEffect` khi cần **đo đạc kích thước DOM thật** (`getBoundingClientRect()`, `offsetWidth`, `scrollHeight`) để tính toán lại vị trí phần tử (Tooltip né mép màn hình, Popover, Dropdown, Auto-scroll) **TRƯỚC KHI người dùng kịp nhìn thấy**.
+- **Cảnh báo hiệu năng:** Tuyệt đối không nhét tác vụ nặng (Fetch API, vòng lặp triệu lần) vào `useLayoutEffect` vì nó sẽ làm đơ cứng toàn bộ trang web (Frozen UI)!
+
+---
+
+### 9. Hook `useRef` – Chiếc két sắt cá nhân & Cầu nối chạm vào Real DOM:
+- **Bản chất của `useRef` trong RAM:**
+  - `useRef(initialValue)` chỉ trả về một Plain JavaScript Object thông thường: `{ current: initialValue }`.
+  - Object này được giữ nguyên địa chỉ ô nhớ trên React Fiber qua mọi lần Component Re-render.
+- **Đặc tính vàng số 1:**
+  - **Thay đổi `ref.current` KHÔNG BAO GIỜ kích hoạt Re-render!** (Lưu trữ thầm lặng trong bóng tối).
+- **Hai sứ mệnh thực chiến:**
+  1. *Sứ mệnh 1: Lưu trữ giá trị sống qua các lần render (Mutable Container):*
+     - Ví dụ Stopwatch: `timerId.current = setInterval(...)`.
+     - Phân tích: Hàm `setInterval` trả về con số ID ngay lập tức (trong 0.0001ms). Nếu dùng `let timerId`, khi hết 1s state đổi gây Re-render -> `let timerId` bị reset thành `undefined` -> nút Stop bị liệt. Dùng `useRef` giúp ID được bảo toàn vĩnh viễn trong két sắt.
+     - Ứng dụng khác: Lưu giá trị trước đó của state (`prevCountRef.current = count`), lưu biến cờ lần đầu render (`isFirstRender.current`).
+  2. *Sứ mệnh 2: Trỏ trực tiếp vào Real DOM (DOM References):*
+     - Cắm vào thẻ HTML: `<input ref={inputRef} />` -> Sau khi vẽ xong, React tự gán phần tử DOM thật vào `inputRef.current`.
+     - Ứng dụng: Tự động focus ô input (`inputRef.current.focus()`), cuộn trang (`scrollIntoView()`), đo kích thước (`offsetWidth`), điều khiển phát video/audio (`play()`, `pause()`).
+- **Bảng so sánh 3 ngôi:**
+  | Tiêu chí | Biến thường `let x` | `useState` | `useRef` |
+  | :--- | :--- | :--- | :--- |
+  | Bị mất khi Re-render? | **CÓ** (Reset về ban đầu) | **KHÔNG** | **KHÔNG** |
+  | Đổi giá trị có Re-render? | **KHÔNG** | **CÓ** (Vẽ lại màn hình) | **KHÔNG** |
+  | Mục đích chính | Tính toán tạm thời | Dữ liệu hiển thị lên UI | Dữ liệu ngầm (Timer, ID) & Trỏ DOM |
+
+---
+
+### 10. Kỹ thuật `forwardRef` & Hook `useImperativeHandle` – Nghệ thuật Đóng gói Component:
+- **Nỗi đau: Tại sao Cha không cắm trực tiếp `ref` vào Component Con được?**
+  - Trong React 18 trở về trước, `ref` là một **Từ khóa bảo lưu (Reserved Keyword)** giống như `key`. Trình biên dịch tự động cắt bỏ `ref` ra khỏi `props` (`props.ref` bị `undefined`).
+  - Hơn nữa, Component con là một hàm JS, React không thể đoán mò thẻ nào bên trong là "thẻ core" để trỏ vào.
+  - *Lưu ý:* Nếu đổi tên thành prop bình thường (như `inputRef={myRef}`) thì chạy được ngay.
+- **Bước ngoặt vĩ đại trong React 19:**
+  - **React 19 chính thức KHAI TỬ `forwardRef`!** Kể từ React 19, `ref` được đối xử bình đẳng như mọi prop khác: `function MyInput({ label, ref }) { return <input ref={ref} />; }`.
+- **Hook `useImperativeHandle` – Tự tạo tay nắm cửa an toàn:**
+  - *Hiểm họa khi Cha cầm DOM thật của Con:* Cha có thể vô tình xóa thẻ (`ref.current.remove()`), đổi link `src`, sửa đè style làm vỡ giao diện Con.
+  - *Giải pháp `useImperativeHandle`:* Con đứng ra làm bộ lọc bảo vệ, chỉ bóc tách và cung cấp cho Cha một Object chứa các hàm an toàn đã được kiểm duyệt:
+    ```jsx
+    useImperativeHandle(ref, () => ({
+      play() { realVideoRef.current.play(); },
+      pause() { realVideoRef.current.pause(); }
+    }));
+    ```
+  - *Kết quả:* Ở Cha, `ref.current` chỉ nhìn thấy `{ play, pause }`, nếu Cha cố gọi `ref.current.remove()` sẽ bị báo lỗi ngay lập tức. Đảm bảo tính đóng gói (Encapsulation) tuyệt đối!
+
+---
+
+### 11. Hook `useId` (React 18) – Trị dứt điểm xung đột Form & Server-Side Rendering (SSR):
+- **Mục đích duy nhất:** Tạo ID ngẫu nhiên duy nhất để liên kết các cặp thẻ Form trợ năng (Accessibility - a11y):
+  - `<label htmlFor={id}>` nối với `<input id={id} />`.
+  - `<input aria-describedby={hintId} />` nối với `<p id={hintId}>Gợi ý mật khẩu</p>`.
+- **CẤM TIỆT:** Tuyệt đối không dùng `useId` để tạo `key` cho danh sách `.map()`! `key` bắt buộc phải sinh ra từ dữ liệu nguồn (`item.id`).
+- **Tại sao không dùng `Math.random()`?**
+  - Trong SSR (Next.js), Server chạy `Math.random()` ra số A, Client tải về chạy ra số B -> Gây lỗi **Hydration Mismatch Error** làm sập web.
+- **Cơ chế ngầm:** `useId` sinh ID dựa trên **vị trí tọa độ của Component trên cây Fiber Tree**. Do đó ID được giữ **cố định vĩnh viễn qua mọi lần Re-render** (không bao giờ bị sinh ID mới, không cần dùng `useRef` kẹp lại), và khớp 100% giữa Server và Client.
+- **Mẹo tối ưu:** Một component có nhiều ô input chỉ cần gọi `const id = useId()` 1 lần rồi ghép đuôi: `id + '-name'`, `id + '-pass'`.
+
+---
+
+### 12. Triết lý tối thượng: "You Might Not Need an Effect" (Tránh bẫy lạm dụng `useEffect`):
+- **Căn bệnh kinh điển:** Tiện tay cái gì cũng tạo thêm State và nhét vào `useEffect` để đồng bộ.
+- **Bẫy Derived State (Giá trị phái sinh):**
+  - *Sai:* Tạo `const [fullName, setFullName] = useState('')` rồi dùng `useEffect(() => setFullName(firstName + ' ' + lastName), [firstName, lastName])` -> Gây re-render thừa 2 lần liên tiếp, code bẩn và lag.
+  - *Đúng:* Tính toán trực tiếp trong thân hàm khi render: `const fullName = firstName + ' ' + lastName;`.
+- **Quy tắc vàng:**
+  > **Nếu một dữ liệu có thể TÍNH TOÁN ĐƯỢC từ State hoặc Props có sẵn -> TÍNH TOÁN TRỰC TIẾP KHI RENDER, TUYỆT ĐỐI KHÔNG TẠO THÊM STATE VÀ KHÔNG DÙNG `useEffect`!**
+
+---
+
+## 6. Tối ưu hiệu năng, Concurrent React & Xử lý lỗi (Performance & Resiliency)
+
+---
+
+### 1. Cơn ác mộng Re-render dây chuyền & Bản chất mặc định của React:
+- **Nguyên lý mặc định:** Cứ khi nào State của Component Cha thay đổi -> Toàn bộ cây con cháu chắt bên dưới đều bị re-render theo mặc định (bất kể Props của con có đổi hay không).
+- **Hậu quả:** Với các component con nặng (biểu đồ thống kê, bảng 10.000 dòng), gõ 1 phím ở ô tìm kiếm của cha sẽ kích hoạt vẽ lại cả đàn con -> Đơ lag, giật khựng giao diện.
+
+---
+
+### 2. Chiếc khiên bảo vệ `React.memo` & Cơ chế So sánh nông (Shallow Compare):
+- **Bản chất:** Là một Higher-Order Component (HOC) bọc lấy Component con: `export default React.memo(MyComponent);`.
+- **Cơ chế:** Khi Cha re-render, `React.memo` mang kính lúp so sánh `oldProps === newProps`. Nếu tất cả props giữ nguyên giá trị -> Chặn đứng không cho Component con chạy lại hàm, tái sử dụng Virtual DOM cũ trong RAM.
+
+---
+
+### 3. Hook `useCallback` – Cứu vãn chiếc khiên `React.memo` bị vỡ:
+- **Bẫy chiếc khiên bị đập vỡ (The Broken Shield Trap):**
+  - Trong JavaScript, Function là Kiểu tham chiếu (Reference Type). Mỗi lần Cha render, các hàm viết trong Cha lại được tạo mới ở một **ô nhớ RAM mới** (`0xAA11 !== 0xBB22`).
+  - Nếu Cha truyền hàm xuống cho Con: `React.memo` so sánh `oldProps.onClick === newProps.onClick` ra `false` -> Chiếc khiên bị vô hiệu hóa, Con vẫn bị re-render thừa!
+- **Giải pháp `useCallback(fn, deps)`:**
+  - Đóng băng con trỏ hàm, giữ nguyên địa chỉ ô nhớ qua các lần render của Cha.
+  - Nhờ đó `React.memo` so sánh ra `true` -> Bảo vệ con thành công.
+- **Mổ xẻ 3 cấp độ Dependencies của `useCallback`:**
+  - *Không mảng:* ❌ **Vô dụng hoàn toàn** (mỗi lần render lại tạo hàm mới, tốn thêm chi phí vô ích).
+  - *Mảng rỗng `[]`:* Giữ con trỏ hàm vĩnh cửu. 💣 **Bẫy Stale Closure** nếu bên trong hàm có đọc biến State ngoài component -> Khắc phục bằng Functional Update (`setCount(prev => prev + 1)`).
+  - *Có biến `[a, b]`:* Chỉ cấp phát con trỏ hàm mới khi biến phụ thuộc thay đổi.
+
+---
+
+### 4. Hook `useMemo` – Bộ nhớ đệm cho các phép tính toán nặng:
+- **Bản chất:** Lưu cache KẾT QUẢ TRẢ VỀ của một biểu thức/hàm tính toán phức tạp (lọc, sắp xếp mảng 5.000 phần tử).
+- **Cú pháp:** `const result = useMemo(() => heavyCalculation(data), [data]);`.
+- **So sánh nhanh trong 3 giây:**
+  - `useCallback`: Đóng băng chính cái **HÀM** (Function reference).
+  - `useMemo`: Đóng băng **KẾT QUẢ** tính toán (Data value / Array / Object).
+- **Bẫy Tối ưu hóa sớm (Premature Optimization):**
+  - Tuyệt đối không dùng `useMemo` cho các phép tính đơn giản như `a + b` hay chuỗi ngắn. Chi phí React cấp phát mảng deps và so sánh `Object.is()` còn tốn CPU và RAM hơn việc tính toán trực tiếp!
+
+---
+
+### 5. Concurrent React (React 18+): Phân chia tác vụ Khẩn cấp vs Thứ yếu:
+- **Nỗi đau trước React 18 (Blocking Rendering):** Mọi lệnh `setState` đều có độ ưu tiên ngang nhau. Gõ phím tìm kiếm (`setText`) và lọc 10.000 phim (`setList`) tranh giành luồng -> Phím bị liệt, đơ cứng.
+- **Hook `useTransition` (`isPending`, `startTransition`):**
+  - Tách biệt: Gõ phím = **Tác vụ Khẩn cấp (Urgent)**, Lọc danh sách = **Tác vụ Thứ yếu (Transition)**.
+  - Bọc cập nhật nặng vào: `startTransition(() => setList(heavyList))`.
+  - Cơ chế cắt ngang (Interruptible): Người dùng gõ phím mới -> React vứt bỏ lượt render danh sách cũ đang dở dang để ưu tiên hiện chữ ngay lập tức -> Đạt chuẩn 60 FPS mượt mà.
+  - Cờ `isPending`: `true` khi tác vụ nặng đang tính toán ngầm -> Dùng để làm mờ UI hoặc hiện loading spinner.
+- **Hook `useDeferredValue(value)`:**
+  - Tương tự `useTransition` nhưng dùng khi bạn **không nắm giữ hàm `setState`** (nhận prop từ cha). Tự động trì hoãn cập nhật giá trị con để nhường luồng cho tác vụ khẩn cấp.
+
+---
+
+### 6. Tương lai Tối ưu hóa: React Compiler (React 19 Forget):
+- Công cụ biên dịch tự động ở bậc build: Tự động phân tích luồng dữ liệu và tự chèn memoization vào mã máy.
+- Lập trình viên tương lai không cần tự tay viết `useCallback`, `useMemo` hay `React.memo` nữa, code quay về sự thuần khiết nguyên bản!
+
+---
+
+### 7. Tải chậm Component (Code Splitting): `React.lazy` & `<Suspense>`:
+- **Nỗi đau:** File `bundle.js` quá lớn (15MB) chứa cả code trang Admin, Thống kê làm người dùng vào trang chủ bị chờ màn hình trắng 5-10s.
+- **Giải pháp Chia để trị:**
+  - `const Admin = React.lazy(() => import('./Admin'));` (Chỉ tải file JS khi người dùng thực sự bấm vào).
+  - Bọc trong `<Suspense fallback={<Spinner />}>`: Tự động hiện Spinner cứu hộ trong lúc tải dở file JS qua mạng, tải xong tự hiện giao diện thật.
+
+---
+
+### 8. Bắt lỗi sập giao diện bằng Error Boundary:
+- **Hiểm họa "Màn hình trắng chết chóc" (White Screen of Death):** Một lỗi nhỏ ở thẻ comment dưới chân trang làm sập toàn bộ cây Virtual DOM, cả trang web biến thành màn hình trắng xóa!
+- **Cơ chế Khoanh vùng dập dịch:**
+  - Bọc component dễ lỗi lại bằng `<ErrorBoundary fallback={<ErrorAlert />}> <CommentSection /> </ErrorBoundary>`.
+  - Lỗi chỉ hiển thị tại vùng bị sập, các phần quan trọng khác (Video Player, Header) vẫn sống và chạy bình thường.
+- **Thực tế doanh nghiệp:** Dùng thư viện chuẩn công nghiệp **`react-error-boundary`** với nút "Thử lại" (Reset / Retry) tự động khôi phục giao diện.
+
+---
+
+## 7. Cẩm nang phản xạ cơ bắp & Bẫy gõ phím thực chiến (Muscle Memory & Daily Traps)
+
+---
+
+### 1. Bẫy 1: Cửa khẩu hải quan `{}` giữa lãnh thổ HTML và JavaScript:
+- **Hiện tượng:** Quên bọc `{}` quanh biến hoặc hàm lặp: `<ul> jobs.map(...) </ul>`.
+- **Hậu quả:** Trình duyệt coi đó là văn bản (text tĩnh), in nguyên xi dòng chữ `"jobs.map(...)"` ra màn hình, không hề chạy code JS!
+- **Phản xạ thị giác:** Đang đứng trong vùng đất thẻ JSX mà muốn "nói tiếng JavaScript" (truyền biến, tính toán, lặp mảng, truyền callback) -> **BẮT BUỘC PHẢI MỞ CỬA BẰNG CẶP NGOẶC NHỌN `{}`**!
+
+---
+
+### 2. Bẫy 2: Cú pháp Arrow Function trong `.map()` (Return âm thầm vs Block Body):
+- **Cú pháp 1 (Ngoặc tròn `()` - Implicit Return):**
+  ```jsx
+  {jobs.map((job, index) => (
+    <li key={index}>{job}</li> // Tự động trả về JSX, cấm có chữ return
+  ))}
+  ```
+- **Cú pháp 2 (Ngoặc nhọn `{}` - Block Body):**
+  ```jsx
+  {jobs.map((job, index) => {
+    return <li key={index}>{job}</li>; // BẮT BUỘC phải có chữ `return`
+  })}
+  ```
+- **Hậu quả nếu viết sai:** `{jobs.map((job, index) => { <li key={index}>{job}</li> })}` (Mở ngoặc nhọn mà quên `return`) -> Hàm trả về mảng toàn `undefined` -> Màn hình trắng trơn không hiện danh sách!
+
+---
+
+### 3. Bẫy 3: Cơn ác mộng gọi hàm ngay khi Render: `onClick={fn()}` vs `onClick={() => fn()}`:
+- **Sai lầm chết người:** `<button onClick={handleDelete(index)}>Xóa</button>`
+  - JS Engine thấy dấu ngoặc tròn `()` liền **thực thi hàm xóa ngay lập tức khi đang vẽ giao diện**.
+  - Hàm xóa gọi `setJobs` -> Re-render -> Lại gọi hàm xóa -> Re-render -> **Lỗi Infinite Loop Crash: *"Too many re-renders"***!
+- **Phản xạ chuẩn:**
+  - Nếu hàm **KHÔNG CẦN** tham số: Truyền thẳng tên hàm `<button onClick={handleSubmit}>`.
+  - Nếu hàm **CẦN TRUYỀN** tham số: Luôn bọc trong Arrow Function để trì hoãn: `<button onClick={() => handleDelete(index)}>`.
+
+---
+
+### 4. Bẫy 4: Bản chất thực sự của tham số `prev` trong Functional Update:
+- **`prev` có phải từ khóa cố định không?** **HOÀN TOÀN KHÔNG!**
+- **Bản chất JS:** Trong JavaScript, hàm callback nhận tham số theo **VỊ TRÍ (Position)** chứ không theo tên. React chỉ quan tâm đối số thứ nhất nó bơm vào hàm là giá trị state tươi mới nhất trong bộ nhớ Fiber.
+- Bạn có thể đặt tên là: `prev`, `prevState`, `prevJobs`, `oldValue`, hay thậm chí `x`.
+- **Quy ước vàng (Clean Code):** Luôn dùng tiền tố `prev + TênState` (ví dụ: `prevJobs => ...`) để vừa tránh trùng tên biến với state ngoài component (tránh shadowing), vừa giúp người đọc hiểu ngay đây là dữ liệu snapshot trước đó.
+
+---
+
+### 5. Bẫy 5: Arrow Function 2 tham số trong `.filter((_, i) => ...)`:
+- Trong JS, Arrow Function có **từ 2 tham số trở lên BẮT BUỘC phải bọc trong ngoặc tròn**: `((_, i) => ...)`.
+- Ký hiệu dấu gạch dưới **`_`** là quy ước quốc tế đại diện cho tham số bỏ qua (không dùng đến giá trị của phần tử, chỉ cần dùng chỉ số index `i`).
+
+---
+
+### 6. Bẫy 6: Cấm viết `async` trực tiếp vào callback của `useEffect`:
+- `useEffect(async () => ...)` luôn trả về một `Promise`, phá vỡ cơ chế Cleanup của React.
+- Luôn khai báo hàm async bên trong rồi gọi `fetchData()`.
+
+---
+
+### 7. Bẫy 7: Stale Closure trong các tác vụ Timer / Event Listener:
+- Khi dùng `setInterval`, `setTimeout`, hoặc `window.addEventListener` bên trong `useEffect(..., [])`, callback luôn bị đóng băng với biến state của lần render đầu tiên.
+- Luôn nhớ sử dụng `setState(prev => ...)` để luôn tính toán dựa trên dữ liệu mới nhất.
+
+
+
 
 
 

@@ -61,39 +61,47 @@
 
 ---
 
-## 5. Quản lý tham chiếu `useRef` & Vòng đời Side Effects với `useEffect`
-- [ ] Hook `useRef`: Chiếc két sắt lưu trữ giá trị qua các lần render mà KHÔNG kích hoạt re-render.
-- [ ] Thao tác trực tiếp với DOM qua `useRef` (Focus ô input, cuộn trang, đo kích thước phần tử).
-- [ ] Khái niệm Side Effect: Khi nào Component cần tương tác với thế giới bên ngoài? (Timer, Storage, API).
-- [ ] Hook `useEffect` & Mổ xẻ Dependency Array:
-  - Không truyền mảng dependency (Nguy cơ lặp vô tận Infinite Loop).
-  - Dependency rỗng `[]` (Chạy 1 lần duy nhất khi Mount).
-  - Dependency có biến `[dep1, dep2]` (Chạy lại khi biến thay đổi).
-- [ ] **Bẫy `StrictMode` chạy effect 2 lần ở môi trường Dev** & Tại sao bắt buộc phải có **Cleanup Function** (xóa timer, gỡ event, hủy request).
-- [ ] Triết lý tối thượng: **"You Might Not Need an Effect"** — Nhận diện Derived State (tính toán trực tiếp khi render) và quy tắc "không lưu state trùng lặp".
+## 5. Quản lý tham chiếu `useRef` & Vòng đời Side Effects (`useEffect`, `useLayoutEffect`)
+- [x] Hook `useRef`: Chiếc két sắt lưu trữ giá trị qua các lần render mà KHÔNG kích hoạt re-render.
+- [x] Thao tác trực tiếp với DOM qua `useRef` (Focus ô input, cuộn trang, đo kích thước phần tử).
+- [x] Hook `useImperativeHandle` kết hợp `forwardRef`: Đóng gói Component con, giới hạn API public mà Cha được phép gọi qua ref (Lưu ý bước ngoặt React 19 bỏ `forwardRef`).
+- [x] Hook `useId` (React 18): Tạo ID ngẫu nhiên duy nhất cho Form a11y (`htmlFor`), chống xung đột Client/Server (SSR).
+- [x] Khái niệm Side Effect & "Bản hợp đồng 1 việc": Khi nào Component cần tương tác với thế giới bên ngoài? (Timer, Storage, API).
+- [x] Hook `useEffect` & Mổ xẻ Dependency Array (3 cấp độ: Không mảng, mảng rỗng `[]`, mảng có biến `[a, b]`).
+- [x] **Bẫy `StrictMode` chạy effect 2 lần ở Dev** & Tầm quan trọng của **Cleanup Function** (Ca bệnh: Preview Avatar thu hồi RAM, Window Listener ma, Đổi kênh Chat).
+- [x] Bẫy **Stale Closure** trong Timer & Vũ khí `setState(prev => ...)`.
+- [x] Bẫy cấm viết `async` trực tiếp trong `useEffect` & Xử lý tranh chấp mạng (**Race Condition**) với `AbortController`.
+- [x] Hook `useLayoutEffect`: So sánh trực diện với `useEffect` (Chạy đồng bộ TRƯỚC KHI trình duyệt vẽ) & Bài toán chống chớp màn hình (Visual Flicker).
+- [x] Triết lý tối thượng: **"You Might Not Need an Effect"** — Nhận diện Derived State (tính toán trực tiếp khi render) và quy tắc "không lưu state trùng lặp".
 - [ ] 🛠️ **Mini-Project 4:** Xây dựng Đồng hồ bấm giờ (Stopwatch) kết hợp Ô tìm kiếm phim có Debounce 400ms dùng `useRef` và `useEffect`.
 
 ---
 
-## 6. Tối ưu hiệu năng, Tải chậm & Xử lý lỗi (Performance & Resiliency)
-- [ ] Khi nào Component bị re-render thừa? (State cha đổi -> Toàn bộ cây con bị kéo theo).
-- [ ] Tối ưu hóa Component với `React.memo` (Cơ chế so sánh nông Shallow Comparison).
-- [ ] Hook `useCallback`: Đóng băng con trỏ hàm chống tạo mới.
-- [ ] Hook `useMemo`: Lưu bộ nhớ đệm cho các phép tính nặng (Filter danh sách 5.000 phim).
-- [ ] Tương lai của Tối ưu hóa: **React Compiler** (Tự động memo hóa trong React 19) và lý do vẫn cần hiểu bản chất để tránh tối ưu hóa sớm (Premature Optimization).
-- [ ] Tải chậm Component (Code Splitting): `React.lazy` và thẻ `<Suspense fallback={<Spinner />}>`.
-- [ ] Bắt lỗi sập giao diện bằng **Error Boundary**: Hiển thị Fallback UI khi component con bị crash.
+## 6. Tối ưu hiệu năng, Concurrent React & Xử lý lỗi (Performance & Resiliency)
+- [x] Khi nào Component bị re-render thừa? (State cha đổi -> Toàn bộ cây con bị kéo theo).
+- [x] Tối ưu hóa Component với `React.memo` (Cơ chế so sánh nông Shallow Comparison).
+- [x] Hook `useCallback`: Đóng băng con trỏ hàm chống tạo mới.
+- [x] Hook `useMemo`: Lưu bộ nhớ đệm cho các phép tính nặng (Filter danh sách 5.000 phim).
+- [x] Concurrent React (React 18+):
+  - Hook `useTransition` (`isPending`, `startTransition`): Phân loại tác vụ khẩn cấp (gõ phím) vs không khẩn cấp (render danh sách lớn).
+  - Hook `useDeferredValue`: Trì hoãn cập nhật giá trị nặng, làm mượt ô Live Search không cần thư viện ngoài.
+- [x] Tương lai của Tối ưu hóa: **React Compiler** (Tự động memo hóa trong React 19) và lý do vẫn cần hiểu bản chất để tránh tối ưu hóa sớm (Premature Optimization).
+- [x] Tải chậm Component (Code Splitting): `React.lazy` và thẻ `<Suspense fallback={<Spinner />}>`.
+- [x] Bắt lỗi sập giao diện bằng **Error Boundary**: Hiển thị Fallback UI khi component con bị crash.
 - [ ] 🛠️ **Mini-Project 5:** Tối ưu hóa một danh sách phim lớn 2.000 phần tử, kèm hiệu ứng Lazy Loading Poster và Error Boundary xử lý khi component bị lỗi.
 
 ---
 
-## 7. Quản lý State nâng cao & Data Fetching thực tế (Server State vs Client State)
+## 7. Quản lý State nâng cao, Data Fetching & Hook React 19 Hiện đại
 - [ ] Phân định rõ ràng: **Client State** (Theme, Modal, Sidebar) vs **Server State** (Dữ liệu API, Cache, Loading, Error).
 - [ ] Quản lý Client State toàn cục với **Context API** (`createContext`, `useContext`, Provider Pattern) cho Theme Tối/Sáng, Ngôn ngữ.
 - [ ] Quản lý Client State bằng thư viện hiện đại gọn nhẹ: **Zustand** (So sánh với Context API và Redux).
 - [ ] Quản lý Server State thực chiến với **TanStack Query (React Query)**:
   - Tự động Caching, Background Refetching, Quản lý `isLoading`, `isError`, và Retry.
   - Loại bỏ hoàn toàn sự cồng kềnh của `useEffect + fetch`.
+- [ ] Các Hook tiên tiến trong React 19:
+  - Hook `useOptimistic`: Kỹ thuật cập nhật giao diện lạc quan (nhảy like/thả tim ngay lập tức trước khi server phản hồi).
+  - Hook `use`: Đọc Promise và Context linh hoạt ngay trong câu lệnh rẽ nhánh `if`.
 - [ ] Tự viết Hook riêng (**Custom Hooks**): Tách rời 100% logic nghiệp vụ ra khỏi UI (`useMovieSearch`, `useDebounce`).
 - [ ] 🛠️ **Mini-Project 6:** Xây dựng trang Quản lý Yêu thích & Dark Mode dùng Zustand, kết hợp TanStack Query gọi API phim có cache mượt mà.
 
