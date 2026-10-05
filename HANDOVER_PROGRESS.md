@@ -1,77 +1,96 @@
 # 📋 BÁO CÁO TIẾN ĐỘ & BÀN GIAO TOÀN DIỆN (HANDOVER PROGRESS)
-
-> **Dành cho AI & Người học tại phiên làm việc tiếp theo (Máy ở nhà / Máy công ty):**
-> Vui lòng đọc kỹ file này kết hợp với:
-> 1. `JS_CHECKLIST_ROADMAP.md`: Theo dõi 13 nhóm kiến thức JS nền tảng để sẵn sàng học React.
-> 2. `JS_STUDY_NOTES.md`: Sổ tay đúc kết bản chất ngầm, ánh xạ 1:1 với Roadmap.
-> 3. `project-movie/HOMEWORK_HERO_BANNER.md`: Tài liệu hướng dẫn tự làm Hero Banner tại nhà.
-> 4. `.agents/rules/roadmap-coaching.md` & `.agents/skills/js-roadmap-coach/SKILL.md`: Quy tắc huấn luyện "Hiện trường vụ án", không code hộ, không dùng LaTeX, giải thích 4 tầng thông tin (Định nghĩa, V8 ô nhớ RAM, Bẫy Senior, Kết nối React).
+> **Dành cho AI Agent & Người học tại phiên làm việc tiếp theo (Máy công ty / Máy ở nhà):**
+> Khi bắt đầu phiên làm việc mới, AI Agent **BẮT BUỘC ĐỌC KỸ FILE NÀY** cùng các tài liệu đi kèm để nắm bắt chính xác ngữ cảnh, phương pháp sư phạm và điểm dừng kỹ thuật, tuyệt đối không làm gãy mạch học.
 
 ---
 
-## 🧭 1. TỔNG QUAN TIẾN ĐỘ HUẤN LUYỆN 13 CHUYÊN ĐỀ JS
-
-Đã hoàn thành xuất sắc **9 / 13 Mục** với chất lượng cao nhất:
-
-| Chuyên đề | Trạng thái | Ghi chú cốt lõi |
-| :--- | :---: | :--- |
-| **1. Biến, Kiểu dữ liệu, Toán tử** | ✅ 100% | Bug `typeof null === 'object'`, `null == undefined`, TDZ, ô nhớ Heap vs Stack |
-| **2. Điều kiện & Vòng lặp** | ✅ 100% | Bẫy Falsy (`0`, `""`, `NaN`), `for...of` vs `for...in`, `Object.keys()` |
-| **3. Function (Trái tim JS & React)** | ✅ 100% | Arrow function không có `this`, Closure 3 điều kiện, Pure function |
-| **4. Array (Bắt buộc phải chắc)** | ✅ 100% | `map`, `filter`, `reduce` bẫy mảng rỗng, `sort` mutate UTF-16, Bộ ba Immutable |
-| **5. Object & Immutable** | ✅ 100% | Dot vs Bracket notation, Shallow vs Deep copy, bẫy `structuredClone`, Rest operator xóa an toàn |
-| **6. Cú pháp ES6+ trong React** | ✅ 100% | Template literal, Destructuring Array vs Object, `??` vs `||`, Named vs Default Export |
-| **7. DOM & Sự kiện** | ✅ 100% | `e.target` vs `e.currentTarget`, `id` vs `data-id`, Memory leak `removeEventListener`, Event Delegation |
-| **8. Bất đồng bộ (Async JS)** | ✅ 100% | Single-thread JS vs Multi-thread Browser C++, Promise 3 trạng thái, `async/await`, bẫy `fetch` `response.ok`, `Promise.all` vs `Promise.allSettled`, `AbortController` chống Race Condition |
-| **9. Cơ chế JS (V8 & Runtime)** | ✅ 100% | Scope Chain, Hoisting, Closure React Fiber, Pass by value/reference, Event Loop (Call Stack -> Microtask VIP -> Macrotask) |
-| **10. Xử lý lỗi & Debug** | ⏳ **TIẾP THEO** | Đang chuẩn bị: Tại sao cấm `throw "string"` mà phải `throw new Error`, Stack Trace, Chrome DevTools |
-| **11. Form & Validation** | ⏳ Chờ xử lý | `FormData`, validate regex email, hiển thị lỗi dưới field, chặn submit |
-| **12. Lưu trữ Browser** | ⏳ Chờ xử lý | `localStorage`, `sessionStorage`, Cookie, bẫy chuỗi hóa JSON |
-| **13. Tư duy Component & State** | ⏳ Chờ xử lý | Cầu nối trực tiếp sang React, luồng dữ liệu 1 chiều |
+## 🎯 1. NGUYÊN TẮC HUẤN LUYỆN BẮT BUỘC CHO AI AGENT
+1. **Phương pháp sư phạm chuẩn F8 (Tư duy phản xạ & Dẫn dắt từng bước):**
+   - **Không bao giờ ném code thành phẩm sẵn:** Tuyệt đối không tự ý viết toàn bộ code vào file hoặc đưa cả block code hoàn chỉnh cho user copy-paste.
+   - **Chia nhỏ bài toán:** Tách thành từng bước nhỏ (Bước 1 -> Bước 2 -> Chờ user gõ và phản hồi -> Bước tiếp theo).
+   - **Dẫn dắt từ quen thuộc đến mới:** Giống như từ `useState` (3 bước) nâng cấp lên `useReducer` (4 bước), luôn đối chiếu "Tại sao sinh ra?", "Giải quyết nỗi đau gì?".
+2. **Mổ xẻ 4 tầng bản chất chuyên sâu:**
+   - Tầng 1: Cú pháp & bài toán đời thực trực quan.
+   - Tầng 2: Cơ chế ngầm dưới "nắp capo" (Virtual DOM, Fiber Node, Closure Scope, Browser Paint, Call Stack, Web APIs, Heap/Stack).
+   - Tầng 3: Bẫy phỏng vấn Senior & Lỗi ngớ ngẩn thường gặp (Stale Closure, Visual Flicker, vỡ khiên `memo`, Infinite Loop re-render).
+   - Tầng 4: Thực chiến sản phẩm chuẩn React 18 / 19.
+3. **Quy tắc Checklist & Sổ tay:**
+   - Chỉ đánh dấu `[x]` trong `REACT_CHECKLIST_ROADMAP.md` khi đã cùng user mổ xẻ thấu đáo và user xác nhận hiểu sâu.
+   - Ghi chú lý thuyết vào `REACT_STUDY_NOTES.md` phải cô đọng, sắc bén, có bảng so sánh đối chiếu và code mẫu minh họa chuẩn mực.
 
 ---
 
-## 🎬 2. TIẾN ĐỘ DỰ ÁN THỰC CHIẾN WEB PHIM (CINEMAHUB - `project-movie/`)
+## 🧭 2. TỔNG QUAN TIẾN ĐỘ LỘ TRÌNH REACT HIỆN TẠI
 
-Đã hoàn thành các hạng mục sản phẩm chuẩn Production:
-
-### ✅ A. Đã hoàn thiện:
-1. **Kiến trúc ES Modules & CSS Tokens:**
-   - `js/config.js`: `CONFIG` (Base URL `phimapi.com`), `getFullImageUrl()` phòng thủ xử lý cả đường dẫn tương đối lẫn tuyệt đối.
-   - `css/base.css` & `css/component.css`: Thiết lập toàn bộ biến màu Dark Cinema, Glassmorphism sticky Navbar, Movie Card 3D lift (`translateY(-8px)`).
-2. **Trang chủ (`index.html` & `js/index.js`):**
-   - Render 24 phim mới nhất từ endpoint `/v1/api/danh-sach`.
-   - Mỗi card phim đã được bọc bằng thẻ `<a href="detail.html?slug=${movie.slug}" class="movie-card">` chuẩn SEO.
-3. **Tính năng Live Search (Tìm kiếm trực tiếp thời gian thực):**
-   - Sự kiện `input` trên `#search-input`.
-   - Ứng dụng kỹ thuật **Debounce 400ms** (`clearTimeout` + `setTimeout`) triệt tiêu spam mạng.
-   - Kỹ thuật **Guard Clause / Early Return** (`if (keyword === "") { initHome(); return; }`).
-   - Có kèm khối code tham khảo nâng cao tích hợp **`AbortController`** chống Race Condition.
-4. **Hàm API chi tiết phim (`js/api.js`):**
-   - Đã thêm hàm `MovieAPI.getMovieDetail(slug)` gọi endpoint `${CONFIG.BASE_URL}/phim/${slug}`.
-5. **Khung HTML Trang Chi Tiết (`detail.html`):**
-   - Đã dựng xong cấu trúc semantic: Navbar đồng bộ, `<section class="detail-hero">` (Poster + Thông tin chi tiết), `<section class="episodes-section">` (`#episodes-grid`).
-6. **Tài liệu hướng dẫn bài tập về nhà:**
-   - File [HOMEWORK_HERO_BANNER.md](file:///Users/thinh/FE/Prac_FE/PRAC_FE/project-movie/HOMEWORK_HERO_BANNER.md) hướng dẫn chi tiết thi công Hero Banner điện ảnh.
+### ✅ A. Đã hoàn thành 100% lý thuyết từ Chương 0 đến Chương 6:
+*(Toàn bộ đã được ghi chép chi tiết trong `REACT_STUDY_NOTES.md` và check `[x]` trong `REACT_CHECKLIST_ROADMAP.md`)*
+- **Chương 0 & 1:** Tư duy Component, Virtual DOM vs Real DOM, Cơ chế Reconciliation & Fiber Tree.
+- **Chương 2:** JSX, Babel, Fragile return, Curly braces `{}`.
+- **Chương 3:** Props vs State, One-way Data Flow, Two-way Binding, Controlled Component, Spread Operator bất biến `[...prev]`.
+  - **Mục 3.6 (Nâng cấp useReducer chuẩn F8):** 4 bước kinh điển (Init -> Actions/Action Creators -> Reducer pure -> Dispatch), đối chiếu tường tận với 3 bước của `useState`.
+  - **Mục 3.7:** Cặp bài toán Radio (`checked === id`, tước quyền thẻ `name`) vs Checkbox (mảng `ids`, `toggle`).
+- **Chương 4:** Xử lý sự kiện (SyntheticEvent, PreventDefault, Currying truyền params).
+- **Chương 5 (Vũ trụ useEffect & Hooks):**
+  - Ba biến thể dependency, cơ chế Cleanup function.
+  - Phân tích sâu: Tại sao `fetch().then()` dùng được trong `useEffect` mà `async () =>` trực tiếp lại lỗi (vì trả về Promise thay vì cleanup/undefined).
+  - Triết lý "You Might Not Need an Effect" (tính toán derived state khi render, không lạm dụng effect).
+  - `useLayoutEffect` vs `useEffect`: Đồng bộ chặn Main Thread trước Browser Paint -> Triệt tiêu giật hình (Visual Flicker).
+  - `useRef`: 2 sứ mệnh (tham chiếu DOM thật & lưu biến qua các lần re-render mà không kích hoạt render lại).
+  - `forwardRef` + `useImperativeHandle`: Đóng gói "tay nắm cửa an toàn", giới hạn quyền component Cha sờ vào DOM Con.
+  - `useId`: Tạo unique ID an toàn trong SSR và hydration.
+- **Chương 6 (Tối ưu hóa hiệu năng & Hiệu năng nâng cao):**
+  - `React.memo` (so sánh shallow props con thoi).
+  - `useCallback` (cứu khiên `memo` khỏi vỡ do tham chiếu hàm mới).
+  - `useMemo` (bảo tồn giá trị tính toán đắt đỏ).
+  - Concurrent React: `useTransition` (hạ độ ưu tiên, giữ UI mượt) vs `useDeferredValue` (trì hoãn giá trị tính toán).
+  - Tương lai React 19: **React Compiler** tự động memoize code, không cần lạm dụng hook tối ưu thủ công.
+  - Code Splitting: `React.lazy` + `Suspense` bóc tách bundle.
+  - `ErrorBoundary`: Vòng tròn bảo vệ cô lập crash bằng Class Component lifecycle `componentDidCatch`.
 
 ---
 
-## 🚀 3. ĐIỂM DỪNG HIỆN TẠI & KẾ HOẠCH LÀM KHI VỀ NHÀ
+## 💻 3. TIẾN ĐỘ THỰC HÀNH CODE (`react-movie-app/src/App.jsx`)
+- **Đã xong:** Ứng dụng To-Do List cơ bản:
+  - Quản lý ô input (Controlled Input với `job`, `setJob`).
+  - Danh sách công việc `jobs` (State mảng).
+  - Thêm việc: `setJobs(prev => [...prev, job])`.
+  - Xóa việc: `setJobs(prev => prev.filter((_, i) => i !== index))`.
 
-### 📍 Điểm dừng chính xác:
-Đã sẵn sàng để viết code cho **`js/detail.js`** và viết CSS cho **`css/detail.css`**.
+---
 
-### 📝 Danh sách việc làm khi mở máy ở nhà:
-1. **Bài tập Hero Banner (Nếu muốn làm đẹp trang chủ):**
-   - Mở file [HOMEWORK_HERO_BANNER.md](file:///Users/thinh/FE/Prac_FE/PRAC_FE/project-movie/HOMEWORK_HERO_BANNER.md) làm theo hướng dẫn 3 bước (HTML template -> CSS Double Gradient -> JS `renderHeroBanner`).
-2. **Hoàn thiện Trang Chi Tiết Phim:**
-   - Mở [detail.js](file:///Users/thinh/FE/Prac_FE/PRAC_FE/project-movie/js/detail.js):
-     - Dùng `new URLSearchParams(window.location.search).get("slug")` để lấy `slug`.
-     - Gọi `MovieAPI.getMovieDetail(slug)`.
-     - Render thông tin `movie` (Poster, Tên, Tên gốc, Badges, Danh sách thể loại `movie.category`, Tóm tắt `movie.content`).
-     - Render danh sách tập phim từ `episodes[0].server_data` vào `#episodes-grid`.
-   - Mở [detail.css](file:///Users/thinh/FE/Prac_FE/PRAC_FE/project-movie/css/detail.css):
-     - Viết CSS Flexbox 2 cột cho `.detail-hero` (Poster 300px bên trái, Thông tin bên phải).
-     - Style các nút tập phim (`.episodes-grid` dùng `display: flex; flex-wrap: wrap; gap: 10px;`).
-3. **Chuyển tiếp sang Trang Xem Phim (`watch.html`):**
-   - Nhúng video iframe xem phim thật qua `link_embed` của KKPhim.
+## 🚀 4. ĐIỂM DỪNG CHÍNH XÁC & BƯỚC TIẾP THEO KHI SANG MÁY CÔNG TY
+
+Khi user kéo code về máy công ty (`git pull origin main`) và mở chat:
+
+### 🎯 Hai hướng triển khai tiếp theo (hỏi user chọn 1 trong 2):
+1. **Lựa chọn 1 (Thực hành phản xạ cơ bắp - Mini-Project 4):**
+   - Viết tiếp trong `react-movie-app/src/App.jsx`:
+     - **Tính năng 1: Đồng hồ bấm giờ (Stopwatch):**
+       - Dùng `useState` lưu thời gian đếm `count`.
+       - Dùng `useRef` lưu `timerId.current = setInterval(...)` để khi Start/Stop không bị reset biến hay gây re-render thừa.
+     - **Tính năng 2: Live Search Debounce 400ms:**
+       - Dùng ô input tìm kiếm.
+       - Áp dụng `useEffect` có cleanup `clearTimeout` để triệt tiêu spam tìm kiếm khi người dùng đang gõ phím liên tục.
+2. **Lựa chọn 2 (Tiếp tục lý thuyết chuyên sâu Chương 7):**
+   - Chuyển sang **Chương 7: Quản lý State nâng cao (State Management)** trong `REACT_CHECKLIST_ROADMAP.md`:
+     - **7.1 Context API:** Vấn nạn Prop Drilling và cái giá re-render lan tỏa toàn cây (Context Hell).
+     - **7.2 Zustand:** Tại sao Zustand đè bẹp Redux & Context API trong dự án hiện đại (Atomic State, Selector chỉ render đúng component cần, Zero-boilerplate).
+     - **7.3 Server State vs Client State (TanStack Query / React Query):** Tách biệt dữ liệu server khỏi client state (Stale-While-Revalidate, tự động cache, retry).
+     - **7.4 Tương lai React 19:** `useOptimistic` (cập nhật UI trước khi server phản hồi) & Hook `use` (unwrap Promise/Context trực tiếp trong JSX).
+     - **7.5 Bóc tách Custom Hooks:** Nghệ thuật gom logic tái sử dụng (`useDebounce`, `useLocalStorage`, `useFetch`).
+
+---
+
+## 📌 5. THAO TÁC ĐỒNG BỘ GIT
+
+### Tại máy ở nhà (đã làm):
+- Đã commit: `docs: cap nhat so tay va checklist React tu Chuong 1 toi Chuong 6 chuan xac` (Hash: `3dd3908`).
+- User chạy lệnh: `git push origin main`.
+
+### Tại máy công ty:
+- Mở terminal chạy:
+  ```bash
+  git pull origin main
+  ```
+- Mở Antigravity / Chat và nhắn:
+  > *"Tôi vừa pull code mới nhất ở máy công ty rồi, tiếp tục lộ trình nhé!"*
