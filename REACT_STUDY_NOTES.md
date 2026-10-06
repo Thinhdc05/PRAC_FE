@@ -1192,3 +1192,239 @@ export function useDebounce(value, delay = 500) {
 
 
 
+
+
+---
+
+## 14. Chương 8: Định Tuyến Đa Trang Hiện Đại (React Router v7 & SPA Masterclass)
+
+---
+
+### 1. Bản chất SPA (Single Page Application) vs MPA:
+- **Thẻ <a href="..."> (Multi-Page App):** Trình duyệt gửi HTTP request mới, tải lại toàn bộ trang (F5 trắng màn hình), xóa sạch state trên RAM.
+- **Thẻ <Link to="..."> (SPA):** Chặn reload mặc định (`e.preventDefault()`), dùng `history.pushState()` để đổi URL êm ái, React Router tráo đổi Component con trong 0.01s mà không tải lại bất kỳ file HTML/CSS/JS nào.
+
+---
+
+### 2. Kiến trúc `createBrowserRouter` & `RouterProvider`:
+- **`createBrowserRouter([ ... ])`:**
+  - Nhận vào một **Mảng [ ] các Layout gốc** (ví dụ: nhóm Public `/`, nhóm Admin `/admin`).
+  - Mỗi phần tử là một **Object { } cấu hình Route**:
+    - `path`: URL bắt đầu.
+    - `element`: Khung Layout bao quanh (`<RootLayout />`).
+    - `children`: Mảng các phòng con bên trong.
+    - `index: true`: Route con mặc định khi người dùng đứng đúng tại đường dẫn của Cha (thay thế cho việc lặp lại `path: '/'`).
+- **Khung cố định & `<Outlet />`:**
+  - Layout cha giữ Header và Footer cố định.
+  - `<Outlet />` là lỗ trống (placeholder) duy nhất ở giữa để Route con được kích hoạt thò mặt ra.
+- **`<RouterProvider router={router} />`:**
+  - Đóng vai trò là React Context Provider trên đỉnh cây component, phát sóng bối cảnh định tuyến cho toàn bộ ứng dụng (giúp các hook `useParams`, `useNavigate` hoạt động mà không nổ lỗi).
+
+---
+
+### 3. Dynamic Route Parameters (`useParams`):
+- **Khai báo ở Router:** `path: '/phim/:slug'` (dấu `:` báo hiệu tham số động, sau dấu `:` là tên biến).
+- **So khớp khuôn mẫu (Pattern Matching):** URL `/phim/mai` -> React Router bóc ra `{ slug: 'mai' }`.
+- **Đọc tham số:** `const { slug } = useParams();` (Chỉ đọc - Read-only).
+- **Nhiều tham số trên cùng một URL:** `path: '/phim/:slug/:tap'` -> `const { slug, tap } = useParams();`.
+
+---
+
+### 4. Điều hướng bằng mã lệnh Javascript (`useNavigate`):
+- **Khi nào dùng:** Khi việc chuyển trang xảy ra sau một logic JS (gọi API xong, đếm ngược hẹn giờ, nút quay lại), thay vì click link đơn thuần.
+- **Lịch sử trình duyệt (History Stack):**
+  - `navigate(-1)`: Lùi 1 trang (Nút Back).
+  - `navigate(1)`: Tiến 1 trang (Nút Forward).
+- **Tùy chọn nâng cao:**
+  - `navigate('/dashboard', { replace: true })`: Ghi đè trang hiện tại trong history (dùng sau khi Đăng nhập thành công để người dùng bấm Back không bị quay lại trang Login).
+  - `navigate('/success', { state: { orderId: 123 } })`: Gửi dữ liệu ngầm, đọc bằng `useLocation().state`.
+
+---
+
+### 5. Hệ thống chịu lỗi 2 tầng (Error Handling & Boundaries):
+- **Tầng 1 - Cấp toàn trang (Route-level):**
+  - Cấu hình: `errorElement: <ErrorPage />` trong Route.
+  - Cơ chế **Error Bubbling:** Lỗi từ con không bắt được sẽ nổi bọt lên cha, thế chỗ toàn bộ khu vực đó.
+  - Hook `useRouteError()`: Móc lỗi 404 (`error.statusText`) hoặc lỗi code JS (`error.message`) để hiển thị.
+- **Tầng 2 - Cấp thẻ linh kiện (Component-level với `react-error-boundary`):**
+  - Bọc riêng từng component nhạy cảm: `<ErrorBoundary FallbackComponent={MyFallback} onReset={...}>`.
+  - Nếu component con crash -> Chỉ riêng khối đó hiển thị cảnh báo đỏ, các phần khác (Search, Banner) vẫn hoạt động 100%. Cung cấp hàm `resetErrorBoundary` để hồi sinh mà không cần F5.
+
+---
+
+### 6. Menu thông minh `<NavLink>`:
+- Tự động so sánh URL hiện tại với thuộc tính `to`.
+- Cung cấp cờ `isActive`: `style={({ isActive }) => ({ color: isActive ? 'red' : 'gray' })}`.
+- **Từ khóa `end` (`<NavLink to="/" end>`):** Bắt buộc dùng cho trang chủ để ngăn chặn việc kích hoạt nhầm khi ở các URL con có tiền tố `/`.
+
+---
+
+### 7. Trạng thái trên URL (`useSearchParams`):
+- Quản lý các tham số sau dấu hỏi chấm (`?q=batman&page=2`).
+- **Cú pháp:** `const [searchParams, setSearchParams] = useSearchParams();`.
+  - Đọc: `searchParams.get('q')`.
+  - Ghi: `setSearchParams({ q: 'avatar', page: 1 })`.
+- **Giá trị cốt lõi:** Biến URL thành "nơi lưu State" có thể chia sẻ (Shareable URL), bookmark, và reload không mất dữ liệu.
+
+
+---
+
+## 15. Chương 9: Quản Lý State Toàn Cục & React Context API Masterclass
+
+---
+
+### 1. Nỗi đau "Props Drilling" & Lý do sinh ra Global State:
+- **Props Drilling (Đào hầm chuyền hàng):** 
+  - Trong React thuần, dữ liệu chỉ chảy 1 chiều từ Cha xuống Con. Khi một component ở tầng đáy (như `MovieDetailPage`) muốn gửi dữ liệu lên đỉnh (như `RootLayout` Header), hoặc chia sẻ dữ liệu giữa 2 nhánh cây độc lập, ta phải truyền prop qua hàng chục component trung gian không có nhu cầu sử dụng.
+  - Hậu quả: Phá vỡ tính tái sử dụng, code rối rắm, cực kỳ khó bảo trì.
+- **Giải pháp - Global State (Trạng thái toàn cục):**
+  - Đưa dữ liệu lên một "kho chứa trên mây" (Context). Bất kỳ component nào cần dữ liệu đều có thể trực tiếp lấy xuống (Consumer) hoặc cập nhật (Dispatch) mà không cần thông qua component trung gian.
+- **Những dữ liệu nào NÊN đưa vào Global State:**
+  - Thông tin đăng nhập người dùng (`User Authentication`).
+  - Chế độ giao diện (`Theme: Dark / Light`).
+  - Giỏ hàng thương mại điện tử (`Cart`) hoặc Danh sách yêu thích (`Favorites / Watchlist`).
+  - Đa ngôn ngữ (`i18n: Tiếng Việt / English`).
+
+---
+
+### 2. Bộ 3 thành phần cốt lõi của Context API (Ẩn dụ Cột Sóng Wi-Fi):
+1. **`const MyContext = createContext(null)`:**
+   - Mua "tần số sóng Wi-Fi" (Khởi tạo đối tượng Context).
+2. **`<MyContext.Provider value={...}>`:**
+   - Cắm điện "cục Router phát sóng".
+   - Thuộc tính **`value`**: Kiện hàng chứa toàn bộ State và Hàm nghiệp vụ được phát sóng.
+   - Thẻ **`{children}`**: Toàn bộ các component nằm bên trong vùng phủ sóng.
+3. **`useContext(MyContext)`:**
+   - Chiếc "ăng-ten bắt sóng". Bất kỳ component con cháu nào gọi hook này đều hút trực tiếp dữ liệu từ `value` xuống.
+
+---
+
+### 3. Mô hình chuẩn Doanh Nghiệp: Context Provider + Custom Hook Pattern:
+Không bao giờ gọi trần `useContext(MyContext)` rải rác ở khắp các component. Tiêu chuẩn công nghiệp luôn đóng gói trọn gói trong 1 file duy nhất (`src/context/FavoritesContext.jsx`):
+
+```javascript
+import { createContext, useContext, useState, useEffect } from "react";
+
+// 1. Context nội bộ (Không cần export ra ngoài)
+const FavoritesContext = createContext(null);
+
+// 2. Component Provider đóng gói toàn bộ logic
+export function FavoritesProvider({ children }) {
+  // Tối ưu Lazy Initialization: Đọc localStorage đúng 1 lần duy nhất lúc mount
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const saved = localStorage.getItem("my_favorites");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Tự động đồng bộ ngược vào ổ cứng khi favorites đổi
+  useEffect(() => {
+    localStorage.setItem("my_favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  // Logic nghiệp vụ: Toggle (Thêm nếu chưa có, Xóa nếu đã có)
+  function toggleFavorite(movie) {
+    if (!movie) return;
+    setFavorites((prev) => {
+      const isExisted = prev.some((item) => item.slug === movie.slug);
+      return isExisted
+        ? prev.filter((item) => item.slug !== movie.slug)
+        : [...prev, movie];
+    });
+  }
+
+  function isFavorite(slug) {
+    return favorites.some((item) => item.slug === slug);
+  }
+
+  return (
+    <FavoritesContext.Provider
+      value={{
+        favorites,
+        totalFavorites: favorites.length,
+        toggleFavorite,
+        isFavorite,
+      }}
+    >
+      {children}
+    </FavoritesContext.Provider>
+  );
+}
+
+// 3. Custom Hook công khai (Public API) cho cả ứng dụng
+export function useFavorites() {
+  const context = useContext(FavoritesContext);
+  // Rào chắn bảo vệ: Báo lỗi ngay nếu dev quên bọc Provider ở ngoài
+  if (!context) {
+    throw new Error("useFavorites phải được dùng bên trong <FavoritesProvider>");
+  }
+  return context;
+}
+```
+
+---
+
+### 4. Những kỹ thuật tối ưu & Bẫy phỏng vấn cấp cao (Senior Gotchas):
+1. **Lazy State Initialization (`useState(() => ...)`):**
+   - Đọc `localStorage` là thao tác I/O đồng bộ rất tốn tài nguyên. Nếu truyền trực tiếp `useState(localStorage.getItem(...))`, thao tác đọc ổ cứng sẽ bị lặp lại ở **MỖI LẦN COMPONENT RE-RENDER**.
+   - Bằng cách truyền một hàm mũi tên `() => ...`, React chỉ thực thi hàm đó **ĐÚNG 1 LẦN DUY NHẤT** khi component khởi tạo (Initial Mount).
+2. **Nguyên tắc Bất biến (Immutability) khi cập nhật Mảng/Object:**
+   - Dùng `setFavorites(prev => ...)` (Functional State Update) để luôn có state mới nhất, chống bẫy Stale State.
+   - Thêm phần tử: `[...prev, newItem]` (Không dùng `prev.push()`).
+   - Xóa phần tử: `prev.filter(item => item.id !== targetId)` (Không dùng `prev.splice()`).
+3. **Bẫy Hiệu năng của Context API:**
+   - **Cơ chế:** Khi giá trị `value` trong Provider thay đổi, **TẤT CẢ các component đang gọi `useContext` đều sẽ bị kích hoạt re-render** (kể cả khi chúng chỉ dùng 1 biến nhỏ trong đó).
+   - **Giải pháp nâng cao:**
+     - Tách nhỏ Context: Tách `ThemeContext`, `AuthContext`, `CartContext` riêng biệt. Không gom toàn bộ dữ liệu cả app vào 1 Context khổng lồ ("God Context").
+     - Tách State Context và Dispatch Context nếu state thay đổi quá thường xuyên.
+
+---
+
+### 5. So sánh Context API vs Redux Toolkit / Zustand:
+- **React Context API:**
+  - Ưu điểm: Tích hợp sẵn trong React (0 byte cài thêm), cấu hình đơn giản, hoàn hảo cho dữ liệu quy mô vừa và tần suất thay đổi thấp/trung bình (Theme, Auth, Favorites).
+  - Nhược điểm: Không tối ưu cho state thay đổi liên tục hàng chục lần/giây (như bảng chứng khoán, canvas vẽ đồ họa).
+- **Zustand / Redux Toolkit:**
+  - Ưu điểm: Quản lý state siêu mạnh, hỗ trợ chọn lọc re-render theo từng trường dữ liệu (Selectors), công cụ Redux DevTools ghi lại lịch sử du hành thời gian (Time-travel debugging).
+  - Nhược điểm: Cần cài thêm thư viện, cấu hình phức tạp hơn.
+
+---
+
+# CHAPTER 10: State Management Toàn Cảnh & Server State với TanStack Query (React Query v5)
+
+### 1. Bản chất cốt lõi: State Management là gì?
+- **Công thức gốc:** `UI = f(State)`. Giao diện hiển thị chỉ là hàm số phản chiếu dữ liệu (State) tại thời điểm t.
+- **State trong RAM:** Là biến lưu trữ trong bộ nhớ máy tính. Khi state thay đổi, React bắt buộc kích hoạt chu kỳ render để cập nhật Virtual DOM -> DOM thật.
+- **3 Nỗi đau kiến trúc khi ứng dụng phình to:**
+  1. **Prop Drilling:** Truyền props sâu 5-10 tầng qua các component trung gian không có nhu cầu sử dụng.
+  2. **Sibling State Sharing:** Hai component ngang hàng cần chung dữ liệu buộc phải "Lifting State Up" lên cha chung cao nhất, làm phình to component cha.
+  3. **Ghost Re-renders:** Cập nhật state ở cha chung vô tình kích hoạt re-render toàn bộ cây con bên dưới.
+
+---
+
+### 2. Bản đồ 4 loại State trong Kiến trúc React Hiện đại:
+Khác với thời kỳ 2015-2020 (nhét tất cả vào Redux Store), kiến trúc hiện đại phân loại rạch ròi 4 loại:
+
+| Loại State | Bản chất & Phạm vi | Ví dụ thực tế | Công cụ tối ưu |
+| :--- | :--- | :--- | :--- |
+| **1. Local (UI) State** | Chỉ sống trong 1 component, hủy khi unmount. | Dropdown đóng/mở, Modal, Input tạm. | `useState`, `useReducer` |
+| **2. URL State** | Nằm trên thanh địa chỉ trình duyệt, share link được, F5 không mất. | `?page=2`, `?tap=1&server=vietsub`, `/phim/:slug`. | `useSearchParams`, `useParams` (React Router v7) |
+| **3. Client Global State** | Toàn app, do Client sinh ra và sở hữu hoàn toàn, đồng bộ (sync). | Theme Tối/Sáng, Yêu thích lưu LocalStorage, Giỏ hàng offline. | **Context API** (vừa & nhỏ) hoặc **Zustand** (lớn, hiệu năng cao) |
+| **4. Server State** | Nằm trên máy chủ/database, Frontend chỉ "mượn tạm" về hiển thị. Bất đồng bộ (async), có thể bị cũ (stale). | Danh sách phim, Chi tiết tập phim, Thông tin profile user. | **TanStack Query (React Query)**, RTK Query |
+
+---
+
+### 3. Tại sao Server State KHÔNG THỂ quản lý bằng `useEffect + useState`?
+- **Cơ chế Stale-While-Revalidate (SWR):**
+  - **Lần đầu mount:** Gọi API, lưu kết quả vào RAM Cache, hiển thị ra UI.
+  - **Khi người dùng quay lại trang (Back/Forward):** Lôi ngay dữ liệu từ Cache hiển thị tức thì (0ms) -> Optimistic UX, không bị màn hình trắng/loading giật lag.
+  - **Chạy ngầm (Background Revalidation):** Tự động bắn request ngầm kiểm tra phiên bản mới, nếu có thay đổi thì cập nhật êm dịu không làm đứng hình app.
+- **Khái niệm `staleTime` vs `gcTime` (CacheTime):**
+  - `staleTime`: Khoảng thời gian dữ liệu được coi là "còn tươi mới". Khi còn trong `staleTime`, chuyển trang 100 lần cũng **KHÔNG BẮN BẤT KỲ REQUEST MẠNG NÀO** -> Giảm 90% tải server.
+  - `gcTime` (Garbage Collection Time): Thời gian lưu cache trong RAM sau khi component unmount trước khi tự động giải phóng bộ nhớ.
+- **Request Deduplication:** Gom nhiều request trùng lặp từ nhiều component khác nhau gọi cùng 1 lúc thành đúng 1 request duy nhất.
+- **Auto-Retry & Network Resilience:** Tự động thử lại 3 lần theo lũy thừa thời gian khi rớt mạng trước khi throw error.
+

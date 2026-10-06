@@ -1,36 +1,38 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { MovieBanner } from './components/MovieBanner';
-import { SearchBar } from './components/SearchBar';
-import {MovieList} from'./components/MovieList';
-import{useMovieSearch} from './hooks/useMovieSearch'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { RootLayout } from './layouts/RootLayout';
+import { HomePage } from './pages/HomePage';
+import { MovieDetailPage } from './pages/MovieDetailPage';
+import { ErrorPage } from './pages/ErrorPage';
+import { FavoritesProvider } from './context/FavoritesContext';
+
 
 function App() {
-   const {
-    movies,
-    isLoading,
-    isLoadingMore,
-    error,
-    hasMore,
-    handleSearch,
-    handleLoadMore,
-  } = useMovieSearch();
-  return (
-    <div>
-      <SearchBar onSearch={handleSearch} />
-      <MovieBanner movies={movies} />
-      <MovieList movies={movies} isLoading={isLoading} error={error} />
+  const router=createBrowserRouter(
+    [
       {
-        hasMore && !isLoading &&(
-          <button
-          onClick={handleLoadMore}
-          disabled={isLoadingMore}
-          >
-            {isLoadingMore? 'Dang tai them phim':'tai thêm phim'}
-          </button>
-        )
-      }
-    </div>
+      path:'/',
+      element:<RootLayout/>,
+      errorElement: <ErrorPage />,
+      children:[
+        {
+          index:true,
+          element:<HomePage/>,
+        },
+        {
+          path:'/phim/:slug',
+          element:<MovieDetailPage/>
+        }
+      ]
+    }
+    ]
   )
+  return (
+    <FavoritesProvider>
+      <RouterProvider router={router} />
+    </FavoritesProvider>
+  
+    )
+  
 }
 
 export default App;
