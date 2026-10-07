@@ -399,6 +399,114 @@
 
 ---
 
+### 28. Quản lý Form Hiện đại với React Hook Form (`useForm`) & Zod Schema: Cơ chế Uncontrolled bằng `ref`, Bộ tứ vũ khí và Ba chế độ `mode`
+* **Định nghĩa gọn:** `useForm` là hook trung tâm của thư viện **React Hook Form**, dùng để quản lý toàn bộ vòng đời của form (nhập liệu, validate, hiển thị lỗi, theo dõi chỉ số, submit) theo cơ chế **Uncontrolled Component bằng `ref`**, giúp form đạt hiệu năng mượt mà 60 FPS mà không làm re-render toàn bộ component ở mỗi lần gõ phím.
+* **Hiểu (Mạch tư duy Nhân - Quả 4 nấc chuyên sâu):**
+  1. **Sinh ra để làm gì? Khắc phục 2 nỗi đau chí mạng của Form truyền thống dùng `useState`:**  
+     * *Nỗi đau 1: Re-render điên cuồng (Render Explosion):* Với Controlled Form truyền thống (`value={name}` + `onChange`), mỗi khi người dùng gõ **1 ký tự** vào ô "Họ tên", hàm `setName` được gọi -> **TOÀN BỘ 15 ô input và cả cái Form bị re-render theo**! Người dùng gõ 20 ký tự = cả form bị vẽ lại 20 lần -> gõ nhanh thì phím bị đơ khựng, tụt FPS.  
+     * *Nỗi đau 2: Code "rác" khổng lồ (Boilerplate):* Ta phải tự tạo hàng chục `useState` rác (`[errors, setErrors]`, `[isSubmitting, setIsSubmitting]`), tự viết hàm kiểm tra từng trường, tự bắt `e.preventDefault()`.  
+     👉 **Giải pháp của `useForm`:** Đưa toàn bộ các ô input về bản chất **Uncontrolled Components** thông qua `ref`. Khi người dùng gõ phím, DOM thật tự giữ chữ trong âm thầm, **React hoàn toàn không bị re-render**! Người dùng gõ phím mượt mà 60 FPS, React Hook Form chỉ re-render cục bộ ở đúng thẻ báo lỗi khi cần thiết.
+  2. **Bộ tứ vũ khí cốt lõi bên trong `useForm` (Phân tích từng quân bài):**  
+     * **Quân bài 1: `register('fieldName')` — "Đăng ký hộ khẩu":**  
+       Khi rải `{...register('email')}` vào thẻ `<input />`, hàm này tự động gắn vào ô input: `name: 'email'`, `ref` (để RHF nắm con trỏ DOM thật), `onChange` và `onBlur`. Ta không cần viết `value` hay `onChange` thủ công nữa!  
+     * **Quân bài 2: `handleSubmit(onSubmit)` — Người gác cổng 2 tầng:**  
+       Tự động gọi `e.preventDefault()` chống reload trang.  
+       * *Tầng 1 (Kiểm duyệt lỗi):* Tự động chạy toàn bộ bộ lọc validation. Nếu có bất kỳ ô nào sai -> **Chặn đứng lại ngay**, không cho gửi đi, và tự động đổ thông báo lỗi vào object `errors`.  
+       * *Tầng 2 (Bàn giao dữ liệu sạch):* Chỉ khi toàn bộ form hợp lệ 100%, nó mới gom toàn bộ dữ liệu sạch thành một Object đóng gói sẵn và truyền thẳng vào hàm `onSubmit(data)` của ta.  
+     * **Quân bài 3: `formState` — Bảng đồng hồ đo chỉ số:**  
+       * `errors`: Nơi chứa thông báo lỗi của từng ô (`errors.fullName?.message`).  
+       * `isSubmitting`: Đang gửi dữ liệu lên server (dùng để `disabled` khóa nút bấm chống spam click).  
+       * `isDirty`: Form đã bị người dùng chỉnh sửa chữ nào chưa (dùng để hiện popup cảnh báo thoát mà chưa lưu).  
+       * `isValid`: Toàn bộ form đã hợp lệ chưa (dùng để làm mờ nút Submit khi chưa điền đúng).  
+     * **Quân bài 4: `watch('fieldName')` — Chiếc Camera giám sát Derived State:**  
+       Mặc định form không re-render khi gõ. Nhưng nếu có một chỗ nào đó **CẦN tính toán ngay lập tức theo giá trị người dùng chọn** thì sao? Ta dùng `watch`:  
+       Ví dụ ở trang Đặt vé: `const selectedSeat = watch('seatType'); const quantity = watch('ticketQuantity');` -> Tính ngay `totalPrice = SEAT_PRICES[selectedSeat] * quantity` (Derived State) mà **không cần tạo thêm bất kỳ `useState` nào**!  
+     * **Quân bài 5: `reset()`:** Xóa sạch toàn bộ form về giá trị mặc định chỉ với 1 dòng lệnh duy nhất.
+  3. **Cặp bài trùng thế kỷ: React Hook Form + Zod Schema (`zodResolver`):**  
+     * **Triết lý Tách rời Luật (Schema) khỏi Giao diện (UI):** File UI (`BookingPage.jsx`) chỉ thuần túy vẽ ô input và nút bấm. Toàn bộ luật kiểm tra phức tạp (Tên >= 2 chữ, Regex số điện thoại VN 10 số `/^(0[35789])[0-9]{8}$/`, Enum loại ghế, Checkbox đồng ý điều khoản) được gom sạch sẽ vào 1 file Schema riêng biệt (`bookingSchema.js`).  
+     * **Chiếc cầu nối `zodResolver`:** Ủy thác 100% việc kiểm duyệt cho Zod. Khi Zod phát hiện lỗi tiếng Việt nào, React Hook Form tự động bốc dòng chữ đó gán vào `errors.fieldName.message` để ta hiển thị lên UI.
+  4. **Ba chế độ kiểm tra lỗi (`mode`):**  
+     * `mode: 'onSubmit'` (Mặc định): Chỉ khi bấm nút Submit mới bắt đầu hiện lỗi đỏ.  
+     * `mode: 'onChange'` (Cách dùng ở BookingPage): Vừa gõ từng ký tự là hệ thống soi lỗi và đổi màu viền đỏ/xanh ngay lập tức.  
+     * `mode: 'onBlur'` (Chuẩn UX doanh nghiệp): Người dùng gõ xong, click chuột ra ngoài ô input khác thì mới soi lỗi (tránh việc người dùng vừa gõ chữ đầu tiên đã nhảy lỗi đỏ làm họ khó chịu).
+* **Đòn phản công Senior:** So với thư viện cũ như Formik (dựa trên Controlled Component làm re-render toàn form liên tục), React Hook Form nhẹ hơn, chạy nhanh hơn gấp nhiều lần nhờ kiến trúc **Uncontrolled + Ref**, và dễ dàng bóc tách Schema độc lập qua Zod.
+
+---
+
+### 29. Quản lý Client State Toàn cục: Cuộc chiến Tam giác Context API vs Redux Toolkit vs Zustand — Triết lý Selector, In-Memory Store ngoài React và Bài toán Re-render Lan tỏa
+* **Định nghĩa gọn:** Quản lý State toàn cục ở Client (Global Client State) là giải pháp chia sẻ và đồng bộ dữ liệu giao diện giữa nhiều Component không cùng huyết thống (không có quan hệ cha-con trực tiếp) nhằm loại bỏ vấn nạn Prop Drilling. Trong đó:
+  * **Context API:** Giải pháp chính chủ tích hợp sẵn trong React Core, phù hợp cho dữ liệu tĩnh hoặc tần suất thay đổi cực thấp (Theme sáng/tối, Ngôn ngữ đa quốc gia i18n, Trạng thái đăng nhập Auth).
+  * **Redux Toolkit (RTK):** Tiêu chuẩn kiến trúc kinh điển của hệ sinh thái React, vận hành theo mô hình dòng dữ liệu một chiều nghiêm ngặt (Flux/CQRS), dành cho các ứng dụng cấp doanh nghiệp (Enterprise) khổng lồ, quy chuẩn chặt chẽ và cần khả năng truy vết lịch sử gỡ lỗi (Time-Travel Debugging).
+  * **Zustand:** Thư viện thế hệ mới siêu nhẹ (~1KB) dựa trên In-Memory Store độc lập nằm ngoài React kết hợp **Selector Pattern**, giải quyết triệt để vấn đề Re-render lan tỏa của Context mà không đòi hỏi bất kỳ thẻ Provider nào bọc ở gốc ứng dụng.
+* **Hiểu (Mạch tư duy Nhân - Quả 4 nấc chuyên sâu):**
+  1. **Sinh ra để làm gì? Lịch sử tiến hóa & Nỗi đau qua 3 thời kỳ:**
+     * *Thời kỳ 1 (Nỗi đau Prop Drilling & Kỷ nguyên Redux):* Khi ứng dụng phình to, việc truyền props xuyên 7-10 tầng component trung gian trở thành thảm họa bảo trì. Redux ra đời giải quyết được bài toán này nhưng lại kéo theo **"cơn ác mộng Boilerplate"**: để đổi một biến số, lập trình viên phải tạo hàng loạt file Action Types, Action Creators, Reducers, Dispatch, Connect HOC, xử lý tính bất biến (Immutability) thủ công. Dù Redux Toolkit (RTK) ra đời với `createSlice` và tích hợp Immer giúp code ngắn hơn nhiều, nó vẫn mang một cấu trúc quá cồng kềnh đối với 90% ứng dụng thực tế.
+     * *Thời kỳ 2 (Context API & Nỗi đau Re-render Lan tỏa - Cascading Re-renders):* Lập trình viên quay sang dùng `createContext` + `useContext` với hy vọng thoát khỏi boilerplate của Redux vì "hàng chính chủ không cần cài thêm thư viện". Nhưng họ nhanh chóng đâm đầu vào **bẫy hiệu năng chí mạng**: Context API **không có cơ chế Selector tự nhiên**! Mọi component đăng ký `useContext(MyContext)` sẽ bị ép re-render mỗi khi giá trị Provider thay đổi, bất kể component đó chỉ dùng 1 thuộc tính nhỏ (`theme`) trong khi thuộc tính bị đổi lại là (`userProfile`). Thêm vào đó là vấn nạn **Context Hell** khi 10 cái `<Provider>` lồng nhau thành hình tam giác nhọn hoắt ở file `main.jsx`.
+     * *Thời kỳ 3 (Cuộc cách mạng Zustand & Triết lý Tối giản đỉnh cao):* Zustand xuất hiện và định nghĩa lại cách quản lý state: Không cần Provider bọc ở Root, không cần Boilerplate rườm rà, tạo store bằng đúng một hàm `create()`, và sở hữu khả năng "phẫu thuật" re-render chính xác tới từng byte nhờ **Selector Pattern**.
+  2. **Cơ chế ngầm dưới nắp ca-pô (Under the Hood - Mổ xẻ cơ chế hoạt động):**
+     * **Vị trí lưu trữ trong bộ nhớ (Inside Fiber vs External In-Memory Store):**
+       * *Context API:* Nằm trực tiếp bên trong cây **React Fiber Tree**. Dữ liệu sống ký sinh vào vòng đời của Provider Component. Khi Provider re-render, React đánh dấu bẩn (dirty) toàn bộ các nhánh con bên dưới có gọi `useContext`.
+       * *Zustand:* Là một **Plain JavaScript Object / Closure độc lập nằm HOÀN TOÀN BÊN NGOÀI cây React (External Module Store)**. Nó chỉ là một vùng nhớ thông thường trong RAM trình duyệt, không bị ràng buộc bởi vòng đời component. Vì nằm ngoài React, ta có thể đọc và ghi dữ liệu của Zustand ở bất kỳ đâu: bên trong component, bên trong Custom Hook, trong file tiện ích `utils.js`, hoặc ngay giữa một hàm chặn mạng `axios.interceptors` mà **không vi phạm bất kỳ Quy tắc nào của Hooks (Rules of Hooks)**!
+     * **Cơ chế đồng bộ hóa với React 18+ qua `useSyncExternalStore`:**
+       Làm sao React biết khi nào dữ liệu trong kho RAM bên ngoài thay đổi để vẽ lại giao diện? Dưới nắp ca-pô, Zustand sử dụng mô hình **Publisher - Subscriber (Observer Pattern)** kết hợp hook chính chủ `useSyncExternalStore` của React 18. Zustand đăng ký một listener lắng nghe sự kiện thay đổi của Store. Khi ta gọi `set(...)`, Zustand cập nhật dữ liệu trong RAM và phát tín hiệu cho React biết để lên lịch vẽ lại đúng những component có liên quan.
+     * **Trái tim hiệu năng: Triết lý Selector Pattern (Chặn đứng re-render thừa):**
+       * Trong Context API:
+         ```jsx
+         const { theme, user } = useContext(AppContext);
+         // Khi 'user' đổi -> Component chỉ cần 'theme' này VẪN BỊ RE-RENDER OAN!
+         ```
+       * Trong Zustand:
+         ```jsx
+         // Component Header chỉ quan tâm đến tổng số vé:
+         const totalTickets = useFavoritesStore(state => state.totalTickets);
+         ```
+         Hàm `state => state.totalTickets` chính là một **Selector**. Khi store xảy ra 1.000 biến động (ví dụ danh sách phim thay đổi, thông tin người dùng cập nhật, cờ modal bật tắt...), Zustand lấy giá trị mới của selector ra so sánh với giá trị cũ bằng phép so sánh nghiêm ngặt (`oldValue === newValue`). Do `totalTickets` vẫn là số `3` không đổi, React **hoàn toàn TỪ CHỐI re-render component này**! Nhờ đó, ứng dụng đạt tốc độ phản hồi 60 FPS mượt mà tuyệt đối.
+  3. **Hệ quả & 3 Cạm bẫy sống còn do bản chất gây ra (Senior Gotchas):**
+     * **Bẫy 1: Bẫy "Tự tay đập vỡ Selector" trong Zustand (Object Reference Trap):**
+       Nhiều bạn viết tiện tay gom biến qua Object:
+       ```javascript
+       // ❌ BẪY CHÍ MẠNG:
+       const { count, text } = useStore(state => ({ count: state.count, text: state.text }));
+       ```
+       *Tại sao gây tai họa?* Ở mỗi lần store có bất kỳ thay đổi nào (kể cả biến khác), hàm selector chạy lại và trả về một **Object mới toanh ở địa chỉ ô nhớ Heap mới** (`{}` khác `{}`). Phép so sánh nông `oldObj === newObj` luôn ra `false` -> **Cơ chế Selector bị vô hiệu hóa hoàn toàn, component bị ép re-render liên tục!**  
+       *Cách khắc phục chuẩn:*
+       * Cách 1 (Khuyên dùng): Tách thành 2 dòng selector riêng biệt:
+         ```javascript
+         const count = useStore(state => state.count);
+         const text = useStore(state => state.text);
+         ```
+       * Cách 2: Dùng hàm so sánh nông `useShallow` chính chủ của Zustand:
+         ```javascript
+         import { useShallow } from 'zustand/react/shallow';
+         const { count, text } = useStore(useShallow(state => ({ count: state.count, text: state.text })));
+         ```
+     * **Bẫy 2: Lạm dụng Global State để lưu Server State (Nhầm lẫn khái niệm tai hại):**
+       Nhiều lập trình viên mang thói quen cũ: gọi API lấy danh sách phim, sau đó nhét mảng phim đó vào Redux hoặc Zustand Store rồi tự viết cờ `isLoading`, `isError`, tự viết logic refetching.  
+       👉 **Tư duy sai lầm!** Dữ liệu từ API máy chủ là **Server State** (có thể bị cũ, cần cache, cần refetch ngầm, cần deduping request). Hãy để **TanStack Query (`useQuery`)** quản lý. Zustand chỉ nên dùng để quản lý **Client State thuần túy** (UI theme, cờ mở drawer, giỏ vé tạm thời, bộ lọc filter đang chọn).
+     * **Bẫy 3: Bẫy "Context Hell" & Hiệu ứng Domino:**
+       Lạm dụng Context API cho dữ liệu biến động nhanh (như vị trí chuột, bộ đếm timer từng giây, dữ liệu gõ phím). Mỗi nhịp thay đổi sẽ kích hoạt một cơn bão re-render càn quét toàn bộ cây component bên dưới Provider.
+  4. **Ma trận Quyết định Thực chiến: Khi nào dùng vũ khí nào? (Senior Decision Matrix):**
+
+     | Tiêu chí so sánh | Context API (Có sẵn) | Redux Toolkit (RTK) | Zustand (Thế hệ mới) |
+     | :--- | :--- | :--- | :--- |
+     | **Kích thước Bundle** | 0 KB (Có sẵn trong React) | ~11 KB + dependencies | **~1.1 KB (Siêu nhẹ)** |
+     | **Boilerplate & Cấu hình** | Thấp | Rất cao (Slice, Thunk, Store) | **Cực thấp (1 hàm `create`)** |
+     | **Cần Provider ở Root?** | Có (Bắt buộc `<Provider>`) | Có (Bắt buộc `<Provider>`) | **KHÔNG CẦN (Zero Provider)** |
+     | **Cơ chế Selector** | ❌ Không có (Re-render lan tỏa) | Có (`useSelector` + memoized) | **Có sẵn (`state => state.field`)** |
+     | **Gọi ngoài React?** | ❌ Không thể (Phụ thuộc Hook) | Có (`store.dispatch`, `getState`) | **Có sẵn (`useStore.getState()`, `setState`)** |
+     | **Hỗ trợ Middleware** | Phải tự code thủ công | Redux Thunk, Saga, DevTools | **Có sẵn `persist`, `devtools`, `immer`** |
+     | **Ứng dụng thực tế** | Dữ liệu tĩnh: DarkMode, i18n, Auth token | Hệ thống ngân hàng lớn, Enterprise | **Dự án hiện đại, Mid/Senior Startup, MVP** |
+
+* **Đòn phản công Senior: "Mô hình Phân tầng State 4 Tầng (The 4-Pillars State Architecture)":**  
+  Khi mentor hỏi: *"Em quản lý State trong dự án React như thế nào?"*, hãy bắn ra tư duy kiến trúc 4 tầng thay vì chỉ kể tên thư viện:  
+  1. **Tầng 1 - Local UI State:** Biến động cục bộ trong 1 component (mở/đóng dropdown, tooltip) -> Dùng `useState`, `useReducer`.  
+  2. **Tầng 2 - Form State:** Quản lý nhập liệu, validate phức tạp, theo dõi ô input -> Dùng **React Hook Form (`useForm`) + Zod**.  
+  3. **Tầng 3 - Server State:** Dữ liệu đến từ máy chủ API cần caching, revalidation, optimistic update -> Dùng **TanStack Query (`useQuery`, `useMutation`)**.  
+  4. **Tầng 4 - Global Client State:** Dữ liệu UI dùng chung toàn app nhưng máy chủ không lưu (Theme, Drawer state, Giỏ vé tạm) -> Dùng **Zustand** (tận dụng Selector và Store ngoài React).  
+  *Kết luận:* Tách bạch 4 tầng này giúp mã nguồn giảm 80% code thừa, triệt tiêu hoàn toàn re-render rác, và mang lại hiệu năng 60 FPS đỉnh cao!
+
+---
+
 ## 🗺️ BẢNG THEO DÕI TIẾN ĐỘ ÔN TẬP CÁC REACT HOOKS (3 TẦNG)
 
 > *(Bảng checklist tạm thời để theo dõi chặng đường ôn luyện, sau khi hoàn thành sẽ xóa gọn)*
