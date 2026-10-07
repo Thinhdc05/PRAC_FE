@@ -57,7 +57,7 @@
 - [x] Controlled Components (Form có kiểm soát bằng State) vs Uncontrolled Components.
 - [x] Thực chiến Form hiện đại: Thư viện **React Hook Form** kết hợp **Zod Schema** để validate dữ liệu chuẩn doanh nghiệp.
 - [x] Lướt qua tính năng mới: Form Actions trong React 19 (Server Actions & `useActionState`).
-- [ ] 🛠️ **Mini-Project 3:** Xây dựng Form Đăng ký / Đặt vé xem phim chuẩn chỉnh với React Hook Form + Zod (báo lỗi inline tức thì).
+- [x] 🛠️ **Mini-Project 3:** Xây dựng Form Đăng ký / Đặt vé xem phim chuẩn chỉnh với React Hook Form + Zod (báo lỗi inline tức thì).
 
 ---
 

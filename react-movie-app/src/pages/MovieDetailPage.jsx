@@ -37,16 +37,16 @@ export function MovieDetailPage() {
             tap: newTap,
             server: currentServer, // Giữ nguyên server đang chọn
         },
-     { replace: true } );
+            { replace: true });
     }
 
     function handleSelectServer(newServer) {
         setSearchParams({
             tap: currentTap, // Giữ nguyên tập đang chọn
             server: newServer,
-            
+
         },
-     { replace: true } );
+            { replace: true });
     }
 
     if (isLoading) return <p style={{ padding: '20px', color: '#0070f3' }}>⏳ Đang tải thông tin phim...</p>;
@@ -88,7 +88,25 @@ export function MovieDetailPage() {
                 >
                     {isLiked ? '❤️ Đã thích' : '🤍 Thêm vào yêu thích'}
                 </button>
+                <button
+                    onClick={() => navigate(`/dat-ve/${slug}`)}
+                    style={{
+                        marginLeft: '10px',
+                        padding: '6px 14px',
+                        background: '#e50914',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '20px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                    }}
+                >
+                    🎟️ Đặt vé xem phim
+                </button>
+
             </h1>
+
             <p style={{ color: '#888' }}>Slug: <code>{slug}</code></p>
 
             {/* HỘP MÔ PHỎNG TRÌNH PHÁT VIDEO DỰA TRÊN QUERY PARAMS */}

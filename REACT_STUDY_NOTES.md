@@ -1396,10 +1396,10 @@ export function useFavorites() {
 # CHAPTER 10: State Management Toàn Cảnh & Server State với TanStack Query (React Query v5)
 
 ### 1. Bản chất cốt lõi: State Management là gì?
-- **Công thức gốc:** `UI = f(State)`. Giao diện hiển thị chỉ là hàm số phản chiếu dữ liệu (State) tại thời điểm t.
-- **State trong RAM:** Là biến lưu trữ trong bộ nhớ máy tính. Khi state thay đổi, React bắt buộc kích hoạt chu kỳ render để cập nhật Virtual DOM -> DOM thật.
+- **Công thức gốc:** `UI = f(State)`. Giao diện hiển thị chỉ là hàm số phản chiếu dữ liệu (State) tại thời điểm $t$.
+- **State trong RAM:** Là các biến lưu trữ trong bộ nhớ máy tính. Khi state thay đổi, React bắt buộc kích hoạt chu kỳ render để tính toán Virtual DOM và cập nhật DOM thật.
 - **3 Nỗi đau kiến trúc khi ứng dụng phình to:**
-  1. **Prop Drilling:** Truyền props sâu 5-10 tầng qua các component trung gian không có nhu cầu sử dụng.
+  1. **Prop Drilling:** Phải truyền props sâu 5-10 tầng qua các component trung gian hoàn toàn không có nhu cầu sử dụng dữ liệu đó.
   2. **Sibling State Sharing:** Hai component ngang hàng cần chung dữ liệu buộc phải "Lifting State Up" lên cha chung cao nhất, làm phình to component cha.
   3. **Ghost Re-renders:** Cập nhật state ở cha chung vô tình kích hoạt re-render toàn bộ cây con bên dưới.
 
@@ -1410,7 +1410,7 @@ Khác với thời kỳ 2015-2020 (nhét tất cả vào Redux Store), kiến tr
 
 | Loại State | Bản chất & Phạm vi | Ví dụ thực tế | Công cụ tối ưu |
 | :--- | :--- | :--- | :--- |
-| **1. Local (UI) State** | Chỉ sống trong 1 component, hủy khi unmount. | Dropdown đóng/mở, Modal, Input tạm. | `useState`, `useReducer` |
+| **1. Local (UI) State** | Chỉ sống trong 1 component, hủy khi unmount. | Dropdown đóng/mở, Modal bật/tắt, Input tạm. | `useState`, `useReducer` |
 | **2. URL State** | Nằm trên thanh địa chỉ trình duyệt, share link được, F5 không mất. | `?page=2`, `?tap=1&server=vietsub`, `/phim/:slug`. | `useSearchParams`, `useParams` (React Router v7) |
 | **3. Client Global State** | Toàn app, do Client sinh ra và sở hữu hoàn toàn, đồng bộ (sync). | Theme Tối/Sáng, Yêu thích lưu LocalStorage, Giỏ hàng offline. | **Context API** (vừa & nhỏ) hoặc **Zustand** (lớn, hiệu năng cao) |
 | **4. Server State** | Nằm trên máy chủ/database, Frontend chỉ "mượn tạm" về hiển thị. Bất đồng bộ (async), có thể bị cũ (stale). | Danh sách phim, Chi tiết tập phim, Thông tin profile user. | **TanStack Query (React Query)**, RTK Query |
@@ -1427,4 +1427,154 @@ Khác với thời kỳ 2015-2020 (nhét tất cả vào Redux Store), kiến tr
   - `gcTime` (Garbage Collection Time): Thời gian lưu cache trong RAM sau khi component unmount trước khi tự động giải phóng bộ nhớ.
 - **Request Deduplication:** Gom nhiều request trùng lặp từ nhiều component khác nhau gọi cùng 1 lúc thành đúng 1 request duy nhất.
 - **Auto-Retry & Network Resilience:** Tự động thử lại 3 lần theo lũy thừa thời gian khi rớt mạng trước khi throw error.
+
+---
+
+### 4. Kiến trúc Bộ Não TanStack Query: `QueryClient` & `QueryClientProvider`
+- **Bản chất `QueryClient`:** Là một In-Memory NoSQL Database thu nhỏ chạy hoàn toàn trong RAM trình duyệt, lưu trữ dữ liệu dạng cặp `Key => Value`.
+- **Cơ chế `QueryClientProvider`:** Bọc ở Root ứng dụng, sử dụng React Context ngầm để phát sóng kho RAM này xuống toàn bộ cây component.
+```jsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,    // 5 phút không gọi lại API
+      gcTime: 10 * 60 * 1000,       // Giữ cache trong RAM 10 phút sau khi unmount
+      refetchOnWindowFocus: false,  // Không tự refetch khi click lại tab
+      retry: 2,                     // Thử lại 2 lần nếu lỗi mạng
+    },
+  },
+});
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
+```
+
+---
+
+### 5. Trụ cột ĐỌC DỮ LIỆU: `useQuery` & Vòng đời Query trong RAM
+- **Vòng đời 5 trạng thái của một Query trong RAM:**
+  ```text
+  [Fetching] -> [Fresh] -(hết staleTime)-> [Stale] -(unmount)-> [Inactive] -(hết gcTime)-> [Xóa khỏi RAM]
+  ```
+- **Cấu trúc khai báo chuẩn:**
+  ```javascript
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
+    queryKey: ['movie', slug],           // Mảng định danh duy nhất (Unique Identity Key)
+    queryFn: () => fetchMovieDetail(slug), // Hàm trả về Promise
+    enabled: Boolean(slug),               // Điều kiện kích hoạt: chỉ chạy khi có slug hợp lệ
+  });
+  ```
+- **Phân biệt `isLoading` vs `isFetching`:**
+  - `isLoading` (`isPending`): Lần đầu tiên tải dữ liệu và trong RAM **chưa hề có cache**. (Dùng để hiện Spinner toàn trang).
+  - `isFetching`: Bất cứ khi nào có request mạng chạy ngầm (kể cả revalidate ngầm khi đã có cache cũ).
+
+---
+
+### 6. Bẫy Senior bắt buộc phải nhớ ở `queryFn`:
+- Hàm `fetch()` gốc của JavaScript **KHÔNG tự ném lỗi khi gặp mã HTTP 404 hoặc 500**. Nó vẫn coi đó là Promise resolved!
+- Do đó, trong `queryFn`, lập trình viên **bắt buộc phải chủ động kiểm tra `res.ok` và tự `throw new Error`** để TanStack Query bắt được trạng thái `isError`:
+  ```javascript
+  async function fetchMovieDetail(slug) {
+    const res = await fetch(`https://phimapi.com/v1/api/phim/${slug}`);
+    if (!res.ok) {
+      throw new Error(`Lỗi máy chủ: ${res.status}`);
+    }
+    return res.json();
+  }
+  ```
+
+---
+
+### 7. Trụ cột GHI DỮ LIỆU: `useMutation`
+- Khác với `useQuery` (chạy tự động khi render), `useMutation` **chỉ chạy khi có hành động chủ động từ người dùng** (Click nút, Submit form: POST, PUT, DELETE).
+- **Cấu trúc khai báo chuẩn:**
+  ```javascript
+  const addFavoriteMutation = useMutation({
+    mutationFn: async (movieData) => {
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(movieData),
+      });
+      if (!res.ok) throw new Error('Không thể thêm vào yêu thích');
+      return res.json();
+    },
+    onSuccess: (data) => console.log('Thành công:', data),
+    onError: (error) => console.error('Thất bại:', error.message),
+  });
+  ```
+
+---
+
+### 8. Chiếc cầu nối đồng bộ: `queryClient.invalidateQueries()`
+- **Bài toán:** Khi mutation thêm phim thành công, làm sao danh sách phim yêu thích ở trang khác tự cập nhật data mới mà không cần reload trang?
+- **Giải pháp:** Báo cho kho RAM biết query đó đã lỗi thời:
+  ```javascript
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: addMovieApi,
+    onSuccess: () => {
+      // Đánh dấu query ['favorites'] là Stale -> TanStack Query tự động kéo data mới ngầm ngay lập tức!
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
+    },
+  });
+  ```
+
+---
+
+### 9. Đỉnh cao UX: Kỹ thuật Optimistic Updates (Cập nhật giao diện lạc quan)
+- **Tư duy:** Nhảy số giao diện ngay trong 0ms (giả lập thành công), gửi request ngầm. Nếu lỗi mạng thì tự động Rollback về trạng thái cũ:
+  ```javascript
+  const likeMutation = useMutation({
+    mutationFn: toggleLikeApi,
+    onMutate: async (newStatus) => {
+      await queryClient.cancelQueries({ queryKey: ['movie', slug] });
+      const previousData = queryClient.getQueryData(['movie', slug]); // Bản sao lưu
+      queryClient.setQueryData(['movie', slug], (old) => ({ ...old, isLiked: newStatus })); // Cập nhật giả lập UI
+      return { previousData };
+    },
+    onError: (err, newStatus, context) => {
+      queryClient.setQueryData(['movie', slug], context.previousData); // Khôi phục khi lỗi
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['movie', slug] }); // Đồng bộ dữ liệu chuẩn cuối cùng
+    },
+  });
+  ```
+
+---
+
+### 10. Các Mảnh Ghép Quản Lý State Nâng Cao Cần Nắm Vững
+
+#### 10.1. Zustand & Triết lý Selector (Giải pháp Client State tối ưu):
+- Khắc phục triệt để nhược điểm của Context API.
+- **Không cần Provider:** Dùng được ở mọi nơi (kể cả ngoài React).
+- **Selector:** `const name = useStore(state => state.name)`. Khi các biến khác trong store thay đổi, component này **hoàn toàn không bị re-render**!
+
+#### 10.2. Derived State (State suy diễn) — Nguyên tắc "Đừng lưu cái gì tính toán được!":
+- **Sai:** Tạo `useState(totalPrice)` rồi dùng `useEffect` để tính lại từ mảng `items` -> Gây thêm 1 nhịp re-render thừa và bẫy lệch pha state.
+- **Đúng:** Tính toán trực tiếp trong thân hàm: `const totalPrice = items.reduce(...)`. Nếu tính toán nặng, bọc `useMemo`.
+
+#### 10.3. State Normalization (Chuẩn hóa cấu trúc State như Database):
+- Thay vì lưu mảng lồng nhau nhiều tầng (Nested Arrays) khiến việc cập nhật dữ liệu con cực kỳ phức tạp qua nhiều tầng `map()`.
+- Chuẩn hóa thành dạng phẳng: `byId: { [id]: item }` và `allIds: [id1, id2]`. Cập nhật và truy xuất đạt tốc độ tức thì $O(1)$.
+
+#### 10.4. Quản lý State hiện đại trong React 19:
+- **`useOptimistic`:** Hook chính thức tích hợp sẵn trong React để cập nhật UI lạc quan trước khi server phản hồi.
+- **`useActionState`:** Hook quản lý vòng đời của Form Action, tự động cung cấp cờ `isPending` để disable nút bấm và bắt lỗi server mà không cần viết boilerplate `useState`.
+
+#### 10.5. Redux Toolkit (RTK):
+- Thường gặp trong các dự án lâu năm, quy mô Enterprise lớn (Ngân hàng, bảo hiểm).
+- Tuân thủ nguyên tắc luồng dữ liệu 1 chiều nghiêm ngặt: `Action -> Dispatch -> Reducer -> Store -> UI`. Hỗ trợ Redux DevTools tua lại lịch sử thay đổi (Time-travel debugging).
+
 

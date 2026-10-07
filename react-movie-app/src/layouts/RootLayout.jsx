@@ -19,6 +19,7 @@ const { totalFavorites } = useFavorites();
                     <span style={{ color: '#e50914', fontWeight: 'bold' }}>
                         ❤️ Yêu thích: ({totalFavorites})
                     </span>
+                    
                 </nav>
             </header>
             <main>

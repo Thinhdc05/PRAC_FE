@@ -1,96 +1,210 @@
 # 📋 BÁO CÁO TIẾN ĐỘ & BÀN GIAO TOÀN DIỆN (HANDOVER PROGRESS)
-> **Dành cho AI Agent & Người học tại phiên làm việc tiếp theo (Máy công ty / Máy ở nhà):**
-> Khi bắt đầu phiên làm việc mới, AI Agent **BẮT BUỘC ĐỌC KỸ FILE NÀY** cùng các tài liệu đi kèm để nắm bắt chính xác ngữ cảnh, phương pháp sư phạm và điểm dừng kỹ thuật, tuyệt đối không làm gãy mạch học.
+> **Dành cho Người học & AI Agent tại phiên làm việc tiếp theo (Máy ở nhà / Máy công ty):**
+> File này ghi lại chính xác điểm dừng kỹ thuật, toàn bộ code mẫu chi tiết của chặng tiếp theo và hướng dẫn đồng bộ Git để bạn có thể tiếp tục làm việc mượt mà mà không bị đứt mạch.
 
 ---
 
 ## 🎯 1. NGUYÊN TẮC HUẤN LUYỆN BẮT BUỘC CHO AI AGENT
 1. **Phương pháp sư phạm chuẩn F8 (Tư duy phản xạ & Dẫn dắt từng bước):**
-   - **Không bao giờ ném code thành phẩm sẵn:** Tuyệt đối không tự ý viết toàn bộ code vào file hoặc đưa cả block code hoàn chỉnh cho user copy-paste.
-   - **Chia nhỏ bài toán:** Tách thành từng bước nhỏ (Bước 1 -> Bước 2 -> Chờ user gõ và phản hồi -> Bước tiếp theo).
-   - **Dẫn dắt từ quen thuộc đến mới:** Giống như từ `useState` (3 bước) nâng cấp lên `useReducer` (4 bước), luôn đối chiếu "Tại sao sinh ra?", "Giải quyết nỗi đau gì?".
+   - **Tuyệt đối không tự ý viết code vào file của user:** Luôn hướng dẫn, giải thích nguyên lý, đưa code mẫu để user tự gõ và cảm nhận luồng chạy.
+   - **Kiểm tra và bắt lỗi (Catch bugs):** Sau khi user gõ, soi kỹ từng lỗi chính tả (typo), hoa/thường, sai prop, bẫy render.
 2. **Mổ xẻ 4 tầng bản chất chuyên sâu:**
-   - Tầng 1: Cú pháp & bài toán đời thực trực quan.
-   - Tầng 2: Cơ chế ngầm dưới "nắp capo" (Virtual DOM, Fiber Node, Closure Scope, Browser Paint, Call Stack, Web APIs, Heap/Stack).
-   - Tầng 3: Bẫy phỏng vấn Senior & Lỗi ngớ ngẩn thường gặp (Stale Closure, Visual Flicker, vỡ khiên `memo`, Infinite Loop re-render).
-   - Tầng 4: Thực chiến sản phẩm chuẩn React 18 / 19.
-3. **Quy tắc Checklist & Sổ tay:**
-   - Chỉ đánh dấu `[x]` trong `REACT_CHECKLIST_ROADMAP.md` khi đã cùng user mổ xẻ thấu đáo và user xác nhận hiểu sâu.
-   - Ghi chú lý thuyết vào `REACT_STUDY_NOTES.md` phải cô đọng, sắc bén, có bảng so sánh đối chiếu và code mẫu minh họa chuẩn mực.
+   - Cú pháp -> Cơ chế ngầm dưới nắp capo (Fiber, RAM, Network, Event Loop) -> Bẫy Senior -> Thực chiến Clean Architecture.
 
 ---
 
-## 🧭 2. TỔNG QUAN TIẾN ĐỘ LỘ TRÌNH REACT HIỆN TẠI
+## 🧭 2. TỔNG QUAN TIẾN ĐỘ HIỆN TẠI (ĐÃ HOÀN THÀNH)
 
-### ✅ A. Đã hoàn thành 100% lý thuyết từ Chương 0 đến Chương 6:
-*(Toàn bộ đã được ghi chép chi tiết trong `REACT_STUDY_NOTES.md` và check `[x]` trong `REACT_CHECKLIST_ROADMAP.md`)*
-- **Chương 0 & 1:** Tư duy Component, Virtual DOM vs Real DOM, Cơ chế Reconciliation & Fiber Tree.
-- **Chương 2:** JSX, Babel, Fragile return, Curly braces `{}`.
-- **Chương 3:** Props vs State, One-way Data Flow, Two-way Binding, Controlled Component, Spread Operator bất biến `[...prev]`.
-  - **Mục 3.6 (Nâng cấp useReducer chuẩn F8):** 4 bước kinh điển (Init -> Actions/Action Creators -> Reducer pure -> Dispatch), đối chiếu tường tận với 3 bước của `useState`.
-  - **Mục 3.7:** Cặp bài toán Radio (`checked === id`, tước quyền thẻ `name`) vs Checkbox (mảng `ids`, `toggle`).
-- **Chương 4:** Xử lý sự kiện (SyntheticEvent, PreventDefault, Currying truyền params).
-- **Chương 5 (Vũ trụ useEffect & Hooks):**
-  - Ba biến thể dependency, cơ chế Cleanup function.
-  - Phân tích sâu: Tại sao `fetch().then()` dùng được trong `useEffect` mà `async () =>` trực tiếp lại lỗi (vì trả về Promise thay vì cleanup/undefined).
-  - Triết lý "You Might Not Need an Effect" (tính toán derived state khi render, không lạm dụng effect).
-  - `useLayoutEffect` vs `useEffect`: Đồng bộ chặn Main Thread trước Browser Paint -> Triệt tiêu giật hình (Visual Flicker).
-  - `useRef`: 2 sứ mệnh (tham chiếu DOM thật & lưu biến qua các lần re-render mà không kích hoạt render lại).
-  - `forwardRef` + `useImperativeHandle`: Đóng gói "tay nắm cửa an toàn", giới hạn quyền component Cha sờ vào DOM Con.
-  - `useId`: Tạo unique ID an toàn trong SSR và hydration.
-- **Chương 6 (Tối ưu hóa hiệu năng & Hiệu năng nâng cao):**
-  - `React.memo` (so sánh shallow props con thoi).
-  - `useCallback` (cứu khiên `memo` khỏi vỡ do tham chiếu hàm mới).
-  - `useMemo` (bảo tồn giá trị tính toán đắt đỏ).
-  - Concurrent React: `useTransition` (hạ độ ưu tiên, giữ UI mượt) vs `useDeferredValue` (trì hoãn giá trị tính toán).
-  - Tương lai React 19: **React Compiler** tự động memoize code, không cần lạm dụng hook tối ưu thủ công.
-  - Code Splitting: `React.lazy` + `Suspense` bóc tách bundle.
-  - `ErrorBoundary`: Vòng tròn bảo vệ cô lập crash bằng Class Component lifecycle `componentDidCatch`.
+1. **SPA Routing với React Router v7 (`App.jsx`):**
+   - `createBrowserRouter`, `RouterProvider`, `Outlet`, `useParams`, `useNavigate`.
+   - `useSearchParams` với kỹ thuật `{ replace: true }` chống tràn lịch sử trình duyệt.
+   - Route-level Error Boundary (`ErrorPage.jsx`) & Component-level Error Boundary (`react-error-boundary`).
+2. **Client Global State với Context API (`FavoritesContext.jsx`):**
+   - `createContext`, `FavoritesProvider`, lazy init từ `localStorage`, sync disk ngầm.
+   - Custom hook `useFavorites()` có rào chắn bảo vệ.
+3. **Chapter 10: State Management Toàn Cảnh & Server State (TanStack Query v5):**
+   - Phân biệt 4 loại State: Local UI, URL State, Client Global State, Server State.
+   - Khởi tạo `QueryClient` singleton, bọc `QueryClientProvider` & `ReactQueryDevtools` ở `App.jsx`.
+   - Tách Custom Hook `src/hooks/useMovieDetail.js` dùng `useQuery` có RAM Cache 5 phút (`staleTime: 5 * 60 * 1000`).
+4. **Complex Forms & Validation (React Hook Form + Zod):**
+   - Tách Schema và bảng giá ra `src/schemas/bookingSchema.js`:
+     - Regex số điện thoại 10 số VN (`/^(0[35789])[0-9]{8}$/`).
+     - Enum loại ghế (`standard`, `vip`, `sweetbox`), ép kiểu số `z.coerce.number()`, refine điều khoản `val === true`.
+   - Màn hình `src/pages/BookingPage.jsx`:
+     - `useForm` với `mode: 'onChange'` soi lỗi thời gian thực.
+     - **Derived State:** Tính `totalPrice` tức thì bằng `watch('seatType')` và `watch('ticketQuantity')` (0 `useState` thừa).
+     - Inline Error UX báo viền đỏ và thông báo lỗi tiếng Việt dưới từng ô.
 
 ---
 
-## 💻 3. TIẾN ĐỘ THỰC HÀNH CODE (`react-movie-app/src/App.jsx`)
-- **Đã xong:** Ứng dụng To-Do List cơ bản:
-  - Quản lý ô input (Controlled Input với `job`, `setJob`).
-  - Danh sách công việc `jobs` (State mảng).
-  - Thêm việc: `setJobs(prev => [...prev, job])`.
-  - Xóa việc: `setJobs(prev => prev.filter((_, i) => i !== index))`.
+## 📌 3. HƯỚNG DẪN CHI TIẾT ĐỂ LÀM TIẾP (TỐI NAY HOẶC PHIÊN TỚI)
+
+Hiện tại đang ở **Chặng 1 của [PLAN.md](file:///Users/thinh/FE/Prac_FE/PRAC_FE/PLAN.md)**: Triển khai `useMutation` để gửi HTTP POST thật qua mạng và hiển thị Modal Vé VIP thành công.
+
+### BƯỚC 1: Tạo Component Modal — `src/components/TicketSuccessModal.jsx`
+Tạo file mới `src/components/TicketSuccessModal.jsx` với nội dung:
+
+```jsx
+export function TicketSuccessModal({ ticket, onClose }) {
+  if (!ticket) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0,0,0,0.85)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999,
+      padding: '20px',
+    }}>
+      <div style={{
+        background: '#222',
+        border: '2px solid #e50914',
+        borderRadius: '16px',
+        padding: '30px',
+        maxWidth: '480px',
+        width: '100%',
+        color: '#fff',
+        boxShadow: '0 0 30px rgba(229, 9, 20, 0.4)',
+        textAlign: 'center',
+      }}>
+        <h2 style={{ color: '#46d369', margin: '0 0 10px 0' }}>🎉 ĐẶT VÉ THÀNH CÔNG!</h2>
+        <p style={{ color: '#aaa', fontSize: '14px' }}>
+          Mã vé điện tử: <strong style={{ color: '#fff' }}>VE-{ticket.id}-{Date.now().toString().slice(-4)}</strong>
+        </p>
+
+        <div style={{ background: '#181818', padding: '16px', borderRadius: '10px', textAlign: 'left', margin: '20px 0', fontSize: '15px' }}>
+          <p style={{ margin: '6px 0' }}>🎬 <strong>Phim:</strong> {ticket.movieName}</p>
+          <p style={{ margin: '6px 0' }}>👤 <strong>Khách hàng:</strong> {ticket.fullName} ({ticket.phone})</p>
+          <p style={{ margin: '6px 0' }}>⏱ <strong>Suất chiếu:</strong> {ticket.showtime}</p>
+          <p style={{ margin: '6px 0' }}>💺 <strong>Loại ghế:</strong> {ticket.seatType?.toUpperCase()} x {ticket.ticketQuantity} vé</p>
+          <p style={{ margin: '6px 0', borderTop: '1px solid #333', paddingTop: '10px', color: '#46d369', fontSize: '18px' }}>
+            💰 <strong>Tổng thanh toán:</strong> {ticket.totalPrice?.toLocaleString('vi-VN')} VNĐ
+          </p>
+        </div>
+
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: '#e50914',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            fontSize: '16px',
+          }}
+        >
+          Trở về Trang Chủ
+        </button>
+      </div>
+    </div>
+  );
+}
+```
 
 ---
 
-## 🚀 4. ĐIỂM DỪNG CHÍNH XÁC & BƯỚC TIẾP THEO KHI SANG MÁY CÔNG TY
+### BƯỚC 2: Cập nhật `src/pages/BookingPage.jsx`
 
-Khi user kéo code về máy công ty (`git pull origin main`) và mở chat:
+1. **Import thêm ở đầu file:**
+   ```javascript
+   import { useState } from 'react';
+   import { useMutation } from '@tanstack/react-query';
+   import { TicketSuccessModal } from '../components/TicketSuccessModal';
+   ```
 
-### 🎯 Hai hướng triển khai tiếp theo (hỏi user chọn 1 trong 2):
-1. **Lựa chọn 1 (Thực hành phản xạ cơ bắp - Mini-Project 4):**
-   - Viết tiếp trong `react-movie-app/src/App.jsx`:
-     - **Tính năng 1: Đồng hồ bấm giờ (Stopwatch):**
-       - Dùng `useState` lưu thời gian đếm `count`.
-       - Dùng `useRef` lưu `timerId.current = setInterval(...)` để khi Start/Stop không bị reset biến hay gây re-render thừa.
-     - **Tính năng 2: Live Search Debounce 400ms:**
-       - Dùng ô input tìm kiếm.
-       - Áp dụng `useEffect` có cleanup `clearTimeout` để triệt tiêu spam tìm kiếm khi người dùng đang gõ phím liên tục.
-2. **Lựa chọn 2 (Tiếp tục lý thuyết chuyên sâu Chương 7):**
-   - Chuyển sang **Chương 7: Quản lý State nâng cao (State Management)** trong `REACT_CHECKLIST_ROADMAP.md`:
-     - **7.1 Context API:** Vấn nạn Prop Drilling và cái giá re-render lan tỏa toàn cây (Context Hell).
-     - **7.2 Zustand:** Tại sao Zustand đè bẹp Redux & Context API trong dự án hiện đại (Atomic State, Selector chỉ render đúng component cần, Zero-boilerplate).
-     - **7.3 Server State vs Client State (TanStack Query / React Query):** Tách biệt dữ liệu server khỏi client state (Stale-While-Revalidate, tự động cache, retry).
-     - **7.4 Tương lai React 19:** `useOptimistic` (cập nhật UI trước khi server phản hồi) & Hook `use` (unwrap Promise/Context trực tiếp trong JSX).
-     - **7.5 Bóc tách Custom Hooks:** Nghệ thuật gom logic tái sử dụng (`useDebounce`, `useLocalStorage`, `useFetch`).
+2. **Bên trong component `BookingPage`:**
+   ```javascript
+   const [bookedTicket, setBookedTicket] = useState(null);
+
+   const bookingMutation = useMutation({
+     mutationFn: async (payload) => {
+       // Bắn HTTP POST thật lên mock server
+       const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(payload),
+       });
+       if (!res.ok) throw new Error(`Lỗi máy chủ: ${res.status}`);
+       return res.json();
+     },
+     onSuccess: (data) => {
+       console.log('Server trả về thành công:', data);
+       setBookedTicket(data); // Mở Modal
+     },
+     onError: (err) => {
+       alert(`Đặt vé thất bại: ${err.message}`);
+     },
+   });
+
+   function onSubmitBooking(data) {
+     const payload = {
+       ...data,
+       movieName: movie?.name,
+       movieSlug: slug,
+       totalPrice: totalPrice,
+       createdAt: new Date().toLocaleString('vi-VN'),
+     };
+     bookingMutation.mutate(payload); // Kích hoạt mutation
+   }
+   ```
+
+3. **Cập nhật nút submit ở cuối form:**
+   ```jsx
+   <button
+     type="submit"
+     disabled={bookingMutation.isPending}
+     style={{
+       marginTop: '20px',
+       padding: '14px',
+       background: bookingMutation.isPending ? '#666' : '#e50914',
+       color: '#fff',
+       border: 'none',
+       borderRadius: '8px',
+       fontSize: '16px',
+       fontWeight: 'bold',
+       cursor: bookingMutation.isPending ? 'not-allowed' : 'pointer',
+     }}
+   >
+     {bookingMutation.isPending ? '⏳ Đang gửi lên máy chủ...' : '🎟️ Xác Nhận Đặt Vé'}
+   </button>
+   ```
+
+4. **Gọi Modal ở cuối hàm `return ()` (trước thẻ đóng `</div>` cuối cùng):**
+   ```jsx
+   <TicketSuccessModal 
+     ticket={bookedTicket} 
+     onClose={() => {
+       setBookedTicket(null);
+       navigate('/');
+     }} 
+   />
+   ```
 
 ---
 
-## 📌 5. THAO TÁC ĐỒNG BỘ GIT
+## 📌 4. HƯỚNG DẪN ĐỒNG BỘ GIT (RẤT QUAN TRỌNG)
 
-### Tại máy ở nhà (đã làm):
-- Đã commit: `docs: cap nhat so tay va checklist React tu Chuong 1 toi Chuong 6 chuan xac` (Hash: `3dd3908`).
-- User chạy lệnh: `git push origin main`.
+### Trước khi rời máy hiện tại:
+Mở Terminal chạy chuỗi lệnh sau để đẩy toàn bộ code và sổ tay lên GitHub:
+```bash
+git add .
+git commit -m "feat: hoan thanh BookingPage voi Zod, RHF va chuan bi useMutation"
+git push origin main
+```
 
-### Tại máy công ty:
-- Mở terminal chạy:
-  ```bash
-  git pull origin main
-  ```
-- Mở Antigravity / Chat và nhắn:
-  > *"Tôi vừa pull code mới nhất ở máy công ty rồi, tiếp tục lộ trình nhé!"*
+### Khi mở máy khác (ở nhà hoặc hôm sau):
+Mở Terminal chạy:
+```bash
+git pull origin main
+```
+Sau đó nếu muốn bắt đầu phiên làm việc mới với AI, chỉ cần nhắn:
+> *"Tôi vừa pull code mới nhất rồi, tiếp tục Chặng 1 làm useMutation nhé!"*
