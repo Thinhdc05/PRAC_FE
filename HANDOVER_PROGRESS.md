@@ -1,210 +1,123 @@
-# 📋 BÁO CÁO TIẾN ĐỘ & BÀN GIAO TOÀN DIỆN (HANDOVER PROGRESS)
-> **Dành cho Người học & AI Agent tại phiên làm việc tiếp theo (Máy ở nhà / Máy công ty):**
-> File này ghi lại chính xác điểm dừng kỹ thuật, toàn bộ code mẫu chi tiết của chặng tiếp theo và hướng dẫn đồng bộ Git để bạn có thể tiếp tục làm việc mượt mà mà không bị đứt mạch.
+# 📋 BÁO CÁO BÀN GIAO & CHIẾN LƯỢC NÂNG CẤP DỰ ÁN MỚI (HANDOVER REPORT)
+
+> **Dành cho Người học & AI Agent tại phiên làm việc tiếp theo (Máy ở nhà / Phiên kế tiếp):**  
+> File này ghi lại **chi tiết phản hồi từ buổi Phỏng vấn Lần 1**, các lỗ hổng kiến trúc cần khắc phục, và **Kế hoạch hành động chi tiết để xây dựng Dự Án Mới: `react-pro-store`** tích hợp toàn bộ các công nghệ bắt buộc.
 
 ---
 
-## 🎯 1. NGUYÊN TẮC HUẤN LUYỆN BẮT BUỘC CHO AI AGENT
-1. **Phương pháp sư phạm chuẩn F8 (Tư duy phản xạ & Dẫn dắt từng bước):**
-   - **Tuyệt đối không tự ý viết code vào file của user:** Luôn hướng dẫn, giải thích nguyên lý, đưa code mẫu để user tự gõ và cảm nhận luồng chạy.
-   - **Kiểm tra và bắt lỗi (Catch bugs):** Sau khi user gõ, soi kỹ từng lỗi chính tả (typo), hoa/thường, sai prop, bẫy render.
-2. **Mổ xẻ 4 tầng bản chất chuyên sâu:**
-   - Cú pháp -> Cơ chế ngầm dưới nắp capo (Fiber, RAM, Network, Event Loop) -> Bẫy Senior -> Thực chiến Clean Architecture.
+## 🎯 1. PHẢN HỒI THỰC TẾ TỪ BUỔI PHỎNG VẤN LẦN 1 (THE REALITY CHECK)
+
+### Nhận xét cốt lõi từ Interviewer:
+1. **"Học lẻ từng hook thì chỉ là học vẹt":**
+   * Trong một dự án thực tế, các Hook không bao giờ đứng độc lập. Phải hiểu cách **các Hook lồng ghép, cộng sinh và phối hợp với nhau** theo luồng dữ liệu (Data Flow) đa tầng.
+2. **Thiếu các công cụ State Management công nghiệp:**
+   * Cần làm chủ **Redux Toolkit (RTK)** — Tiêu chuẩn của các hệ thống doanh nghiệp lớn.
+   * Cần làm chủ **Zustand** — Thư viện State Management hiện đại siêu nhẹ (~1KB) dựa trên Selector Pattern.
+3. **Thư viện Validation đi kèm `useForm` (Ngoài Zod):**
+   * Phải biết sử dụng **YUP** (`yup` + `@hookform/resolvers/yup`) — Thư viện validation kinh điển thống trị hàng ngàn dự án React lâu năm.
+4. **Đào sâu bản chất `react-router-dom` v6:**
+   * Không chỉ dừng ở link dẫn thông thường, phải nắm chắc:
+     * **Nested Routes** với `<Outlet />`.
+     * **Protected Routes (Auth Guard):** Chặn các trang nhạy cảm (`/checkout`, `/profile`) khi chưa đăng nhập và tự động đá về `/login`.
+     * `useParams`, `useSearchParams`, `useLocation`, `useNavigate`, `useRouteError`.
+5. **Tối ưu hóa hiệu năng tải trang:**
+   * Bắt buộc có **Code Splitting** với **`React.lazy` + `<Suspense>`**.
+6. **Yêu cầu hành động:**
+   * Xây dựng **Một Dự Án Mới Hoàn Chỉnh** tích hợp đầy đủ 100% tất cả các công nghệ trên và nhiều React Hooks phối hợp.
 
 ---
 
-## 🧭 2. TỔNG QUAN TIẾN ĐỘ HIỆN TẠI (ĐÃ HOÀN THÀNH)
+## 🚀 2. DỰ ÁN MỚI: `react-pro-store` (E-COMMERCE & MULTI-VENDOR HUB)
 
-1. **SPA Routing với React Router v7 (`App.jsx`):**
-   - `createBrowserRouter`, `RouterProvider`, `Outlet`, `useParams`, `useNavigate`.
-   - `useSearchParams` với kỹ thuật `{ replace: true }` chống tràn lịch sử trình duyệt.
-   - Route-level Error Boundary (`ErrorPage.jsx`) & Component-level Error Boundary (`react-error-boundary`).
-2. **Client Global State với Context API (`FavoritesContext.jsx`):**
-   - `createContext`, `FavoritesProvider`, lazy init từ `localStorage`, sync disk ngầm.
-   - Custom hook `useFavorites()` có rào chắn bảo vệ.
-3. **Chapter 10: State Management Toàn Cảnh & Server State (TanStack Query v5):**
-   - Phân biệt 4 loại State: Local UI, URL State, Client Global State, Server State.
-   - Khởi tạo `QueryClient` singleton, bọc `QueryClientProvider` & `ReactQueryDevtools` ở `App.jsx`.
-   - Tách Custom Hook `src/hooks/useMovieDetail.js` dùng `useQuery` có RAM Cache 5 phút (`staleTime: 5 * 60 * 1000`).
-4. **Complex Forms & Validation (React Hook Form + Zod):**
-   - Tách Schema và bảng giá ra `src/schemas/bookingSchema.js`:
-     - Regex số điện thoại 10 số VN (`/^(0[35789])[0-9]{8}$/`).
-     - Enum loại ghế (`standard`, `vip`, `sweetbox`), ép kiểu số `z.coerce.number()`, refine điều khoản `val === true`.
-   - Màn hình `src/pages/BookingPage.jsx`:
-     - `useForm` với `mode: 'onChange'` soi lỗi thời gian thực.
-     - **Derived State:** Tính `totalPrice` tức thì bằng `watch('seatType')` và `watch('ticketQuantity')` (0 `useState` thừa).
-     - Inline Error UX báo viền đỏ và thông báo lỗi tiếng Việt dưới từng ô.
+* **Backend API được chọn:** **[DummyJSON](https://dummyjson.com/)** (API RESTful công cộng phong phú: Sản phẩm có ảnh đẹp, Đăng nhập trả JWT token thật, Danh mục, Giỏ hàng, Phân trang, Tìm kiếm).
+
+### 🏛️ Bảng Phân Vai Công Nghệ Chuẩn Enterprise:
+
+| Tầng Kiến Trúc | Thư Viện / Công Nghệ | Nhiệm vụ cụ thể trong dự án `react-pro-store` |
+| :--- | :--- | :--- |
+| **Routing & Protection** | `react-router-dom` v6 | • Data APIs (`createBrowserRouter`, `RouterProvider`)<br>• Nested Layout dùng chung (`RootLayout` + `<Outlet />`)<br>• **Protected Route (`<ProtectedRoute />`)** bảo vệ trang Checkout & Profile<br>• `useParams` (ID sản phẩm), `useSearchParams` (lọc danh mục, phân trang, sort) |
+| **Code Splitting** | `React.lazy` + `<Suspense>` | Cắt nhỏ từng trang (`HomePage`, `ProductsPage`, `ProductDetailPage`, `LoginPage`, `CartPage`, `CheckoutPage`) giảm 70% Initial Bundle size |
+| **Form & Validation** | `react-hook-form` + **YUP** | • Đăng nhập & Đăng ký: Validate email, password, confirm password bằng **Yup Schema**<br>• Form Checkout thanh toán: Validate địa chỉ, số điện thoại, thẻ |
+| **Global Client State 1** | **Redux Toolkit (RTK)** | **Quản lý Giỏ hàng (`cartSlice.js`):**<br>• `configureStore`, `createSlice` (tận dụng Immer)<br>• `useSelector`, `useDispatch`<br>• Thêm vào giỏ, tăng/giảm số lượng, xóa sản phẩm |
+| **Global Client State 2** | **Zustand** | **Quản lý Auth & Theme (`useAuthStore.js`):**<br>• Lưu `user`, `accessToken`, `isAuthenticated`<br>• Middleware **`persist`** tự động đồng bộ `localStorage`<br>• Hàm `login()`, `logout()` |
+| **Server State & Cache** | **TanStack Query v5** | • `useQuery`: Fetch danh sách sản phẩm, chi tiết sản phẩm (Cache RAM 5 phút, SWR)<br>• `useMutation`: Gửi request đặt hàng POST lên DummyJSON |
+| **Hệ thống Hooks Phối hợp** | React Core Hooks | • `useMemo`: Tính tổng tiền giỏ hàng, lọc sản phẩm<br>• `useCallback`: Đóng băng hàm truyền xuống item con bọc `React.memo`<br>• `useRef`: Lưu timer debounce, focus ô lỗi<br>• Custom Hooks: `useDebounce`, `useLocalStorage` |
 
 ---
 
-## 📌 3. HƯỚNG DẪN CHI TIẾT ĐỂ LÀM TIẾP (TỐI NAY HOẶC PHIÊN TỚI)
+## 📂 3. CẤU TRÚC THƯ MỤC CHUẨN SENIOR CỦA DỰ ÁN MỚI
 
-Hiện tại đang ở **Chặng 1 của [PLAN.md](file:///Users/thinh/FE/Prac_FE/PRAC_FE/PLAN.md)**: Triển khai `useMutation` để gửi HTTP POST thật qua mạng và hiển thị Modal Vé VIP thành công.
-
-### BƯỚC 1: Tạo Component Modal — `src/components/TicketSuccessModal.jsx`
-Tạo file mới `src/components/TicketSuccessModal.jsx` với nội dung:
-
-```jsx
-export function TicketSuccessModal({ ticket, onClose }) {
-  if (!ticket) return null;
-
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0,0,0,0.85)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 9999,
-      padding: '20px',
-    }}>
-      <div style={{
-        background: '#222',
-        border: '2px solid #e50914',
-        borderRadius: '16px',
-        padding: '30px',
-        maxWidth: '480px',
-        width: '100%',
-        color: '#fff',
-        boxShadow: '0 0 30px rgba(229, 9, 20, 0.4)',
-        textAlign: 'center',
-      }}>
-        <h2 style={{ color: '#46d369', margin: '0 0 10px 0' }}>🎉 ĐẶT VÉ THÀNH CÔNG!</h2>
-        <p style={{ color: '#aaa', fontSize: '14px' }}>
-          Mã vé điện tử: <strong style={{ color: '#fff' }}>VE-{ticket.id}-{Date.now().toString().slice(-4)}</strong>
-        </p>
-
-        <div style={{ background: '#181818', padding: '16px', borderRadius: '10px', textAlign: 'left', margin: '20px 0', fontSize: '15px' }}>
-          <p style={{ margin: '6px 0' }}>🎬 <strong>Phim:</strong> {ticket.movieName}</p>
-          <p style={{ margin: '6px 0' }}>👤 <strong>Khách hàng:</strong> {ticket.fullName} ({ticket.phone})</p>
-          <p style={{ margin: '6px 0' }}>⏱ <strong>Suất chiếu:</strong> {ticket.showtime}</p>
-          <p style={{ margin: '6px 0' }}>💺 <strong>Loại ghế:</strong> {ticket.seatType?.toUpperCase()} x {ticket.ticketQuantity} vé</p>
-          <p style={{ margin: '6px 0', borderTop: '1px solid #333', paddingTop: '10px', color: '#46d369', fontSize: '18px' }}>
-            💰 <strong>Tổng thanh toán:</strong> {ticket.totalPrice?.toLocaleString('vi-VN')} VNĐ
-          </p>
-        </div>
-
-        <button
-          onClick={onClose}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: '#e50914',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            fontSize: '16px',
-          }}
-        >
-          Trở về Trang Chủ
-        </button>
-      </div>
-    </div>
-  );
-}
+```
+react-pro-store/
+├── src/
+│   ├── api/                     # Cấu hình gọi API (DummyJSON endpoints)
+│   │   ├── client.js            # Fetch wrapper / Axios instance
+│   │   ├── productsApi.js       # Gọi sản phẩm, danh mục
+│   │   └── authApi.js           # Gọi login DummyJSON lấy JWT token
+│   ├── components/              # Các UI Component dùng chung
+│   │   ├── common/              # Button, Input, Modal, Spinner
+│   │   ├── Navbar.jsx           # Thanh điều hướng (Hiển thị avatar user, badge số lượng giỏ hàng)
+│   │   ├── Footer.jsx           # Chân trang
+│   │   └── ProductCard.jsx      # Thẻ sản phẩm (Bọc React.memo)
+│   ├── features/                # Chia module theo nghiệp vụ (Feature-based)
+│   │   ├── auth/                # Login, Register, ProtectedRoute
+│   │   │   ├── schemas/authYupSchema.js  # 👉 Yup Validation Schema!
+│   │   │   └── ProtectedRoute.jsx        # 👉 Auth Guard Router!
+│   │   ├── cart/                # Giỏ hàng dùng Redux Toolkit
+│   │   │   └── cartSlice.js     # 👉 Redux Toolkit Slice!
+│   │   └── products/            # Danh sách, Chi tiết, Lọc
+│   │       └── hooks/useProducts.js      # 👉 TanStack Query Hook!
+│   ├── layouts/                 # RootLayout chứa Header, Outlet, Footer
+│   │   └── RootLayout.jsx
+│   ├── pages/                   # Các trang được Lazy load
+│   │   ├── HomePage.jsx
+│   │   ├── ProductsPage.jsx
+│   │   ├── ProductDetailPage.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── CartPage.jsx
+│   │   ├── CheckoutPage.jsx
+│   │   └── NotFoundPage.jsx
+│   ├── store/                   # Quản lý State toàn cục
+│   │   ├── index.js             # Cấu hình configureStore (Redux)
+│   │   └── useAuthStore.js      # 👉 Zustand Store (Auth & Theme)!
+│   ├── App.jsx                  # Cấu hình Router, QueryClientProvider, Provider Redux
+│   └── main.jsx
 ```
 
 ---
 
-### BƯỚC 2: Cập nhật `src/pages/BookingPage.jsx`
+## 📝 4. CÁC GÓI THƯ VIỆN CẦN CÀI ĐẶT
 
-1. **Import thêm ở đầu file:**
-   ```javascript
-   import { useState } from 'react';
-   import { useMutation } from '@tanstack/react-query';
-   import { TicketSuccessModal } from '../components/TicketSuccessModal';
-   ```
+Khi bắt đầu khởi tạo dự án:
+```bash
+# 1. Khởi tạo dự án Vite React:
+npm create vite@latest react-pro-store -- --template react
 
-2. **Bên trong component `BookingPage`:**
-   ```javascript
-   const [bookedTicket, setBookedTicket] = useState(null);
+# 2. Vào thư mục:
+cd react-pro-store
 
-   const bookingMutation = useMutation({
-     mutationFn: async (payload) => {
-       // Bắn HTTP POST thật lên mock server
-       const res = await fetch('https://jsonplaceholder.typicode.com/posts', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify(payload),
-       });
-       if (!res.ok) throw new Error(`Lỗi máy chủ: ${res.status}`);
-       return res.json();
-     },
-     onSuccess: (data) => {
-       console.log('Server trả về thành công:', data);
-       setBookedTicket(data); // Mở Modal
-     },
-     onError: (err) => {
-       alert(`Đặt vé thất bại: ${err.message}`);
-     },
-   });
-
-   function onSubmitBooking(data) {
-     const payload = {
-       ...data,
-       movieName: movie?.name,
-       movieSlug: slug,
-       totalPrice: totalPrice,
-       createdAt: new Date().toLocaleString('vi-VN'),
-     };
-     bookingMutation.mutate(payload); // Kích hoạt mutation
-   }
-   ```
-
-3. **Cập nhật nút submit ở cuối form:**
-   ```jsx
-   <button
-     type="submit"
-     disabled={bookingMutation.isPending}
-     style={{
-       marginTop: '20px',
-       padding: '14px',
-       background: bookingMutation.isPending ? '#666' : '#e50914',
-       color: '#fff',
-       border: 'none',
-       borderRadius: '8px',
-       fontSize: '16px',
-       fontWeight: 'bold',
-       cursor: bookingMutation.isPending ? 'not-allowed' : 'pointer',
-     }}
-   >
-     {bookingMutation.isPending ? '⏳ Đang gửi lên máy chủ...' : '🎟️ Xác Nhận Đặt Vé'}
-   </button>
-   ```
-
-4. **Gọi Modal ở cuối hàm `return ()` (trước thẻ đóng `</div>` cuối cùng):**
-   ```jsx
-   <TicketSuccessModal 
-     ticket={bookedTicket} 
-     onClose={() => {
-       setBookedTicket(null);
-       navigate('/');
-     }} 
-   />
-   ```
+# 3. Cài đặt toàn bộ bộ vũ khí:
+npm install react-router-dom @tanstack/react-query @tanstack/react-query-devtools @reduxjs/toolkit react-redux zustand react-hook-form yup @hookform/resolvers
+```
 
 ---
 
-## 📌 4. HƯỚNG DẪN ĐỒNG BỘ GIT (RẤT QUAN TRỌNG)
+## 🔄 5. HƯỚNG DẪN ĐỒNG BỘ GIT CHO MÁY Ở NHÀ
 
-### Trước khi rời máy hiện tại:
-Mở Terminal chạy chuỗi lệnh sau để đẩy toàn bộ code và sổ tay lên GitHub:
+### Bước 1: Commit và đẩy lên GitHub (Tại máy hiện tại):
+Mở terminal tại thư mục gốc chạy:
 ```bash
 git add .
-git commit -m "feat: hoan thanh BookingPage voi Zod, RHF va chuan bi useMutation"
+git commit -m "docs: cap nhat bao cao ban giao va lo trinh du an moi react-pro-store"
 git push origin main
 ```
 
-### Khi mở máy khác (ở nhà hoặc hôm sau):
-Mở Terminal chạy:
+### Bước 2: Kéo về tại máy ở nhà:
+Mở terminal tại máy ở nhà chạy:
 ```bash
 git pull origin main
 ```
-Sau đó nếu muốn bắt đầu phiên làm việc mới với AI, chỉ cần nhắn:
-> *"Tôi vừa pull code mới nhất rồi, tiếp tục Chặng 1 làm useMutation nhé!"*
+
+### Bước 3: Câu lệnh tiếp tục phiên làm việc với AI ở nhà:
+Khi mở Antigravity / IDE ở nhà, bạn chỉ cần gửi tin nhắn:
+> *"Tôi vừa pull code mới nhất về rồi. Bắt đầu ngay Bước 1: Khởi tạo dự án `react-pro-store` và cài đặt các thư viện theo HANDOVER_PROGRESS.md nhé!"*
